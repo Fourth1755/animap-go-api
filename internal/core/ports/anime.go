@@ -7,6 +7,8 @@ import (
 
 type AnimeRepository interface {
 	Save(anime entities.Anime) error
-	GetById(id int) (*entities.Anime, error)
+	GetById(id uint) (*entities.Anime, error)
 	GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime, error)
+	Update(anime *entities.Anime) error
+	Delete(id uint) error
 }

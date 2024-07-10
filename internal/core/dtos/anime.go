@@ -1,7 +1,7 @@
 package dtos
 
 type AnimeDTO struct {
-	ID       int    `json:"id"`
+	ID       uint   `json:"id"`
 	Name     string `json:"name"`
 	Episodes int    `json:"episodes"`
 	Seasonal string `json:"seasonal"`

@@ -22,7 +22,7 @@ func (r *GormAnimeRepository) Save(anime entities.Anime) error {
 	return nil
 }
 
-func (r *GormAnimeRepository) GetById(id int) (*entities.Anime, error) {
+func (r *GormAnimeRepository) GetById(id uint) (*entities.Anime, error) {
 	var anime entities.Anime
 	if result := r.db.First(&anime, id); result.Error != nil {
 		return nil, result.Error
@@ -39,4 +39,21 @@ func (r *GormAnimeRepository) GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime
 	}
 
 	return animes, nil
+}
+
+func (r *GormAnimeRepository) Update(anime *entities.Anime) error {
+	result := r.db.Model(&anime).Updates(anime)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *GormAnimeRepository) Delete(id uint) error {
+	var anime entities.Anime
+	result := r.db.Delete(&anime, id)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

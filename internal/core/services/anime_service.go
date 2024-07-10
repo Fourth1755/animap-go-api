@@ -8,8 +8,10 @@ import (
 
 type AnimeService interface {
 	CreateAnime(anime entities.Anime) error
-	GetAnimeById(id int) (*entities.Anime, error)
+	GetAnimeById(id uint) (*entities.Anime, error)
 	GetAnimes(query dtos.AnimeQueryDTO) ([]entities.Anime, error)
+	UpdateAnime(anime entities.Anime) error
+	DeleteAnime(id uint) error
 }
 
 type animeServiceImpl struct {
@@ -27,7 +29,7 @@ func (s *animeServiceImpl) CreateAnime(anime entities.Anime) error {
 	return nil
 }
 
-func (s *animeServiceImpl) GetAnimeById(id int) (*entities.Anime, error) {
+func (s *animeServiceImpl) GetAnimeById(id uint) (*entities.Anime, error) {
 	anime, err := s.repo.GetById(id)
 	if err != nil {
 		return nil, err
@@ -41,4 +43,18 @@ func (s *animeServiceImpl) GetAnimes(query dtos.AnimeQueryDTO) ([]entities.Anime
 		return nil, err
 	}
 	return animes, nil
+}
+
+func (s *animeServiceImpl) UpdateAnime(anime entities.Anime) error {
+	if err := s.repo.Update(&anime); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *animeServiceImpl) DeleteAnime(id uint) error {
+	if err := s.repo.Delete(id); err != nil {
+		return err
+	}
+	return nil
 }

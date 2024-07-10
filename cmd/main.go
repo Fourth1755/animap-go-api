@@ -59,5 +59,7 @@ func InitRoutes() {
 	app.Post("animes", animeHandler.CreateAnime)
 	app.Get("animes/:id", animeHandler.GetAnimeById)
 	app.Get("animes", animeHandler.GetAnimeList)
+	app.Put("animes/:id", animeHandler.UpdateAnime)
+	app.Delete("animes/:id", animeHandler.DeleteAnime)
 	app.Listen(":8080")
 }

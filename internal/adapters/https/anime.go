@@ -41,7 +41,7 @@ func (h *HttpAnimeHandler) GetAnimeById(c *fiber.Ctx) error {
 			"message": err.Error(),
 		})
 	}
-	anime, err := h.service.GetAnimeById(animeId)
+	anime, err := h.service.GetAnimeById(uint(animeId))
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"message": err.Error(),
@@ -83,4 +83,62 @@ func (h *HttpAnimeHandler) GetAnimeList(c *fiber.Ctx) error {
 		})
 	}
 	return c.JSON(animesDto)
+}
+
+func (h *HttpAnimeHandler) UpdateAnime(c *fiber.Ctx) error {
+	animeId, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	_, err = h.service.GetAnimeById(uint(animeId))
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	animeUpdate := new(entities.Anime)
+	if err := c.BodyParser(animeUpdate); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	animeUpdate.ID = uint(animeId)
+	err = h.service.UpdateAnime(*animeUpdate)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Update anime success",
+	})
+}
+
+func (h *HttpAnimeHandler) DeleteAnime(c *fiber.Ctx) error {
+	animeId, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	_, err = h.service.GetAnimeById(uint(animeId))
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	if err = h.service.DeleteAnime(uint(animeId)); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Delete anime success",
+	})
 }
