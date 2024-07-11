@@ -11,6 +11,7 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/gofiber/fiber/v2"
+	jwtware "github.com/gofiber/jwt/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -61,9 +62,12 @@ func main() {
 
 func InitRoutes() {
 	app := fiber.New()
-
 	app.Post("register", userHandler.CreateUser)
 	app.Post("login", userHandler.Login)
+
+	app.Use("animes", jwtware.New(jwtware.Config{
+		SigningKey: []byte(os.Getenv("JWT_SECRET")),
+	}))
 	app.Post("animes", animeHandler.CreateAnime)
 	app.Get("animes/:id", animeHandler.GetAnimeById)
 	app.Get("animes", animeHandler.GetAnimeList)
