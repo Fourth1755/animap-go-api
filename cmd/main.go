@@ -26,6 +26,7 @@ const (
 
 var (
 	animeHandler *adapters.HttpAnimeHandler
+	userHandler  *adapters.HttpUserHandler
 )
 
 func main() {
@@ -47,15 +48,22 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	db.AutoMigrate(&entities.Anime{})
+	db.AutoMigrate(&entities.Anime{}, &entities.User{})
 	animeRepo := repositories.NewGormAnimeRepository(db)
 	animeService := services.NewAnimeService(animeRepo)
 	animeHandler = adapters.NewHttpAnimeHandler(animeService)
+
+	userRepo := repositories.NewGormUserRepository(db)
+	userService := services.NewUserService(userRepo)
+	userHandler = adapters.NewHttpUserHandler(userService)
 	InitRoutes()
 }
 
 func InitRoutes() {
 	app := fiber.New()
+
+	app.Post("register", userHandler.CreateUser)
+	app.Post("login", userHandler.Login)
 	app.Post("animes", animeHandler.CreateAnime)
 	app.Get("animes/:id", animeHandler.GetAnimeById)
 	app.Get("animes", animeHandler.GetAnimeList)
