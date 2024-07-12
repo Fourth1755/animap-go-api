@@ -26,8 +26,9 @@ const (
 )
 
 var (
-	animeHandler *adapters.HttpAnimeHandler
-	userHandler  *adapters.HttpUserHandler
+	animeHandler     *adapters.HttpAnimeHandler
+	userHandler      *adapters.HttpUserHandler
+	userAnimeHandler *adapters.HttpUserAnimeHandler
 )
 
 func main() {
@@ -49,7 +50,7 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	db.AutoMigrate(&entities.Anime{}, &entities.User{})
+	db.AutoMigrate(&entities.Anime{}, &entities.User{}, &entities.UserAnime{})
 	animeRepo := repositories.NewGormAnimeRepository(db)
 	animeService := services.NewAnimeService(animeRepo)
 	animeHandler = adapters.NewHttpAnimeHandler(animeService)
@@ -57,6 +58,10 @@ func main() {
 	userRepo := repositories.NewGormUserRepository(db)
 	userService := services.NewUserService(userRepo)
 	userHandler = adapters.NewHttpUserHandler(userService)
+
+	userAnimeRepo := repositories.NewGormUserAnimeRepository(db)
+	userAnimeService := services.NewUserAnimeService(userAnimeRepo, animeRepo, userRepo)
+	userAnimeHandler = adapters.NewHttpUserAnimeHandler(userAnimeService)
 	InitRoutes()
 }
 
@@ -73,5 +78,8 @@ func InitRoutes() {
 	app.Get("animes", animeHandler.GetAnimeList)
 	app.Put("animes/:id", animeHandler.UpdateAnime)
 	app.Delete("animes/:id", animeHandler.DeleteAnime)
+
+	app.Post("anime-list", userAnimeHandler.AddAnimeToList)
+	app.Get("anime-list/:id", userAnimeHandler.GetAnimeByUserId)
 	app.Listen(":8080")
 }
