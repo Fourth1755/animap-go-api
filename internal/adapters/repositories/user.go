@@ -30,3 +30,12 @@ func (r *GormUserRepository) GetUserByEmail(email string) (*entities.User, error
 	}
 	return selectUser, nil
 }
+
+func (r *GormUserRepository) GetById(id uint) (*entities.User, error) {
+	user := new(entities.User)
+	result := r.db.First(&user, id)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return user, nil
+}
