@@ -7,5 +7,5 @@ type Category struct {
 	Name       string  `json:"name"`
 	Image      string  `json:"image"`
 	IsUniverse bool    `json:"isUniverse"`
-	Anime      []Anime `gorm:"many2many:anime_categories;"`
+	Animes     []Anime `gorm:"many2many:anime_categories;"`
 }
