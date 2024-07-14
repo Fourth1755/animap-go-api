@@ -26,9 +26,11 @@ const (
 )
 
 var (
-	animeHandler     *adapters.HttpAnimeHandler
-	userHandler      *adapters.HttpUserHandler
-	userAnimeHandler *adapters.HttpUserAnimeHandler
+	animeHandler         *adapters.HttpAnimeHandler
+	userHandler          *adapters.HttpUserHandler
+	userAnimeHandler     *adapters.HttpUserAnimeHandler
+	categoryHandler      *adapters.HttpCategoryHandler
+	animeCategoryHandler *adapters.HttpAnimeCategoryHandler
 )
 
 func main() {
@@ -50,7 +52,7 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	db.AutoMigrate(&entities.Anime{}, &entities.User{}, &entities.UserAnime{})
+	db.AutoMigrate(&entities.Anime{}, &entities.User{}, &entities.UserAnime{}, &entities.Category{}, &entities.AnimeCategory{})
 	animeRepo := repositories.NewGormAnimeRepository(db)
 	animeService := services.NewAnimeService(animeRepo)
 	animeHandler = adapters.NewHttpAnimeHandler(animeService)
@@ -62,6 +64,14 @@ func main() {
 	userAnimeRepo := repositories.NewGormUserAnimeRepository(db)
 	userAnimeService := services.NewUserAnimeService(userAnimeRepo, animeRepo, userRepo)
 	userAnimeHandler = adapters.NewHttpUserAnimeHandler(userAnimeService)
+
+	categoryRepo := repositories.NewGormCategoryRepository(db)
+	categoryService := services.NewCategoryService(categoryRepo)
+	categoryHandler = adapters.NewHttpCategoryHandler(categoryService)
+
+	animeCategoryRepo := repositories.NewGormAnimeCategoryRepository(db)
+	animeCategoryService := services.NewAnimeCategoryService(animeCategoryRepo)
+	animeCategoryHandler = adapters.NewHttpAnimeCategoryHandler(animeCategoryService)
 	InitRoutes()
 }
 
@@ -81,5 +91,11 @@ func InitRoutes() {
 
 	app.Post("anime-list", userAnimeHandler.AddAnimeToList)
 	app.Get("anime-list/:id", userAnimeHandler.GetAnimeByUserId)
+
+	app.Post("category", categoryHandler.CreateCategory)
+	app.Get("category", categoryHandler.Getcategorise)
+	app.Get("category/:id", categoryHandler.GetCategoryById)
+
+	app.Post("anime-category", animeCategoryHandler.AddAnimeToCategory)
 	app.Listen(":8080")
 }
