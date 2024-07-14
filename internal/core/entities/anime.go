@@ -10,6 +10,6 @@ type Anime struct {
 	Description string     `json:"description"`
 	Seasonal    string     `json:"seasonal"`
 	Year        string     `json:"year"`
-	User        []User     `gorm:"many2many:user_animes;"`
-	Category    []Category `gorm:"many2many:anime_categories;"`
+	Users       []User     `gorm:"many2many:user_animes;"`
+	Categories  []Category `gorm:"many2many:anime_categories;"`
 }
