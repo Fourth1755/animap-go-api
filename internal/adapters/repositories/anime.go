@@ -61,3 +61,12 @@ func (r *GormAnimeRepository) Delete(id uint) error {
 	}
 	return nil
 }
+
+func (r *GormAnimeRepository) GetByUserId(id uint) ([]entities.UserAnime, error) {
+	var animes []entities.UserAnime
+	result := r.db.Preload("Anime").Where("user_id = ?", id).Find(&animes)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return animes, nil
+}

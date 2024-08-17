@@ -142,3 +142,19 @@ func (h *HttpAnimeHandler) DeleteAnime(c *fiber.Ctx) error {
 		"message": "Delete anime success",
 	})
 }
+
+func (h *HttpAnimeHandler) GetAnimeByUserId(c *fiber.Ctx) error {
+	user_id, err := strconv.Atoi(c.Params("user_id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	animes, err := h.service.GetAnimeByUserId(uint(user_id))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	return c.JSON(animes)
+}
