@@ -11,4 +11,5 @@ type AnimeRepository interface {
 	GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime, error)
 	Update(anime *entities.Anime) error
 	Delete(id uint) error
+	GetByUserId(user_id uint) ([]entities.UserAnime, error)
 }

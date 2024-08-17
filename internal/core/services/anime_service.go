@@ -12,14 +12,16 @@ type AnimeService interface {
 	GetAnimes(query dtos.AnimeQueryDTO) ([]entities.Anime, error)
 	UpdateAnime(anime entities.Anime) error
 	DeleteAnime(id uint) error
+	GetAnimeByUserId(user_id uint) ([]entities.UserAnime, error)
 }
 
 type animeServiceImpl struct {
-	repo ports.AnimeRepository
+	repo     ports.AnimeRepository
+	userRepo ports.UserRepository
 }
 
-func NewAnimeService(repo ports.AnimeRepository) AnimeService {
-	return &animeServiceImpl{repo: repo}
+func NewAnimeService(repo ports.AnimeRepository, userRepo ports.UserRepository) AnimeService {
+	return &animeServiceImpl{repo: repo, userRepo: userRepo}
 }
 
 func (s *animeServiceImpl) CreateAnime(anime entities.Anime) error {
@@ -57,4 +59,15 @@ func (s *animeServiceImpl) DeleteAnime(id uint) error {
 		return err
 	}
 	return nil
+}
+
+func (s *animeServiceImpl) GetAnimeByUserId(user_id uint) ([]entities.UserAnime, error) {
+	if _, err := s.userRepo.GetById(user_id); err != nil {
+		return nil, err
+	}
+	result, err := s.repo.GetByUserId(user_id)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
