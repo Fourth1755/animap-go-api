@@ -10,6 +10,7 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
+	"github.com/Fourth1755/animap-go-api/internal/logs"
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v2"
 	"gorm.io/driver/postgres"
@@ -47,11 +48,10 @@ func main() {
 		Logger: newLogger,
 	})
 	print(db)
-
 	if err != nil {
 		panic("failed to connect database")
 	}
-
+	logs.Error("failed to connect database")
 	db.AutoMigrate(&entities.Anime{}, &entities.User{}, &entities.UserAnime{}, &entities.Category{}, &entities.AnimeCategory{})
 	animeRepo := repositories.NewGormAnimeRepository(db)
 	userRepo := repositories.NewGormUserRepository(db)
