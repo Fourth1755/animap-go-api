@@ -2,15 +2,20 @@ package repositories
 
 import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
-	"github.com/Fourth1755/animap-go-api/internal/core/ports"
 	"gorm.io/gorm"
 )
+
+type CategoryRepository interface {
+	Save(category *entities.Category) error
+	GetAll() ([]entities.Category, error)
+	GetById(id uint) (*entities.Category, error)
+}
 
 type GormCategoryRepository struct {
 	db *gorm.DB
 }
 
-func NewGormCategoryRepository(db *gorm.DB) ports.CategoryRepository {
+func NewGormCategoryRepository(db *gorm.DB) CategoryRepository {
 	return &GormCategoryRepository{db: db}
 }
 

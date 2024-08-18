@@ -1,8 +1,8 @@
 package services
 
 import (
+	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
-	"github.com/Fourth1755/animap-go-api/internal/core/ports"
 )
 
 type UserAnimeService interface {
@@ -11,12 +11,12 @@ type UserAnimeService interface {
 }
 
 type userAnimeServiceImpl struct {
-	repo      ports.UserAnimeRepository
-	animeRepo ports.AnimeRepository
-	userRepo  ports.UserRepository
+	repo      repositories.UserAnimeRepository
+	animeRepo repositories.AnimeRepository
+	userRepo  repositories.UserRepository
 }
 
-func NewUserAnimeService(repo ports.UserAnimeRepository, animeRepo ports.AnimeRepository, userRepo ports.UserRepository) UserAnimeService {
+func NewUserAnimeService(repo repositories.UserAnimeRepository, animeRepo repositories.AnimeRepository, userRepo repositories.UserRepository) UserAnimeService {
 	return &userAnimeServiceImpl{repo: repo, animeRepo: animeRepo, userRepo: userRepo}
 }
 

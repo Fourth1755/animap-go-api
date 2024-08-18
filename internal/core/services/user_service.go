@@ -4,8 +4,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
-	"github.com/Fourth1755/animap-go-api/internal/core/ports"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -16,10 +16,10 @@ type UserService interface {
 }
 
 type UserServiceImpl struct {
-	repo ports.UserRepository
+	repo repositories.UserRepository
 }
 
-func NewUserService(repo ports.UserRepository) UserService {
+func NewUserService(repo repositories.UserRepository) UserService {
 	return &UserServiceImpl{repo: repo}
 }
 

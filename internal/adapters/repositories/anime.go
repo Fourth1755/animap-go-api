@@ -3,15 +3,23 @@ package repositories
 import (
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
-	"github.com/Fourth1755/animap-go-api/internal/core/ports"
 	"gorm.io/gorm"
 )
+
+type AnimeRepository interface {
+	Save(anime entities.Anime) error
+	GetById(id uint) (*entities.Anime, error)
+	GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime, error)
+	Update(anime *entities.Anime) error
+	Delete(id uint) error
+	GetByUserId(user_id uint) ([]entities.UserAnime, error)
+}
 
 type GormAnimeRepository struct {
 	db *gorm.DB
 }
 
-func NewGormAnimeRepository(db *gorm.DB) ports.AnimeRepository {
+func NewGormAnimeRepository(db *gorm.DB) AnimeRepository {
 	return &GormAnimeRepository{db: db}
 }
 
