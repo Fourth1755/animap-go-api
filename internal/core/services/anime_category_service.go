@@ -1,8 +1,8 @@
 package services
 
 import (
+	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
-	"github.com/Fourth1755/animap-go-api/internal/core/ports"
 )
 
 type AnimeCategoryService interface {
@@ -10,10 +10,10 @@ type AnimeCategoryService interface {
 }
 
 type AnimeCategoryServiceImpl struct {
-	repo ports.AnimeCategoryRepository
+	repo repositories.AnimeCategoryRepository
 }
 
-func NewAnimeCategoryService(repo ports.AnimeCategoryRepository) AnimeCategoryService {
+func NewAnimeCategoryService(repo repositories.AnimeCategoryRepository) AnimeCategoryService {
 	return &AnimeCategoryServiceImpl{repo: repo}
 }
 

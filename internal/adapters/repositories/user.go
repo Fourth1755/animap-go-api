@@ -2,15 +2,19 @@ package repositories
 
 import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
-	"github.com/Fourth1755/animap-go-api/internal/core/ports"
 	"gorm.io/gorm"
 )
 
+type UserRepository interface {
+	Save(user *entities.User) error
+	GetUserByEmail(email string) (*entities.User, error)
+	GetById(id uint) (*entities.User, error)
+}
 type GormUserRepository struct {
 	db *gorm.DB
 }
 
-func NewGormUserRepository(db *gorm.DB) ports.UserRepository {
+func NewGormUserRepository(db *gorm.DB) UserRepository {
 	return &GormUserRepository{db: db}
 }
 

@@ -72,17 +72,7 @@ func (h *HttpAnimeHandler) GetAnimeList(c *fiber.Ctx) error {
 		})
 	}
 
-	var animesDto []dtos.AnimeDTO
-	for _, anime := range animes {
-		animesDto = append(animesDto, dtos.AnimeDTO{
-			ID:       anime.ID,
-			Name:     anime.Name,
-			Episodes: anime.Episodes,
-			Seasonal: anime.Seasonal,
-			Year:     anime.Year,
-		})
-	}
-	return c.JSON(animesDto)
+	return c.JSON(animes)
 }
 
 func (h *HttpAnimeHandler) UpdateAnime(c *fiber.Ctx) error {

@@ -1,26 +1,26 @@
 package services
 
 import (
+	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
-	"github.com/Fourth1755/animap-go-api/internal/core/ports"
 )
 
 type AnimeService interface {
 	CreateAnime(anime entities.Anime) error
 	GetAnimeById(id uint) (*entities.Anime, error)
-	GetAnimes(query dtos.AnimeQueryDTO) ([]entities.Anime, error)
+	GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeDTO, error)
 	UpdateAnime(anime entities.Anime) error
 	DeleteAnime(id uint) error
 	GetAnimeByUserId(user_id uint) ([]entities.UserAnime, error)
 }
 
 type animeServiceImpl struct {
-	repo     ports.AnimeRepository
-	userRepo ports.UserRepository
+	repo     repositories.AnimeRepository
+	userRepo repositories.UserRepository
 }
 
-func NewAnimeService(repo ports.AnimeRepository, userRepo ports.UserRepository) AnimeService {
+func NewAnimeService(repo repositories.AnimeRepository, userRepo repositories.UserRepository) AnimeService {
 	return &animeServiceImpl{repo: repo, userRepo: userRepo}
 }
 
@@ -39,12 +39,23 @@ func (s *animeServiceImpl) GetAnimeById(id uint) (*entities.Anime, error) {
 	return anime, nil
 }
 
-func (s *animeServiceImpl) GetAnimes(query dtos.AnimeQueryDTO) ([]entities.Anime, error) {
+func (s *animeServiceImpl) GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeDTO, error) {
 	animes, err := s.repo.GetAll(query)
 	if err != nil {
 		return nil, err
 	}
-	return animes, nil
+
+	var animesDto []dtos.AnimeDTO
+	for _, anime := range animes {
+		animesDto = append(animesDto, dtos.AnimeDTO{
+			ID:       anime.ID,
+			Name:     anime.Name,
+			Episodes: anime.Episodes,
+			Seasonal: anime.Seasonal,
+			Year:     anime.Year,
+		})
+	}
+	return animesDto, nil
 }
 
 func (s *animeServiceImpl) UpdateAnime(anime entities.Anime) error {
