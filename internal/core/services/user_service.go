@@ -6,6 +6,7 @@ import (
 
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
@@ -32,14 +33,14 @@ func (s *UserServiceImpl) CreateUser(user *entities.User) error {
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		logs.Error(err.Error())
-		return err
+		return errs.NewUnexpectedError()
 	}
 
 	user.Password = string(hashPassword)
 	err = s.repo.Save(user)
 	if err != nil {
 		logs.Error(err.Error())
-		return err
+		return errs.NewUnexpectedError()
 	}
 	return nil
 }
@@ -48,12 +49,12 @@ func (s *UserServiceImpl) Login(user *entities.User) (string, error) {
 	selectUser, err := s.repo.GetUserByEmail(user.Email)
 	if err != nil {
 		logs.Error(err.Error())
-		return "", err
+		return "", errs.NewNotFoundError("User not found")
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(selectUser.Password), []byte(user.Password))
 	if err != nil {
 		logs.Error(err.Error())
-		return "", err
+		return "", errs.NewUnexpectedError()
 	}
 	// Create the Claims
 	claims := jwt.MapClaims{
@@ -66,7 +67,7 @@ func (s *UserServiceImpl) Login(user *entities.User) (string, error) {
 	t, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		logs.Error(err.Error())
-		return "", err
+		return "", errs.NewUnexpectedError()
 	}
 	return t, nil
 }

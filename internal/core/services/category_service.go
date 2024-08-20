@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
 )
 
@@ -23,7 +24,7 @@ func NewCategoryService(repo repositories.CategoryRepository) CategoryService {
 func (s *CategoryServiceImpl) CreateCategory(category *entities.Category) error {
 	if err := s.repo.Save(category); err != nil {
 		logs.Error(err.Error())
-		return err
+		return errs.NewUnexpectedError()
 	}
 	return nil
 }
@@ -32,7 +33,7 @@ func (s *CategoryServiceImpl) Getcategorise() ([]entities.Category, error) {
 	category, err := s.repo.GetAll()
 	if err != nil {
 		logs.Error(err.Error())
-		return nil, err
+		return nil, errs.NewUnexpectedError()
 	}
 	return category, nil
 }
@@ -41,7 +42,7 @@ func (s *CategoryServiceImpl) GetCategoryById(id uint) (*entities.Category, erro
 	category, err := s.repo.GetById(id)
 	if err != nil {
 		logs.Error(err.Error())
-		return nil, err
+		return nil, errs.NewNotFoundError("Category not found")
 	}
 	return category, nil
 }

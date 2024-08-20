@@ -5,6 +5,7 @@ import (
 
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
+	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -19,14 +20,10 @@ func NewHttpCategoryHandler(service services.CategoryService) *HttpCategoryHandl
 func (h *HttpCategoryHandler) CreateCategory(c *fiber.Ctx) error {
 	category := new(entities.Category)
 	if err := c.BodyParser(&category); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err,
-		})
+		return handleError(c, errs.NewBadRequestError(err.Error()))
 	}
 	if err := h.service.CreateCategory(category); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err,
-		})
+		return handleError(c, err)
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
@@ -37,9 +34,7 @@ func (h *HttpCategoryHandler) CreateCategory(c *fiber.Ctx) error {
 func (h *HttpCategoryHandler) Getcategorise(c *fiber.Ctx) error {
 	category, err := h.service.Getcategorise()
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err,
-		})
+		return handleError(c, errs.NewBadRequestError(err.Error()))
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(category)
@@ -48,15 +43,11 @@ func (h *HttpCategoryHandler) Getcategorise(c *fiber.Ctx) error {
 func (h *HttpCategoryHandler) GetCategoryById(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err,
-		})
+		return handleError(c, errs.NewBadRequestError(err.Error()))
 	}
 	category, err := h.service.GetCategoryById(uint(id))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err,
-		})
+		return handleError(c, err)
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(category)

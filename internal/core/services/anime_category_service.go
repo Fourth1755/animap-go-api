@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
 )
 
@@ -21,7 +22,7 @@ func NewAnimeCategoryService(repo repositories.AnimeCategoryRepository) AnimeCat
 func (s AnimeCategoryServiceImpl) AddAnimeToCategory(animeCategory *entities.AnimeCategory) error {
 	if err := s.repo.Save(animeCategory); err != nil {
 		logs.Error(err.Error())
-		return err
+		return errs.NewUnexpectedError()
 	}
 	return nil
 }

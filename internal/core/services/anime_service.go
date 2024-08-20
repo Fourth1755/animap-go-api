@@ -1,9 +1,12 @@
 package services
 
 import (
+	"gorm.io/gorm"
+
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
 )
 
@@ -28,7 +31,7 @@ func NewAnimeService(repo repositories.AnimeRepository, userRepo repositories.Us
 func (s *animeServiceImpl) CreateAnime(anime entities.Anime) error {
 	if err := s.repo.Save(anime); err != nil {
 		logs.Error(err.Error())
-		return err
+		return errs.NewUnexpectedError()
 	}
 	return nil
 }
@@ -37,7 +40,10 @@ func (s *animeServiceImpl) GetAnimeById(id uint) (*entities.Anime, error) {
 	anime, err := s.repo.GetById(id)
 	if err != nil {
 		logs.Error(err.Error())
-		return nil, err
+		if err == gorm.ErrRecordNotFound {
+			return nil, errs.NewNotFoundError("Anime not found")
+		}
+		return nil, errs.NewUnexpectedError()
 	}
 	return anime, nil
 }
@@ -63,17 +69,35 @@ func (s *animeServiceImpl) GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeDTO,
 }
 
 func (s *animeServiceImpl) UpdateAnime(anime entities.Anime) error {
+	_, err := s.repo.GetById(anime.ID)
+	if err != nil {
+		logs.Error(err.Error())
+		if err == gorm.ErrRecordNotFound {
+			return errs.NewNotFoundError("Anime not found")
+		}
+		return errs.NewUnexpectedError()
+	}
+
 	if err := s.repo.Update(&anime); err != nil {
 		logs.Error(err.Error())
-		return err
+		return errs.NewUnexpectedError()
 	}
 	return nil
 }
 
 func (s *animeServiceImpl) DeleteAnime(id uint) error {
+	_, err := s.repo.GetById(id)
+	if err != nil {
+		logs.Error(err.Error())
+		if err == gorm.ErrRecordNotFound {
+			return errs.NewNotFoundError("Anime not found")
+		}
+		return errs.NewUnexpectedError()
+	}
+
 	if err := s.repo.Delete(id); err != nil {
 		logs.Error(err.Error())
-		return err
+		return errs.NewUnexpectedError()
 	}
 	return nil
 }
@@ -81,12 +105,12 @@ func (s *animeServiceImpl) DeleteAnime(id uint) error {
 func (s *animeServiceImpl) GetAnimeByUserId(user_id uint) ([]entities.UserAnime, error) {
 	if _, err := s.userRepo.GetById(user_id); err != nil {
 		logs.Error(err.Error())
-		return nil, err
+		return nil, errs.NewNotFoundError("User not found")
 	}
 	result, err := s.repo.GetByUserId(user_id)
 	if err != nil {
 		logs.Error(err.Error())
-		return nil, err
+		return nil, errs.NewUnexpectedError()
 	}
 	return result, nil
 }
