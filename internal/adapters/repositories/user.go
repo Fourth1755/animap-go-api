@@ -10,6 +10,7 @@ type UserRepository interface {
 	GetUserByEmail(email string) (*entities.User, error)
 	GetById(id uint) (*entities.User, error)
 }
+
 type GormUserRepository struct {
 	db *gorm.DB
 }

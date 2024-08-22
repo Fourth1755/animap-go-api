@@ -12,6 +12,7 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	jwtware "github.com/gofiber/jwt/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -78,6 +79,7 @@ func main() {
 
 func InitRoutes() {
 	app := fiber.New()
+	app.Use(cors.New())
 	app.Post("register", userHandler.CreateUser)
 	app.Post("login", userHandler.Login)
 
