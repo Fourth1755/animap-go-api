@@ -1,6 +1,8 @@
 package adapters
 
 import (
+	"time"
+
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
@@ -39,6 +41,12 @@ func (h *HttpUserHandler) Login(c *fiber.Ctx) error {
 	if err != nil {
 		return handleError(c, errs.NewUnauthorizedError(err.Error()))
 	}
+	c.Cookie(&fiber.Cookie{
+		Name:     "jwt",
+		Value:    token,
+		Expires:  time.Now().Add(time.Hour * 72),
+		HTTPOnly: true,
+	})
 	return c.JSON(fiber.Map{
 		"message": "Login success",
 		"token":   token,

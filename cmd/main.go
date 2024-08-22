@@ -11,20 +11,13 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
+	"github.com/Fourth1755/animap-go-api/internal/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	jwtware "github.com/gofiber/jwt/v2"
+	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-)
-
-const (
-	host         = "localhost"
-	port         = 5432
-	databaseName = "postgres"
-	username     = "postgres"
-	password     = "12131415"
 )
 
 var (
@@ -33,10 +26,47 @@ var (
 	userAnimeHandler     *adapters.HttpUserAnimeHandler
 	categoryHandler      *adapters.HttpCategoryHandler
 	animeCategoryHandler *adapters.HttpAnimeCategoryHandler
+	songHandler          *adapters.HttpSongHandler
 )
 
 func main() {
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, username, password, databaseName)
+	db := InitDatabase()
+	//create repository
+	animeRepo := repositories.NewGormAnimeRepository(db)
+	userRepo := repositories.NewGormUserRepository(db)
+	userAnimeRepo := repositories.NewGormUserAnimeRepository(db)
+	categoryRepo := repositories.NewGormCategoryRepository(db)
+	animeCategoryRepo := repositories.NewGormAnimeCategoryRepository(db)
+	songRepo := repositories.NewGormSongRepository(db)
+
+	//create service
+	animeService := services.NewAnimeService(animeRepo, userRepo)
+	userService := services.NewUserService(userRepo)
+	userAnimeService := services.NewUserAnimeService(userAnimeRepo, animeRepo, userRepo)
+	categoryService := services.NewCategoryService(categoryRepo)
+	animeCategoryService := services.NewAnimeCategoryService(animeCategoryRepo)
+	songService := services.NewSongService(songRepo)
+
+	//create handler
+	animeHandler = adapters.NewHttpAnimeHandler(animeService)
+	userHandler = adapters.NewHttpUserHandler(userService)
+	userAnimeHandler = adapters.NewHttpUserAnimeHandler(userAnimeService)
+	categoryHandler = adapters.NewHttpCategoryHandler(categoryService)
+	animeCategoryHandler = adapters.NewHttpAnimeCategoryHandler(animeCategoryService)
+	songHandler = adapters.NewHttpSongHandler(songService)
+	InitRoutes()
+}
+
+func InitDatabase() *gorm.DB {
+	initConfig()
+
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		viper.GetString("db.host"),
+		viper.GetInt("db.port"),
+		viper.GetString("db.username"),
+		viper.GetString("db.password"),
+		viper.GetString("db.databaseName"))
+
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
@@ -48,33 +78,24 @@ func main() {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: newLogger,
 	})
-	print(db)
 	if err != nil {
 		panic("failed to connect database")
 	}
 	logs.Error("failed to connect database")
-	db.AutoMigrate(&entities.Anime{}, &entities.User{}, &entities.UserAnime{}, &entities.Category{}, &entities.AnimeCategory{})
-	animeRepo := repositories.NewGormAnimeRepository(db)
-	userRepo := repositories.NewGormUserRepository(db)
-	userAnimeRepo := repositories.NewGormUserAnimeRepository(db)
-	categoryRepo := repositories.NewGormCategoryRepository(db)
-	animeCategoryRepo := repositories.NewGormAnimeCategoryRepository(db)
 
-	animeService := services.NewAnimeService(animeRepo, userRepo)
-	animeHandler = adapters.NewHttpAnimeHandler(animeService)
+	db.AutoMigrate(&entities.Anime{}, &entities.User{}, &entities.UserAnime{}, &entities.Category{}, &entities.AnimeCategory{}, &entities.Song{}, &entities.SongChannel{})
 
-	userService := services.NewUserService(userRepo)
-	userHandler = adapters.NewHttpUserHandler(userService)
+	return db
+}
+func initConfig() {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("../")
 
-	userAnimeService := services.NewUserAnimeService(userAnimeRepo, animeRepo, userRepo)
-	userAnimeHandler = adapters.NewHttpUserAnimeHandler(userAnimeService)
-
-	categoryService := services.NewCategoryService(categoryRepo)
-	categoryHandler = adapters.NewHttpCategoryHandler(categoryService)
-
-	animeCategoryService := services.NewAnimeCategoryService(animeCategoryRepo)
-	animeCategoryHandler = adapters.NewHttpAnimeCategoryHandler(animeCategoryService)
-	InitRoutes()
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func InitRoutes() {
@@ -83,9 +104,10 @@ func InitRoutes() {
 	app.Post("register", userHandler.CreateUser)
 	app.Post("login", userHandler.Login)
 
-	app.Use("animes", jwtware.New(jwtware.Config{
-		SigningKey: []byte(os.Getenv("JWT_SECRET")),
-	}))
+	// app.Use("animes", jwtware.New(jwtware.Config{
+	// 	SigningKey: []byte(os.Getenv("JWT_SECRET")),
+	// }))
+	app.Use("animes", middleware.AuthRequired)
 	app.Post("animes", animeHandler.CreateAnime)
 	app.Get("animes/:id", animeHandler.GetAnimeById)
 	app.Get("animes", animeHandler.GetAnimeList)
@@ -101,5 +123,9 @@ func InitRoutes() {
 	app.Get("category/:id", categoryHandler.GetCategoryById)
 
 	app.Post("anime-category", animeCategoryHandler.AddAnimeToCategory)
+
+	app.Post("songs", songHandler.CreateSong)
+	app.Get("songs", songHandler.GetSongAll)
+	app.Get("songs/:id", songHandler.GetSongById)
 	app.Listen(":8080")
 }
