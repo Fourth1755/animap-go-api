@@ -12,4 +12,5 @@ type Anime struct {
 	Year        string     `json:"year"`
 	Users       []User     `gorm:"many2many:user_animes;"`
 	Categories  []Category `gorm:"many2many:anime_categories;"`
+	Songs       []Song
 }
