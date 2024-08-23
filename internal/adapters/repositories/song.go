@@ -9,6 +9,7 @@ type SongRepository interface {
 	Save(*entities.Song) error
 	GetById(uint) (*entities.Song, error)
 	GetAll() ([]entities.Song, error)
+	Update(*entities.Song) error
 }
 
 type GormSongRepository struct {
@@ -28,7 +29,7 @@ func (r *GormSongRepository) Save(song *entities.Song) error {
 
 func (r *GormSongRepository) GetById(id uint) (*entities.Song, error) {
 	song := new(entities.Song)
-	if result := r.db.First(&song, id); result.Error != nil {
+	if result := r.db.Preload("SongChannel").First(&song, id); result.Error != nil {
 		return nil, result.Error
 	}
 	return song, nil
@@ -40,4 +41,12 @@ func (r *GormSongRepository) GetAll() ([]entities.Song, error) {
 		return nil, result.Error
 	}
 	return song, nil
+}
+
+func (r *GormSongRepository) Update(song *entities.Song) error {
+	result := r.db.Model(&song).Updates(song)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

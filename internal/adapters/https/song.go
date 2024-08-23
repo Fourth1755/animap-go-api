@@ -49,3 +49,21 @@ func (h *HttpSongHandler) GetSongAll(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).JSON(song)
 }
+
+func (h *HttpSongHandler) UpdateSong(c *fiber.Ctx) error {
+	songId, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return handleError(c, errs.NewBadRequestError(err.Error()))
+	}
+	song := new(entities.Song)
+	if err := c.BodyParser(&song); err != nil {
+		return handleError(c, err)
+	}
+	song.ID = uint(songId)
+	if err := h.service.UpdateSong(song); err != nil {
+		return handleError(c, err)
+	}
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "Update song success",
+	})
+}
