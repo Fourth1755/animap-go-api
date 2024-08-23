@@ -42,14 +42,7 @@ func (h *HttpAnimeHandler) GetAnimeById(c *fiber.Ctx) error {
 		return handleError(c, err)
 	}
 
-	animeDto := dtos.AnimeDTO{
-		ID:       anime.ID,
-		Name:     anime.Name,
-		Episodes: anime.Episodes,
-		Seasonal: anime.Seasonal,
-		Year:     anime.Year,
-	}
-	return c.JSON(animeDto)
+	return c.JSON(anime)
 }
 
 func (h *HttpAnimeHandler) GetAnimeList(c *fiber.Ctx) error {
