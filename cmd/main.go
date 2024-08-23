@@ -127,5 +127,6 @@ func InitRoutes() {
 	app.Post("songs", songHandler.CreateSong)
 	app.Get("songs", songHandler.GetSongAll)
 	app.Get("songs/:id", songHandler.GetSongById)
+	app.Put("songs/:id", songHandler.UpdateSong)
 	app.Listen(":8080")
 }
