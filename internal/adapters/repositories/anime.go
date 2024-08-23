@@ -32,7 +32,7 @@ func (r *GormAnimeRepository) Save(anime entities.Anime) error {
 
 func (r *GormAnimeRepository) GetById(id uint) (*entities.Anime, error) {
 	var anime entities.Anime
-	if result := r.db.First(&anime, id); result.Error != nil {
+	if result := r.db.Preload("Songs").Preload("Categories").First(&anime, id); result.Error != nil {
 		return nil, result.Error
 	}
 	return &anime, nil
