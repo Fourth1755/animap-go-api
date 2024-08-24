@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
+	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
@@ -10,7 +11,7 @@ import (
 type SongService interface {
 	CreateSong(*entities.Song) error
 	GetSongById(uint) (*entities.Song, error)
-	GetAllSongs() ([]entities.Song, error)
+	GetAllSongs() ([]dtos.SongListResponse, error)
 	UpdateSong(*entities.Song) error
 }
 
@@ -21,6 +22,8 @@ type songServiceImpl struct {
 func NewSongService(repo repositories.SongRepository) SongService {
 	return &songServiceImpl{repo: repo}
 }
+
+var songTypeMap = []string{"none", "opening", "ending", "soundtrack"}
 
 func (s songServiceImpl) CreateSong(song *entities.Song) error {
 	if err := s.repo.Save(song); err != nil {
@@ -39,13 +42,28 @@ func (s songServiceImpl) GetSongById(id uint) (*entities.Song, error) {
 	return song, nil
 }
 
-func (s songServiceImpl) GetAllSongs() ([]entities.Song, error) {
+func (s songServiceImpl) GetAllSongs() ([]dtos.SongListResponse, error) {
 	songs, err := s.repo.GetAll()
 	if err != nil {
 		logs.Error(err)
 		return nil, errs.NewUnexpectedError()
 	}
-	return songs, nil
+	var songResponse []dtos.SongListResponse
+	for _, song := range songs {
+		songResponse = append(songResponse, dtos.SongListResponse{
+			ID:          song.ID,
+			Name:        song.Name,
+			Image:       song.Image,
+			Description: song.Description,
+			Year:        song.Year,
+			Type:        songTypeMap[song.Type],
+			Sequence:    song.Sequence,
+			AnimeID:     song.AnimeID,
+			AnimeName:   song.Anime.Name,
+		})
+	}
+
+	return songResponse, nil
 }
 
 func (s songServiceImpl) UpdateSong(song *entities.Song) error {
