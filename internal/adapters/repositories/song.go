@@ -37,7 +37,7 @@ func (r *GormSongRepository) GetById(id uint) (*entities.Song, error) {
 
 func (r *GormSongRepository) GetAll() ([]entities.Song, error) {
 	var song []entities.Song
-	if result := r.db.Find(&song); result.Error != nil {
+	if result := r.db.Preload("Anime").Find(&song); result.Error != nil {
 		return nil, result.Error
 	}
 	return song, nil

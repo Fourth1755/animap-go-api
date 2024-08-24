@@ -8,7 +8,9 @@ type Song struct {
 	Image       string        `json:"image"`
 	Description string        `json:"description"`
 	Year        string        `json:"year"`
-	Type        uint          `json:"type"` // 1: opening, 2: ending, 3:other
+	Type        int           `json:"type"` // 1: opening, 2: ending, 3:soundtrack
+	Sequence    int           `json:"sequence"`
 	AnimeID     uint          `json:"anime_id"`
+	Anime       Anime         `json:"anime"`
 	SongChannel []SongChannel `json:"song_channel"`
 }
