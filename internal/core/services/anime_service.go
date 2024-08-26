@@ -12,7 +12,7 @@ import (
 
 type AnimeService interface {
 	CreateAnime(anime entities.Anime) error
-	GetAnimeById(id uint) (*entities.Anime, error)
+	GetAnimeById(id uint) (*dtos.AnimeDetailResponse, error)
 	GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeDTO, error)
 	UpdateAnime(anime entities.Anime) error
 	DeleteAnime(id uint) error
@@ -36,7 +36,7 @@ func (s *animeServiceImpl) CreateAnime(anime entities.Anime) error {
 	return nil
 }
 
-func (s *animeServiceImpl) GetAnimeById(id uint) (*entities.Anime, error) {
+func (s *animeServiceImpl) GetAnimeById(id uint) (*dtos.AnimeDetailResponse, error) {
 	anime, err := s.repo.GetById(id)
 	if err != nil {
 		logs.Error(err.Error())
@@ -45,7 +45,52 @@ func (s *animeServiceImpl) GetAnimeById(id uint) (*entities.Anime, error) {
 		}
 		return nil, errs.NewUnexpectedError()
 	}
-	return anime, nil
+
+	var categories []dtos.AnimeDetailCategories
+	for _, category := range anime.Categories {
+		categories = append(categories, dtos.AnimeDetailCategories{
+			ID:   category.ID,
+			Name: category.Name,
+		})
+	}
+
+	var openingSong []dtos.AnimeDetailSongs
+	var endingSong []dtos.AnimeDetailSongs
+	var soundtrack []dtos.AnimeDetailSongs
+	SongType := NewSongType()
+	for _, song := range anime.Songs {
+		songData := dtos.AnimeDetailSongs{
+			ID:       song.ID,
+			Name:     song.Name,
+			Type:     uint(song.Type),
+			Sequence: uint(song.Sequence),
+		}
+		if song.Type == SongType.Opening {
+			openingSong = append(openingSong, songData)
+		} else if song.Type == SongType.Ending {
+			endingSong = append(endingSong, songData)
+		} else if song.Type == SongType.Soundtrack {
+			soundtrack = append(soundtrack, songData)
+		}
+	}
+
+	animeResponse := dtos.AnimeDetailResponse{
+		ID:             anime.ID,
+		Name:           anime.Name,
+		NameEnglish:    anime.NameEnglish,
+		Episodes:       anime.Episodes,
+		Seasonal:       anime.Seasonal,
+		Year:           anime.Year,
+		Image:          anime.Image,
+		Description:    anime.Description,
+		Type:           anime.Type,
+		Duration:       anime.Duration,
+		Categories:     categories,
+		OpeningSong:    openingSong,
+		EndingSong:     endingSong,
+		SoundtrackSong: soundtrack,
+	}
+	return &animeResponse, nil
 }
 
 func (s *animeServiceImpl) GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeDTO, error) {
