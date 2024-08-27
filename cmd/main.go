@@ -45,7 +45,7 @@ func main() {
 	userAnimeService := services.NewUserAnimeService(userAnimeRepo, animeRepo, userRepo)
 	categoryService := services.NewCategoryService(categoryRepo)
 	animeCategoryService := services.NewAnimeCategoryService(animeCategoryRepo)
-	songService := services.NewSongService(songRepo)
+	songService := services.NewSongService(songRepo, animeRepo)
 
 	//create handler
 	animeHandler = adapters.NewHttpAnimeHandler(animeService)
@@ -128,5 +128,7 @@ func InitRoutes() {
 	app.Get("songs", songHandler.GetSongAll)
 	app.Get("songs/:id", songHandler.GetSongById)
 	app.Put("songs/:id", songHandler.UpdateSong)
+	app.Delete("songs/:id", songHandler.DeleteSong)
+	app.Get("songs/anime/:id", songHandler.GetSongByAnimeId)
 	app.Listen(":8080")
 }

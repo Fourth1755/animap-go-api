@@ -13,14 +13,17 @@ type SongService interface {
 	GetSongById(uint) (*entities.Song, error)
 	GetAllSongs() ([]dtos.SongListResponse, error)
 	UpdateSong(*entities.Song) error
+	DeleteSong(uint) error
+	GetSongByAnimeId(uint) ([]entities.Song, error)
 }
 
 type songServiceImpl struct {
-	repo repositories.SongRepository
+	repo      repositories.SongRepository
+	animeRepo repositories.AnimeRepository
 }
 
-func NewSongService(repo repositories.SongRepository) SongService {
-	return &songServiceImpl{repo: repo}
+func NewSongService(repo repositories.SongRepository, animeRepo repositories.AnimeRepository) SongService {
+	return &songServiceImpl{repo: repo, animeRepo: animeRepo}
 }
 
 var songTypeMap = []string{"none", "opening", "ending", "soundtrack"}
@@ -69,6 +72,7 @@ func (s songServiceImpl) GetAllSongs() ([]dtos.SongListResponse, error) {
 func (s songServiceImpl) UpdateSong(song *entities.Song) error {
 	_, err := s.repo.GetById(song.ID)
 	if err != nil {
+		logs.Error(err)
 		return errs.NewNotFoundError("Song not found")
 	}
 	if err := s.repo.Update(song); err != nil {
@@ -76,4 +80,27 @@ func (s songServiceImpl) UpdateSong(song *entities.Song) error {
 		return err
 	}
 	return nil
+}
+
+func (s songServiceImpl) DeleteSong(id uint) error {
+	err := s.repo.Delete(id)
+	if err != nil {
+		logs.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (s songServiceImpl) GetSongByAnimeId(animeId uint) ([]entities.Song, error) {
+	_, err := s.animeRepo.GetById(animeId)
+	if err != nil {
+		logs.Error(err)
+		return nil, errs.NewNotFoundError("Anime not found")
+	}
+	songs, err := s.repo.GetByAnimeId(animeId)
+	if err != nil {
+		logs.Error(err)
+		return nil, err
+	}
+	return songs, nil
 }
