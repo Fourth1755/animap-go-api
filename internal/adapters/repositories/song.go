@@ -10,6 +10,8 @@ type SongRepository interface {
 	GetById(uint) (*entities.Song, error)
 	GetAll() ([]entities.Song, error)
 	Update(*entities.Song) error
+	Delete(uint) error
+	GetByAnimeId(uint) ([]entities.Song, error)
 }
 
 type GormSongRepository struct {
@@ -49,4 +51,22 @@ func (r *GormSongRepository) Update(song *entities.Song) error {
 		return result.Error
 	}
 	return nil
+}
+
+func (r *GormSongRepository) Delete(id uint) error {
+	song := new(entities.Song)
+	result := r.db.Delete(&song, id)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *GormSongRepository) GetByAnimeId(id uint) ([]entities.Song, error) {
+	var songs []entities.Song
+	result := r.db.Preload("SongChannel").Where("anime_id = ?", id).Find(&songs)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return songs, nil
 }

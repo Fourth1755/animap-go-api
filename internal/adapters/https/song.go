@@ -67,3 +67,28 @@ func (h *HttpSongHandler) UpdateSong(c *fiber.Ctx) error {
 		"message": "Update song success",
 	})
 }
+
+func (h *HttpSongHandler) DeleteSong(c *fiber.Ctx) error {
+	songId, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return handleError(c, errs.NewBadRequestError(err.Error()))
+	}
+	if err := h.service.DeleteSong(uint(songId)); err != nil {
+		return handleError(c, err)
+	}
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "Delete song success",
+	})
+}
+
+func (h *HttpSongHandler) GetSongByAnimeId(c *fiber.Ctx) error {
+	animeId, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return handleError(c, errs.NewBadRequestError(err.Error()))
+	}
+	songs, err := h.service.GetSongByAnimeId(uint(animeId))
+	if err != nil {
+		return handleError(c, err)
+	}
+	return c.Status(fiber.StatusOK).JSON(songs)
+}
