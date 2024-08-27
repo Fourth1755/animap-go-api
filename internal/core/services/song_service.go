@@ -14,7 +14,7 @@ type SongService interface {
 	GetAllSongs() ([]dtos.SongListResponse, error)
 	UpdateSong(*entities.Song) error
 	DeleteSong(uint) error
-	GetSongByAnimeId(uint) ([]entities.Song, error)
+	GetSongByAnimeId(uint) (*dtos.SongDetailResponse, error)
 }
 
 type songServiceImpl struct {
@@ -91,7 +91,7 @@ func (s songServiceImpl) DeleteSong(id uint) error {
 	return nil
 }
 
-func (s songServiceImpl) GetSongByAnimeId(animeId uint) ([]entities.Song, error) {
+func (s songServiceImpl) GetSongByAnimeId(animeId uint) (*dtos.SongDetailResponse, error) {
 	_, err := s.animeRepo.GetById(animeId)
 	if err != nil {
 		logs.Error(err)
@@ -102,5 +102,46 @@ func (s songServiceImpl) GetSongByAnimeId(animeId uint) ([]entities.Song, error)
 		logs.Error(err)
 		return nil, err
 	}
-	return songs, nil
+	var openingSong []dtos.SongDetail
+	var endingSong []dtos.SongDetail
+	var soundtrack []dtos.SongDetail
+	SongType := NewSongType()
+	for _, song := range songs {
+		var songChannelData []dtos.SongChannel
+		for _, channel := range song.SongChannel {
+			songChannel := dtos.SongChannel{
+				ID:      channel.ID,
+				Channel: channel.Channel,
+				Type:    channel.Type,
+				Link:    channel.Link,
+				IsMain:  channel.IsMain,
+			}
+			songChannelData = append(songChannelData, songChannel)
+		}
+
+		songData := dtos.SongDetail{
+			ID:          song.ID,
+			Name:        song.Name,
+			Type:        song.Type,
+			Sequence:    song.Sequence,
+			Image:       song.Image,
+			Description: song.Description,
+			Year:        song.Year,
+			AnimeID:     song.AnimeID,
+			SongChannel: songChannelData,
+		}
+		if song.Type == SongType.Opening {
+			openingSong = append(openingSong, songData)
+		} else if song.Type == SongType.Ending {
+			endingSong = append(endingSong, songData)
+		} else if song.Type == SongType.Soundtrack {
+			soundtrack = append(soundtrack, songData)
+		}
+	}
+	songResponse := dtos.SongDetailResponse{
+		OpeningSong:    openingSong,
+		EndingSong:     endingSong,
+		SoundtrackSong: soundtrack,
+	}
+	return &songResponse, nil
 }
