@@ -13,4 +13,5 @@ type Song struct {
 	AnimeID     uint          `json:"anime_id"`
 	Anime       Anime         `json:"anime"`
 	SongChannel []SongChannel `json:"song_channel"`
+	Artist      []Artist      `gorm:"many2many:song_artists;"`
 }
