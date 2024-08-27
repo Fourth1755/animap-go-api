@@ -27,6 +27,7 @@ var (
 	categoryHandler      *adapters.HttpCategoryHandler
 	animeCategoryHandler *adapters.HttpAnimeCategoryHandler
 	songHandler          *adapters.HttpSongHandler
+	artistHandler        *adapters.HttpArtistHandler
 )
 
 func main() {
@@ -38,6 +39,7 @@ func main() {
 	categoryRepo := repositories.NewGormCategoryRepository(db)
 	animeCategoryRepo := repositories.NewGormAnimeCategoryRepository(db)
 	songRepo := repositories.NewGormSongRepository(db)
+	artistRepo := repositories.NewGormArtistRepository(db)
 
 	//create service
 	animeService := services.NewAnimeService(animeRepo, userRepo)
@@ -46,6 +48,7 @@ func main() {
 	categoryService := services.NewCategoryService(categoryRepo)
 	animeCategoryService := services.NewAnimeCategoryService(animeCategoryRepo)
 	songService := services.NewSongService(songRepo, animeRepo)
+	artistService := services.NewArtistService(artistRepo)
 
 	//create handler
 	animeHandler = adapters.NewHttpAnimeHandler(animeService)
@@ -54,6 +57,7 @@ func main() {
 	categoryHandler = adapters.NewHttpCategoryHandler(categoryService)
 	animeCategoryHandler = adapters.NewHttpAnimeCategoryHandler(animeCategoryService)
 	songHandler = adapters.NewHttpSongHandler(songService)
+	artistHandler = adapters.NewHttpArtistHandler(artistService)
 	InitRoutes()
 }
 
@@ -83,7 +87,17 @@ func InitDatabase() *gorm.DB {
 	}
 	logs.Error("failed to connect database")
 
-	db.AutoMigrate(&entities.Anime{}, &entities.User{}, &entities.UserAnime{}, &entities.Category{}, &entities.AnimeCategory{}, &entities.Song{}, &entities.SongChannel{})
+	db.AutoMigrate(
+		&entities.Anime{},
+		&entities.User{},
+		&entities.UserAnime{},
+		&entities.Category{},
+		&entities.AnimeCategory{},
+		&entities.Song{},
+		&entities.SongChannel{},
+		&entities.Artist{},
+		&entities.SongArtist{},
+	)
 
 	return db
 }
@@ -130,5 +144,9 @@ func InitRoutes() {
 	app.Put("songs/:id", songHandler.UpdateSong)
 	app.Delete("songs/:id", songHandler.DeleteSong)
 	app.Get("songs/anime/:id", songHandler.GetSongByAnimeId)
+
+	app.Post("artists", artistHandler.CreateArtist)
+	app.Get("artists", artistHandler.GetArtistList)
+	app.Get("artists/:id", artistHandler.GetArtistById)
 	app.Listen(":8080")
 }
