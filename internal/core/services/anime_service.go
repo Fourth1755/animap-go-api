@@ -54,41 +54,18 @@ func (s *animeServiceImpl) GetAnimeById(id uint) (*dtos.AnimeDetailResponse, err
 		})
 	}
 
-	var openingSong []dtos.AnimeDetailSongs
-	var endingSong []dtos.AnimeDetailSongs
-	var soundtrack []dtos.AnimeDetailSongs
-	SongType := NewSongType()
-	for _, song := range anime.Songs {
-		songData := dtos.AnimeDetailSongs{
-			ID:       song.ID,
-			Name:     song.Name,
-			Type:     uint(song.Type),
-			Sequence: uint(song.Sequence),
-		}
-		if song.Type == SongType.Opening {
-			openingSong = append(openingSong, songData)
-		} else if song.Type == SongType.Ending {
-			endingSong = append(endingSong, songData)
-		} else if song.Type == SongType.Soundtrack {
-			soundtrack = append(soundtrack, songData)
-		}
-	}
-
 	animeResponse := dtos.AnimeDetailResponse{
-		ID:             anime.ID,
-		Name:           anime.Name,
-		NameEnglish:    anime.NameEnglish,
-		Episodes:       anime.Episodes,
-		Seasonal:       anime.Seasonal,
-		Year:           anime.Year,
-		Image:          anime.Image,
-		Description:    anime.Description,
-		Type:           anime.Type,
-		Duration:       anime.Duration,
-		Categories:     categories,
-		OpeningSong:    openingSong,
-		EndingSong:     endingSong,
-		SoundtrackSong: soundtrack,
+		ID:          anime.ID,
+		Name:        anime.Name,
+		NameEnglish: anime.NameEnglish,
+		Episodes:    anime.Episodes,
+		Seasonal:    anime.Seasonal,
+		Year:        anime.Year,
+		Image:       anime.Image,
+		Description: anime.Description,
+		Type:        anime.Type,
+		Duration:    anime.Duration,
+		Categories:  categories,
 	}
 	return &animeResponse, nil
 }
