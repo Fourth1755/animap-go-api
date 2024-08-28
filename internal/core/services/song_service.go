@@ -9,7 +9,7 @@ import (
 )
 
 type SongService interface {
-	CreateSong(*entities.Song) error
+	CreateSong(*dtos.CreateSongRequest) error
 	GetSongById(uint) (*entities.Song, error)
 	GetAllSongs() ([]dtos.SongListResponse, error)
 	UpdateSong(*entities.Song) error
@@ -18,18 +18,73 @@ type SongService interface {
 }
 
 type songServiceImpl struct {
-	repo      repositories.SongRepository
-	animeRepo repositories.AnimeRepository
+	repo           repositories.SongRepository
+	animeRepo      repositories.AnimeRepository
+	artistRepo     repositories.ArtistRepository
+	songArtistRepo repositories.SongArtistRepository
 }
 
-func NewSongService(repo repositories.SongRepository, animeRepo repositories.AnimeRepository) SongService {
-	return &songServiceImpl{repo: repo, animeRepo: animeRepo}
+func NewSongService(
+	repo repositories.SongRepository,
+	animeRepo repositories.AnimeRepository,
+	artistRepo repositories.ArtistRepository,
+	songArtistRepo repositories.SongArtistRepository) SongService {
+	return &songServiceImpl{repo: repo, animeRepo: animeRepo, artistRepo: artistRepo, songArtistRepo: songArtistRepo}
 }
 
 var songTypeMap = []string{"none", "opening", "ending", "soundtrack"}
 
-func (s songServiceImpl) CreateSong(song *entities.Song) error {
-	if err := s.repo.Save(song); err != nil {
+func (s songServiceImpl) CreateSong(songRequest *dtos.CreateSongRequest) error {
+	//validate anime id
+	if _, err := s.animeRepo.GetById(songRequest.AnimeID); err != nil {
+		logs.Error(err)
+		return errs.NewNotFoundError("Anime Not Found")
+	}
+
+	//validate artist id
+	artistList, err := s.artistRepo.GetByIds(songRequest.ArtistList)
+	if err != nil {
+		logs.Error(err)
+		return errs.NewUnexpectedError()
+	}
+
+	songChannel := []entities.SongChannel{}
+	for _, item := range songRequest.SongChannel {
+		songChannel = append(songChannel, entities.SongChannel{
+			Channel: item.Channel,
+			Type:    item.Type,
+			Link:    item.Link,
+			IsMain:  item.IsMain,
+		})
+	}
+
+	song := entities.Song{
+		Name:        songRequest.Name,
+		Image:       songRequest.Image,
+		Description: songRequest.Description,
+		Year:        songRequest.Year,
+		Type:        songRequest.Type,
+		Sequence:    songRequest.Sequence,
+		AnimeID:     songRequest.AnimeID,
+		SongChannel: songChannel,
+	}
+
+	//save song
+	songId, err := s.repo.Save(&song)
+	if err != nil {
+		logs.Error(err)
+		return errs.NewUnexpectedError()
+	}
+
+	//save song artist
+	songArtist := []entities.SongArtist{}
+	for _, item := range artistList {
+		songArtist = append(songArtist, entities.SongArtist{
+			SongId:   songId,
+			ArtistId: item.ID,
+		})
+	}
+	if err := s.songArtistRepo.Save(songArtist); err != nil {
 		logs.Error(err)
 		return errs.NewUnexpectedError()
 	}

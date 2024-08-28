@@ -17,7 +17,7 @@ type SongChannel struct {
 	Channel int    `json:"channel"` // 1: youtube 2: spotify
 	Type    int    `json:"type"`    // 1: tv_size 2: full 3: official 4 unofficial
 	Link    string `json:"link"`
-	IsMain  int    `json:"is_main"` // 1: main 2:not main is_main for show
+	IsMain  int    `json:"is_main"` // 1: main 2:secondary 3:not main is_main for show
 }
 
 type SongDetail struct {
@@ -35,4 +35,16 @@ type SongDetailResponse struct {
 	OpeningSong    []SongDetail `json:"opening_song"`
 	EndingSong     []SongDetail `json:"ending_song"`
 	SoundtrackSong []SongDetail `json:"soundtrack_song"`
+}
+
+type CreateSongRequest struct {
+	Name        string        `json:"name"`
+	Image       string        `json:"image"`
+	Description string        `json:"description"`
+	Year        string        `json:"year"`
+	Type        int           `json:"type"` // 1: opening, 2: ending, 3:soundtrack
+	Sequence    int           `json:"sequence"`
+	AnimeID     uint          `json:"anime_id"`
+	SongChannel []SongChannel `json:"song_channel"`
+	ArtistList  []uint        `json:"artist_list"`
 }
