@@ -3,6 +3,7 @@ package adapters
 import (
 	"strconv"
 
+	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
@@ -18,7 +19,7 @@ func NewHttpSongHandler(service services.SongService) *HttpSongHandler {
 }
 
 func (h *HttpSongHandler) CreateSong(c *fiber.Ctx) error {
-	var song entities.Song
+	var song dtos.CreateSongRequest
 	if err := c.BodyParser(&song); err != nil {
 		return handleError(c, errs.NewBadRequestError(err.Error()))
 	}

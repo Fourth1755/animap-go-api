@@ -9,6 +9,7 @@ type ArtistRepository interface {
 	Save(*entities.Artist) error
 	GetAll() ([]entities.Artist, error)
 	GetById(uint) (*entities.Artist, error)
+	GetByIds([]uint) ([]entities.Artist, error)
 }
 
 type GormArtistRepository struct {
@@ -36,7 +37,15 @@ func (r GormArtistRepository) GetAll() ([]entities.Artist, error) {
 
 func (r GormArtistRepository) GetById(id uint) (*entities.Artist, error) {
 	var artist *entities.Artist
-	if result := r.db.First(&artist, id); result.Error != nil {
+	if result := r.db.Preload("Song").First(&artist, id); result.Error != nil {
+		return nil, result.Error
+	}
+	return artist, nil
+}
+
+func (r GormArtistRepository) GetByIds(ids []uint) ([]entities.Artist, error) {
+	var artist []entities.Artist
+	if result := r.db.Where("id = ?", ids).Find(&artist); result.Error != nil {
 		return nil, result.Error
 	}
 	return artist, nil

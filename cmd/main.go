@@ -11,7 +11,6 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
-	"github.com/Fourth1755/animap-go-api/internal/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/spf13/viper"
@@ -40,6 +39,7 @@ func main() {
 	animeCategoryRepo := repositories.NewGormAnimeCategoryRepository(db)
 	songRepo := repositories.NewGormSongRepository(db)
 	artistRepo := repositories.NewGormArtistRepository(db)
+	songArtistRepo := repositories.NewGormSongArtistRepository(db)
 
 	//create service
 	animeService := services.NewAnimeService(animeRepo, userRepo)
@@ -47,7 +47,7 @@ func main() {
 	userAnimeService := services.NewUserAnimeService(userAnimeRepo, animeRepo, userRepo)
 	categoryService := services.NewCategoryService(categoryRepo)
 	animeCategoryService := services.NewAnimeCategoryService(animeCategoryRepo)
-	songService := services.NewSongService(songRepo, animeRepo)
+	songService := services.NewSongService(songRepo, animeRepo, artistRepo, songArtistRepo)
 	artistService := services.NewArtistService(artistRepo)
 
 	//create handler
@@ -121,7 +121,7 @@ func InitRoutes() {
 	// app.Use("animes", jwtware.New(jwtware.Config{
 	// 	SigningKey: []byte(os.Getenv("JWT_SECRET")),
 	// }))
-	app.Use("animes", middleware.AuthRequired)
+	//app.Use("animes", middleware.AuthRequired)
 	app.Post("animes", animeHandler.CreateAnime)
 	app.Get("animes/:id", animeHandler.GetAnimeById)
 	app.Get("animes", animeHandler.GetAnimeList)

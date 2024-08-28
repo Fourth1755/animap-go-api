@@ -6,7 +6,7 @@ import (
 )
 
 type SongRepository interface {
-	Save(*entities.Song) error
+	Save(*entities.Song) (uint, error)
 	GetById(uint) (*entities.Song, error)
 	GetAll() ([]entities.Song, error)
 	Update(*entities.Song) error
@@ -22,11 +22,12 @@ func NewGormSongRepository(db *gorm.DB) SongRepository {
 	return &GormSongRepository{db: db}
 }
 
-func (r *GormSongRepository) Save(song *entities.Song) error {
-	if result := r.db.Create(&song); result.Error != nil {
-		return result.Error
+func (r *GormSongRepository) Save(song *entities.Song) (uint, error) {
+	result := r.db.Create(&song)
+	if result.Error != nil {
+		return 0, result.Error
 	}
-	return nil
+	return song.ID, nil
 }
 
 func (r *GormSongRepository) GetById(id uint) (*entities.Song, error) {
