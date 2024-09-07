@@ -45,7 +45,7 @@ func (r GormArtistRepository) GetById(id uint) (*entities.Artist, error) {
 
 func (r GormArtistRepository) GetByIds(ids []uint) ([]entities.Artist, error) {
 	var artist []entities.Artist
-	if result := r.db.Where("id = ?", ids).Find(&artist); result.Error != nil {
+	if result := r.db.Find(&artist, ids); result.Error != nil {
 		return nil, result.Error
 	}
 	return artist, nil

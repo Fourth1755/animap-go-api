@@ -1,8 +1,6 @@
 package repositories
 
 import (
-	"fmt"
-
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"gorm.io/gorm"
 )
@@ -20,10 +18,8 @@ func NewGormSongArtistRepository(db *gorm.DB) SongArtistRepository {
 }
 
 func (r *GormSongArtistRepository) Save(songArtist []entities.SongArtist) error {
-	fmt.Println("------")
 	if result := r.db.Create(&songArtist); result.Error != nil {
 		return result.Error
 	}
-	fmt.Println("------")
 	return nil
 }
