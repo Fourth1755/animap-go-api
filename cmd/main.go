@@ -42,7 +42,7 @@ func main() {
 	songArtistRepo := repositories.NewGormSongArtistRepository(db)
 
 	//create service
-	animeService := services.NewAnimeService(animeRepo, userRepo)
+	animeService := services.NewAnimeService(animeRepo, userRepo, animeCategoryRepo)
 	userService := services.NewUserService(userRepo)
 	userAnimeService := services.NewUserAnimeService(userAnimeRepo, animeRepo, userRepo)
 	categoryService := services.NewCategoryService(categoryRepo)
@@ -128,6 +128,8 @@ func InitRoutes() {
 	app.Put("animes/:id", animeHandler.UpdateAnime)
 	app.Delete("animes/:id", animeHandler.DeleteAnime)
 	app.Get("anime-list/:user_id", animeHandler.GetAnimeByUserId)
+	app.Post("animes/category", animeCategoryHandler.AddAnimeToCategory)
+	app.Get("animes/category/:category_id", animeHandler.GetAnimeByCategory)
 
 	app.Post("anime-list", userAnimeHandler.AddAnimeToList)
 	//app.Get("anime-list/:id", userAnimeHandler.GetAnimeByUserId)
@@ -135,8 +137,6 @@ func InitRoutes() {
 	app.Post("category", categoryHandler.CreateCategory)
 	app.Get("category", categoryHandler.Getcategorise)
 	app.Get("category/:id", categoryHandler.GetCategoryById)
-
-	app.Post("anime-category", animeCategoryHandler.AddAnimeToCategory)
 
 	app.Post("songs", songHandler.CreateSong)
 	app.Get("songs", songHandler.GetSongAll)
