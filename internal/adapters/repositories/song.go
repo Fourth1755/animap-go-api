@@ -32,7 +32,7 @@ func (r *GormSongRepository) Save(song *entities.Song) (uint, error) {
 
 func (r *GormSongRepository) GetById(id uint) (*entities.Song, error) {
 	song := new(entities.Song)
-	if result := r.db.Preload("SongChannel").First(&song, id); result.Error != nil {
+	if result := r.db.Preload("Artist").Preload("SongChannel").First(&song, id); result.Error != nil {
 		return nil, result.Error
 	}
 	return song, nil
