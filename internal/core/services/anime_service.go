@@ -13,19 +13,21 @@ import (
 type AnimeService interface {
 	CreateAnime(anime entities.Anime) error
 	GetAnimeById(id uint) (*dtos.AnimeDetailResponse, error)
-	GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeDTO, error)
+	GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeListResponse, error)
 	UpdateAnime(anime entities.Anime) error
 	DeleteAnime(id uint) error
 	GetAnimeByUserId(user_id uint) ([]entities.UserAnime, error)
+	GetAnimeByCategoryId(category_id uint) ([]dtos.AnimeListResponse, error)
 }
 
 type animeServiceImpl struct {
-	repo     repositories.AnimeRepository
-	userRepo repositories.UserRepository
+	repo              repositories.AnimeRepository
+	userRepo          repositories.UserRepository
+	animeCategoryRepo repositories.AnimeCategoryRepository
 }
 
-func NewAnimeService(repo repositories.AnimeRepository, userRepo repositories.UserRepository) AnimeService {
-	return &animeServiceImpl{repo: repo, userRepo: userRepo}
+func NewAnimeService(repo repositories.AnimeRepository, userRepo repositories.UserRepository, animeCategoryRepo repositories.AnimeCategoryRepository) AnimeService {
+	return &animeServiceImpl{repo: repo, userRepo: userRepo, animeCategoryRepo: animeCategoryRepo}
 }
 
 func (s *animeServiceImpl) CreateAnime(anime entities.Anime) error {
@@ -70,21 +72,22 @@ func (s *animeServiceImpl) GetAnimeById(id uint) (*dtos.AnimeDetailResponse, err
 	return &animeResponse, nil
 }
 
-func (s *animeServiceImpl) GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeDTO, error) {
+func (s *animeServiceImpl) GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeListResponse, error) {
 	animes, err := s.repo.GetAll(query)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, err
 	}
 
-	var animesDto []dtos.AnimeDTO
+	var animesDto []dtos.AnimeListResponse
 	for _, anime := range animes {
-		animesDto = append(animesDto, dtos.AnimeDTO{
+		animesDto = append(animesDto, dtos.AnimeListResponse{
 			ID:       anime.ID,
 			Name:     anime.Name,
 			Episodes: anime.Episodes,
 			Seasonal: anime.Seasonal,
 			Year:     anime.Year,
+			Image:    anime.Image,
 		})
 	}
 	return animesDto, nil
@@ -135,4 +138,24 @@ func (s *animeServiceImpl) GetAnimeByUserId(user_id uint) ([]entities.UserAnime,
 		return nil, errs.NewUnexpectedError()
 	}
 	return result, nil
+}
+
+func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uint) ([]dtos.AnimeListResponse, error) {
+	animeCategories, err := s.animeCategoryRepo.GetByCategoryId(category_id)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil, errs.NewUnexpectedError()
+	}
+	var animesReponse []dtos.AnimeListResponse
+	for _, anime := range animeCategories {
+		animesReponse = append(animesReponse, dtos.AnimeListResponse{
+			ID:       anime.ID,
+			Name:     anime.Anime.Name,
+			Episodes: anime.Anime.Episodes,
+			Seasonal: anime.Anime.Seasonal,
+			Year:     anime.Anime.Year,
+			Image:    anime.Anime.Image,
+		})
+	}
+	return animesReponse, nil
 }

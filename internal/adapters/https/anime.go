@@ -105,3 +105,15 @@ func (h *HttpAnimeHandler) GetAnimeByUserId(c *fiber.Ctx) error {
 	}
 	return c.JSON(animes)
 }
+
+func (h *HttpAnimeHandler) GetAnimeByCategory(c *fiber.Ctx) error {
+	category_id, err := strconv.Atoi(c.Params("category_id"))
+	if err != nil {
+		return handleError(c, errs.NewBadRequestError(err.Error()))
+	}
+	animes, err := h.service.GetAnimeByCategoryId(uint(category_id))
+	if err != nil {
+		return handleError(c, err)
+	}
+	return c.JSON(animes)
+}

@@ -7,6 +7,7 @@ import (
 
 type AnimeCategoryRepository interface {
 	Save(animeCategory *entities.AnimeCategory) error
+	GetByCategoryId(uint) ([]entities.AnimeCategory, error)
 }
 
 type GormAnimeCategoryRepository struct {
@@ -22,4 +23,13 @@ func (r GormAnimeCategoryRepository) Save(animeCategory *entities.AnimeCategory)
 		return result.Error
 	}
 	return nil
+}
+
+func (r GormAnimeCategoryRepository) GetByCategoryId(category_id uint) ([]entities.AnimeCategory, error) {
+	var categoryAnime []entities.AnimeCategory
+	result := r.db.Preload("Anime").Where("category_id = ?", category_id).Find(&categoryAnime)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return categoryAnime, nil
 }

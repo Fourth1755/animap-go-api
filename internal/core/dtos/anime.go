@@ -1,11 +1,12 @@
 package dtos
 
-type AnimeDTO struct {
+type AnimeListResponse struct {
 	ID       uint   `json:"id"`
 	Name     string `json:"name"`
 	Episodes int    `json:"episodes"`
 	Seasonal string `json:"seasonal"`
 	Year     string `json:"year"`
+	Image    string `json:"image"`
 }
 type AnimeDetailCategories struct {
 	ID   uint   `json:"id"`
