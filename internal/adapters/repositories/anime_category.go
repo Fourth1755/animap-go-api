@@ -6,7 +6,7 @@ import (
 )
 
 type AnimeCategoryRepository interface {
-	Save(animeCategory *entities.AnimeCategory) error
+	Save(animeCategory []entities.AnimeCategory) error
 	GetByCategoryId(uint) ([]entities.AnimeCategory, error)
 }
 
@@ -18,7 +18,7 @@ func NewGormAnimeCategoryRepository(db *gorm.DB) AnimeCategoryRepository {
 	return &GormAnimeCategoryRepository{db: db}
 }
 
-func (r GormAnimeCategoryRepository) Save(animeCategory *entities.AnimeCategory) error {
+func (r GormAnimeCategoryRepository) Save(animeCategory []entities.AnimeCategory) error {
 	if result := r.db.Create(&animeCategory); result.Error != nil {
 		return result.Error
 	}

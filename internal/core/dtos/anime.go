@@ -31,3 +31,8 @@ type AnimeQueryDTO struct {
 	Seasonal string
 	Year     string
 }
+
+type AddCategoryToAnimeRequest struct {
+	AnimeID    uint   `json:"anime_id"`
+	CategoryID []uint `json:"category_id"`
+}
