@@ -117,3 +117,23 @@ func (h *HttpAnimeHandler) GetAnimeByCategory(c *fiber.Ctx) error {
 	}
 	return c.JSON(animes)
 }
+
+func (h *HttpAnimeHandler) AddCategoryToAnime(c *fiber.Ctx) error {
+	animeId, err := strconv.Atoi(c.Params("anime_id"))
+	if err != nil {
+		return handleError(c, errs.NewBadRequestError(err.Error()))
+	}
+
+	categoryRequest := new(dtos.AddCategoryToAnimeRequest)
+	if err := c.BodyParser(categoryRequest); err != nil {
+		return handleError(c, errs.NewBadRequestError(err.Error()))
+	}
+
+	categoryRequest.AnimeID = uint(animeId)
+	if err := h.service.AddCategoryToAnime(*categoryRequest); err != nil {
+		return handleError(c, err)
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Add anime to category success.",
+	})
+}

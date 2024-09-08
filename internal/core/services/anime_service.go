@@ -18,6 +18,7 @@ type AnimeService interface {
 	DeleteAnime(id uint) error
 	GetAnimeByUserId(user_id uint) ([]entities.UserAnime, error)
 	GetAnimeByCategoryId(category_id uint) ([]dtos.AnimeListResponse, error)
+	AddCategoryToAnime(request dtos.AddCategoryToAnimeRequest) error
 }
 
 type animeServiceImpl struct {
@@ -158,4 +159,19 @@ func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uint) ([]dtos.AnimeL
 		})
 	}
 	return animesReponse, nil
+}
+
+func (s *animeServiceImpl) AddCategoryToAnime(request dtos.AddCategoryToAnimeRequest) error {
+	animeCategory := []entities.AnimeCategory{}
+	for _, catrgory := range request.CategoryID {
+		animeCategory = append(animeCategory, entities.AnimeCategory{
+			AnimeID:    request.AnimeID,
+			CategoryID: uint(catrgory),
+		})
+	}
+	if err := s.animeCategoryRepo.Save(animeCategory); err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+	return nil
 }

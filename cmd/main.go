@@ -20,13 +20,12 @@ import (
 )
 
 var (
-	animeHandler         *adapters.HttpAnimeHandler
-	userHandler          *adapters.HttpUserHandler
-	userAnimeHandler     *adapters.HttpUserAnimeHandler
-	categoryHandler      *adapters.HttpCategoryHandler
-	animeCategoryHandler *adapters.HttpAnimeCategoryHandler
-	songHandler          *adapters.HttpSongHandler
-	artistHandler        *adapters.HttpArtistHandler
+	animeHandler     *adapters.HttpAnimeHandler
+	userHandler      *adapters.HttpUserHandler
+	userAnimeHandler *adapters.HttpUserAnimeHandler
+	categoryHandler  *adapters.HttpCategoryHandler
+	songHandler      *adapters.HttpSongHandler
+	artistHandler    *adapters.HttpArtistHandler
 )
 
 func main() {
@@ -46,7 +45,6 @@ func main() {
 	userService := services.NewUserService(userRepo)
 	userAnimeService := services.NewUserAnimeService(userAnimeRepo, animeRepo, userRepo)
 	categoryService := services.NewCategoryService(categoryRepo)
-	animeCategoryService := services.NewAnimeCategoryService(animeCategoryRepo)
 	songService := services.NewSongService(songRepo, animeRepo, artistRepo, songArtistRepo)
 	artistService := services.NewArtistService(artistRepo)
 
@@ -55,7 +53,6 @@ func main() {
 	userHandler = adapters.NewHttpUserHandler(userService)
 	userAnimeHandler = adapters.NewHttpUserAnimeHandler(userAnimeService)
 	categoryHandler = adapters.NewHttpCategoryHandler(categoryService)
-	animeCategoryHandler = adapters.NewHttpAnimeCategoryHandler(animeCategoryService)
 	songHandler = adapters.NewHttpSongHandler(songService)
 	artistHandler = adapters.NewHttpArtistHandler(artistService)
 	InitRoutes()
@@ -128,7 +125,7 @@ func InitRoutes() {
 	app.Put("animes/:id", animeHandler.UpdateAnime)
 	app.Delete("animes/:id", animeHandler.DeleteAnime)
 	app.Get("anime-list/:user_id", animeHandler.GetAnimeByUserId)
-	app.Post("animes/category", animeCategoryHandler.AddAnimeToCategory)
+	app.Post("animes/category/:anime_id", animeHandler.AddCategoryToAnime)
 	app.Get("animes/category/:category_id", animeHandler.GetAnimeByCategory)
 
 	app.Post("anime-list", userAnimeHandler.AddAnimeToList)
