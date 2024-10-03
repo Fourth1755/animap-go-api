@@ -1,12 +1,12 @@
 package adapters
 
 import (
-	"time"
+	"net/http"
 
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 )
 
 type HttpUserHandler struct {
@@ -17,38 +17,32 @@ func NewHttpUserHandler(service services.UserService) *HttpUserHandler {
 	return &HttpUserHandler{service: service}
 }
 
-func (h *HttpUserHandler) CreateUser(c *fiber.Ctx) error {
+func (h *HttpUserHandler) CreateUser(c *gin.Context) {
 	user := new(entities.User)
-	if err := c.BodyParser(user); err != nil {
-		return handleError(c, errs.NewBadRequestError(err.Error()))
+	if err := c.BindJSON(user); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
 	}
 	err := h.service.CreateUser(user)
 	if err != nil {
-		return handleError(c, err)
+		handleError(c, err)
+		return
 	}
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Register success",
-	})
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Register success."})
 }
 
-func (h *HttpUserHandler) Login(c *fiber.Ctx) error {
+func (h *HttpUserHandler) Login(c *gin.Context) {
 	user := new(entities.User)
-	if err := c.BodyParser(user); err != nil {
-		return handleError(c, errs.NewBadRequestError(err.Error()))
+	if err := c.BindJSON(user); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
 	}
 
 	token, err := h.service.Login(user)
 	if err != nil {
-		return handleError(c, errs.NewUnauthorizedError(err.Error()))
+		handleError(c, errs.NewUnauthorizedError(err.Error()))
+		return
 	}
-	c.Cookie(&fiber.Cookie{
-		Name:     "jwt",
-		Value:    token,
-		Expires:  time.Now().Add(time.Hour * 72),
-		HTTPOnly: true,
-	})
-	return c.JSON(fiber.Map{
-		"message": "Login success",
-		"token":   token,
-	})
+	c.SetCookie("jwt", token, 3600*24, "/", "localhost", false, true)
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Login success.", "token": token})
 }

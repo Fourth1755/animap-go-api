@@ -1,12 +1,13 @@
 package adapters
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 )
 
 type HttpArtistHandler struct {
@@ -17,38 +18,41 @@ func NewHttpArtistHandler(service services.ArtistService) *HttpArtistHandler {
 	return &HttpArtistHandler{service: service}
 }
 
-func (h *HttpArtistHandler) CreateArtist(c *fiber.Ctx) error {
+func (h *HttpArtistHandler) CreateArtist(c *gin.Context) {
 	var artist *entities.Artist
-	if err := c.BodyParser(&artist); err != nil {
-		return handleError(c, errs.NewBadRequestError(err.Error()))
+	if err := c.BindJSON(&artist); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
 	}
 	if err := h.service.CreateArtist(artist); err != nil {
-		return handleError(c, err)
+		handleError(c, err)
+		return
 	}
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message": "Create artist success",
-	})
+	c.IndentedJSON(http.StatusCreated, gin.H{"message": "Create artist success"})
 }
 
-func (h *HttpArtistHandler) GetArtistById(c *fiber.Ctx) error {
-	artistId, err := strconv.Atoi(c.Params("id"))
+func (h *HttpArtistHandler) GetArtistById(c *gin.Context) {
+	artistId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return handleError(c, errs.NewBadRequestError(err.Error()))
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
 	}
 
-	Artist, err := h.service.GetArtistById(uint(artistId))
+	artist, err := h.service.GetArtistById(uint(artistId))
 	if err != nil {
-		return handleError(c, err)
+		handleError(c, err)
+		return
 	}
-
-	return c.JSON(Artist)
+	c.JSON(http.StatusOK, artist)
 }
 
-func (h *HttpArtistHandler) GetArtistList(c *fiber.Ctx) error {
+func (h *HttpArtistHandler) GetArtistList(c *gin.Context) {
 	artists, err := h.service.GetArtists()
 	if err != nil {
-		return handleError(c, errs.NewBadRequestError(err.Error()))
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
 	}
 
-	return c.JSON(artists)
+	c.JSON(http.StatusOK, artists)
+	return
 }

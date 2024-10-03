@@ -1,18 +1,18 @@
 package adapters
 
 import (
+	"net/http"
+
 	"github.com/Fourth1755/animap-go-api/internal/errs"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 )
 
-func handleError(c *fiber.Ctx, err error) error {
+func handleError(c *gin.Context, err error) {
 	switch e := err.(type) {
 	case errs.AppError:
-		return c.Status(e.Code).JSON(fiber.Map{
-			"message": e.Error(),
-		})
+		c.IndentedJSON(e.Code, gin.H{"message": e.Error()})
+		return
 	}
-	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-		"message": err.Error(),
-	})
+	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+	return
 }

@@ -2,22 +2,28 @@ package middleware
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
 
-func AuthRequired(c *fiber.Ctx) error {
-	cookie := c.Cookies("jwt")
+func AuthRequired(c *gin.Context) {
+	cookie, err := c.Cookie("jwt")
+	if err != nil {
+		c.String(http.StatusNotFound, "Cookie not found")
+		return
+	}
 	jwtSecretKey := os.Getenv("JWT_SECRET")
 	token, err := jwt.ParseWithClaims(cookie, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
 		return []byte(jwtSecretKey), nil
 	})
 	if err != nil || !token.Valid {
-		return c.SendStatus(fiber.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, "")
+		return
 	}
 	claim := token.Claims.(jwt.MapClaims)
 	fmt.Println(claim["role"])
-	return c.Next()
+	c.Next()
 }

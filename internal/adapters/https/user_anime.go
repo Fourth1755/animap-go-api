@@ -1,12 +1,13 @@
 package adapters
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 )
 
 type HttpUserAnimeHandler struct {
@@ -17,31 +18,31 @@ func NewHttpUserAnimeHandler(service services.UserAnimeService) *HttpUserAnimeHa
 	return &HttpUserAnimeHandler{service: service}
 }
 
-func (h *HttpUserAnimeHandler) AddAnimeToList(c *fiber.Ctx) error {
+func (h *HttpUserAnimeHandler) AddAnimeToList(c *gin.Context) {
 	userAnime := new(entities.UserAnime)
-	if err := c.BodyParser(userAnime); err != nil {
-		return handleError(c, errs.NewBadRequestError(err.Error()))
+	if err := c.BindJSON(userAnime); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
 	}
 
 	if err := h.service.AddAnimeToList(userAnime); err != nil {
-		return handleError(c, err)
+		handleError(c, err)
+		return
 	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Add anime to list success.",
-	})
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Add anime to list success."})
 }
 
-func (h *HttpUserAnimeHandler) GetAnimeByUserId(c *fiber.Ctx) error {
-	userId, err := strconv.Atoi(c.Params("id"))
+func (h *HttpUserAnimeHandler) GetAnimeByUserId(c *gin.Context) {
+	userId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return handleError(c, errs.NewBadRequestError(err.Error()))
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
 	}
 
 	animeList, err := h.service.GetAnimeByUserId(uint(userId))
 	if err != nil {
-		return handleError(c, err)
+		handleError(c, err)
+		return
 	}
-
-	return c.JSON(animeList)
+	c.JSON(http.StatusOK, animeList)
 }

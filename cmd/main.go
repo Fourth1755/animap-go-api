@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -11,8 +12,8 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -55,7 +56,13 @@ func main() {
 	categoryHandler = adapters.NewHttpCategoryHandler(categoryService)
 	songHandler = adapters.NewHttpSongHandler(songService)
 	artistHandler = adapters.NewHttpArtistHandler(artistService)
-	InitRoutes()
+
+	rtr := InitRoutes()
+
+	log.Print("Server listening on http://localhost:8080/")
+	if err := http.ListenAndServe("0.0.0.0:8080", rtr); err != nil {
+		log.Fatalf("There was an error with the http server: %v", err)
+	}
 }
 
 func InitDatabase() *gorm.DB {
@@ -109,41 +116,42 @@ func initConfig() {
 	}
 }
 
-func InitRoutes() {
-	app := fiber.New()
-	app.Use(cors.New())
-	app.Post("register", userHandler.CreateUser)
-	app.Post("login", userHandler.Login)
+func InitRoutes() *gin.Engine {
+	router := gin.Default()
+	router.Use(cors.Default())
+	router.POST("register", userHandler.CreateUser)
+	router.POST("login", userHandler.Login)
 
-	// app.Use("animes", jwtware.New(jwtware.Config{
-	// 	SigningKey: []byte(os.Getenv("JWT_SECRET")),
+	// router.Use("animes", jwtware.New(jwtware.Config{
+	// 	SigningKey: []byte(os.GETenv("JWT_SECRET")),
 	// }))
-	//app.Use("animes", middleware.AuthRequired)
-	app.Post("animes", animeHandler.CreateAnime)
-	app.Get("animes/:id", animeHandler.GetAnimeById)
-	app.Get("animes", animeHandler.GetAnimeList)
-	app.Put("animes/:id", animeHandler.UpdateAnime)
-	app.Delete("animes/:id", animeHandler.DeleteAnime)
-	app.Get("anime-list/:user_id", animeHandler.GetAnimeByUserId)
-	app.Post("animes/category/:anime_id", animeHandler.AddCategoryToAnime)
-	app.Get("animes/category/:category_id", animeHandler.GetAnimeByCategory)
+	//router.Use("animes", middleware.AuthRequired)
+	router.POST("animes", animeHandler.CreateAnime)
+	router.GET("animes/:id", animeHandler.GetAnimeById)
+	router.GET("animes", animeHandler.GetAnimeList)
+	router.PUT("animes/:id", animeHandler.UpdateAnime)
+	router.DELETE("animes/:id", animeHandler.DeleteAnime)
+	router.GET("anime-list/:user_id", animeHandler.GetAnimeByUserId)
+	router.POST("animes/category/:anime_id", animeHandler.AddCategoryToAnime)
+	router.GET("animes/category/:category_id", animeHandler.GetAnimeByCategory)
 
-	app.Post("anime-list", userAnimeHandler.AddAnimeToList)
-	//app.Get("anime-list/:id", userAnimeHandler.GetAnimeByUserId)
+	router.POST("anime-list", userAnimeHandler.AddAnimeToList)
+	//router.GET("anime-list/:id", userAnimeHandler.GETAnimeByUserId)
 
-	app.Post("category", categoryHandler.CreateCategory)
-	app.Get("category", categoryHandler.Getcategorise)
-	app.Get("category/:id", categoryHandler.GetCategoryById)
+	router.POST("category", categoryHandler.CreateCategory)
+	router.GET("category", categoryHandler.Getcategorise)
+	router.GET("category/:id", categoryHandler.GetCategoryById)
 
-	app.Post("songs", songHandler.CreateSong)
-	app.Get("songs", songHandler.GetSongAll)
-	app.Get("songs/:id", songHandler.GetSongById)
-	app.Put("songs/:id", songHandler.UpdateSong)
-	app.Delete("songs/:id", songHandler.DeleteSong)
-	app.Get("songs/anime/:id", songHandler.GetSongByAnimeId)
+	router.POST("songs", songHandler.CreateSong)
+	router.GET("songs", songHandler.GetSongAll)
+	router.GET("songs/:id", songHandler.GetSongById)
+	router.PUT("songs/:id", songHandler.UpdateSong)
+	router.DELETE("songs/:id", songHandler.DeleteSong)
+	router.GET("songs/anime/:id", songHandler.GetSongByAnimeId)
 
-	app.Post("artists", artistHandler.CreateArtist)
-	app.Get("artists", artistHandler.GetArtistList)
-	app.Get("artists/:id", artistHandler.GetArtistById)
-	app.Listen(":8080")
+	router.POST("artists", artistHandler.CreateArtist)
+	router.GET("artists", artistHandler.GetArtistList)
+	router.GET("artists/:id", artistHandler.GetArtistById)
+
+	return router
 }
