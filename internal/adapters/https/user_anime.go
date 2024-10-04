@@ -2,9 +2,8 @@ package adapters
 
 import (
 	"net/http"
-	"strconv"
 
-	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/gin-gonic/gin"
@@ -19,13 +18,14 @@ func NewHttpUserAnimeHandler(service services.UserAnimeService) *HttpUserAnimeHa
 }
 
 func (h *HttpUserAnimeHandler) AddAnimeToList(c *gin.Context) {
-	userAnime := new(entities.UserAnime)
-	if err := c.BindJSON(userAnime); err != nil {
+	//userAnime := new(entities.UserAnime)
+	userAnimeRequest := new(dtos.AddAnimeToListRequest)
+	if err := c.BindJSON(userAnimeRequest); err != nil {
 		handleError(c, errs.NewBadRequestError(err.Error()))
 		return
 	}
 
-	if err := h.service.AddAnimeToList(userAnime); err != nil {
+	if err := h.service.AddAnimeToList(userAnimeRequest); err != nil {
 		handleError(c, err)
 		return
 	}
@@ -33,13 +33,9 @@ func (h *HttpUserAnimeHandler) AddAnimeToList(c *gin.Context) {
 }
 
 func (h *HttpUserAnimeHandler) GetAnimeByUserId(c *gin.Context) {
-	userId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
+	sid := c.Param("sid")
 
-	animeList, err := h.service.GetAnimeByUserId(uint(userId))
+	animeList, err := h.service.GetAnimeByUserId(sid)
 	if err != nil {
 		handleError(c, err)
 		return

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,7 +13,8 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
-	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
@@ -27,6 +29,7 @@ var (
 	categoryHandler  *adapters.HttpCategoryHandler
 	songHandler      *adapters.HttpSongHandler
 	artistHandler    *adapters.HttpArtistHandler
+	authHandler      *adapters.HttpAuthHandler
 )
 
 func main() {
@@ -49,6 +52,11 @@ func main() {
 	songService := services.NewSongService(songRepo, animeRepo, artistRepo, songArtistRepo)
 	artistService := services.NewArtistService(artistRepo)
 
+	auth, err := services.NewAuthenticator()
+	if err != nil {
+		log.Fatalf("Failed to initialize the authenticator: %v", err)
+	}
+
 	//create handler
 	animeHandler = adapters.NewHttpAnimeHandler(animeService)
 	userHandler = adapters.NewHttpUserHandler(userService)
@@ -56,7 +64,7 @@ func main() {
 	categoryHandler = adapters.NewHttpCategoryHandler(categoryService)
 	songHandler = adapters.NewHttpSongHandler(songService)
 	artistHandler = adapters.NewHttpArtistHandler(artistService)
-
+	authHandler = adapters.NewHttpAuthHandler(auth)
 	rtr := InitRoutes()
 
 	log.Print("Server listening on http://localhost:8080/")
@@ -118,7 +126,15 @@ func initConfig() {
 
 func InitRoutes() *gin.Engine {
 	router := gin.Default()
-	router.Use(cors.Default())
+	router.Use(CORSMiddleware())
+	// router.Use(cors.New(cors.Config{
+	// 	AllowOrigins:     []string{"http://localhost:8090", "http://localhost:3000"},
+	// 	AllowMethods:     []string{"PUT", "PATCH", "GET", "DELETE", "POST"},
+	// 	AllowHeaders:     []string{"Origin"},
+	// 	ExposeHeaders:    []string{"Content-Length"},
+	// 	AllowCredentials: true,
+	// 	MaxAge:           12 * time.Hour,
+	// }))
 	router.POST("register", userHandler.CreateUser)
 	router.POST("login", userHandler.Login)
 
@@ -126,16 +142,27 @@ func InitRoutes() *gin.Engine {
 	// 	SigningKey: []byte(os.GETenv("JWT_SECRET")),
 	// }))
 	//router.Use("animes", middleware.AuthRequired)
+
+	//auth0
+	gob.Register(map[string]interface{}{})
+
+	store := cookie.NewStore([]byte("secret"))
+	router.Use(sessions.Sessions("auth-session", store))
+
+	router.GET("/login", authHandler.Login())
+	router.GET("/callback", authHandler.Callback)
+	router.GET("/logout", authHandler.Logout)
+
 	router.POST("animes", animeHandler.CreateAnime)
 	router.GET("animes/:id", animeHandler.GetAnimeById)
 	router.GET("animes", animeHandler.GetAnimeList)
 	router.PUT("animes/:id", animeHandler.UpdateAnime)
 	router.DELETE("animes/:id", animeHandler.DeleteAnime)
-	router.GET("anime-list/:user_id", animeHandler.GetAnimeByUserId)
 	router.POST("animes/category/:anime_id", animeHandler.AddCategoryToAnime)
 	router.GET("animes/category/:category_id", animeHandler.GetAnimeByCategory)
 
-	router.POST("anime-list", userAnimeHandler.AddAnimeToList)
+	router.POST("user/anime-list", userAnimeHandler.AddAnimeToList)
+	router.GET("user/anime-list/:sid", userAnimeHandler.GetAnimeByUserId)
 	//router.GET("anime-list/:id", userAnimeHandler.GETAnimeByUserId)
 
 	router.POST("category", categoryHandler.CreateCategory)
@@ -152,6 +179,21 @@ func InitRoutes() *gin.Engine {
 	router.POST("artists", artistHandler.CreateArtist)
 	router.GET("artists", artistHandler.GetArtistList)
 	router.GET("artists/:id", artistHandler.GetArtistById)
-
 	return router
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
 }

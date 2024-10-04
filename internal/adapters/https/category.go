@@ -37,7 +37,7 @@ func (h *HttpCategoryHandler) Getcategorise(c *gin.Context) {
 		handleError(c, errs.NewBadRequestError(err.Error()))
 		return
 	}
-	c.JSON(http.StatusCreated, category)
+	c.JSON(http.StatusOK, category)
 }
 
 func (h *HttpCategoryHandler) GetCategoryById(c *gin.Context) {

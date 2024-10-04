@@ -14,5 +14,4 @@ func handleError(c *gin.Context, err error) {
 		return
 	}
 	c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-	return
 }
