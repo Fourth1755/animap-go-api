@@ -7,3 +7,9 @@ db:
   username: "postgres"
   password: "12131415"
   databaseName: "postgres"
+
+auth0:
+  domain: "dev-hs6hlbika1azoj0b.us.auth0.com"
+  clientID: "UmEeEGx3sHYvf9WZrUC4cMonLzAsBH5A"
+  clientSecret: "_RqqthXCiYY-YfMLhmv0BBYsxadzgpikt7Kzu2xC39YGykbzfm1YLF_af--H4CXP"
+  callbackUrl: "http://localhost:8080/callback" 

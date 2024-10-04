@@ -7,5 +7,6 @@ type User struct {
 	Email    string `gorm:"unique"`
 	Password string
 	Name     string
+	SID      string
 	Animes   []Anime `gorm:"many2many:user_animes;"`
 }

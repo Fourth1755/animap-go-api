@@ -9,8 +9,8 @@ import (
 )
 
 type UserAnimeService interface {
-	AddAnimeToList(userAnime *entities.UserAnime) error
-	GetAnimeByUserId(id uint) ([]dtos.UserAnimeListDTO, error)
+	AddAnimeToList(userAnime *dtos.AddAnimeToListRequest) error
+	GetAnimeByUserId(sid string) ([]dtos.UserAnimeListDTO, error)
 }
 
 type userAnimeServiceImpl struct {
@@ -23,18 +23,25 @@ func NewUserAnimeService(repo repositories.UserAnimeRepository, animeRepo reposi
 	return &userAnimeServiceImpl{repo: repo, animeRepo: animeRepo, userRepo: userRepo}
 }
 
-func (s *userAnimeServiceImpl) AddAnimeToList(userAnime *entities.UserAnime) error {
-	if _, err := s.animeRepo.GetById(userAnime.AnimeID); err != nil {
+func (s *userAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListRequest) error {
+	if _, err := s.animeRepo.GetById(request.AnimeID); err != nil {
 		logs.Error(err.Error())
 		return errs.NewNotFoundError("Anime not found")
 	}
 
-	if _, err := s.userRepo.GetById(userAnime.UserID); err != nil {
+	user, err := s.userRepo.GetBySid(request.Sid)
+	if err != nil {
 		logs.Error(err.Error())
 		return errs.NewNotFoundError("User not found")
 	}
+	userAnime := entities.UserAnime{
+		UserID:  user.ID,
+		AnimeID: request.AnimeID,
+		Score:   request.Score,
+		Status:  request.Status,
+	}
 
-	if err := s.repo.Save(userAnime); err != nil {
+	if err := s.repo.Save(&userAnime); err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}
@@ -42,13 +49,14 @@ func (s *userAnimeServiceImpl) AddAnimeToList(userAnime *entities.UserAnime) err
 	return nil
 }
 
-func (s *userAnimeServiceImpl) GetAnimeByUserId(id uint) ([]dtos.UserAnimeListDTO, error) {
-	if _, err := s.userRepo.GetById(id); err != nil {
+func (s *userAnimeServiceImpl) GetAnimeByUserId(sid string) ([]dtos.UserAnimeListDTO, error) {
+	user, err := s.userRepo.GetBySid(sid)
+	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewNotFoundError("User not found")
 	}
 
-	userAnimes, err := s.repo.GetByUserId(id)
+	userAnimes, err := s.repo.GetByUserId(user.ID)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
