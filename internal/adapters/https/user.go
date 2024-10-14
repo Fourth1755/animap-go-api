@@ -38,11 +38,15 @@ func (h *HttpUserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := h.service.Login(user)
+	response, err := h.service.Login(user)
 	if err != nil {
 		handleError(c, errs.NewUnauthorizedError(err.Error()))
 		return
 	}
-	c.SetCookie("jwt", token, 3600*24, "/", "localhost", false, true)
-	c.IndentedJSON(http.StatusOK, gin.H{"message": "Login success.", "token": token})
+	c.SetCookie("jwt", response.Token, 3600*24, "/", "localhost", false, true)
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"message": "Login success.",
+		"token":   response.Token,
+		"user_id": response.UserID,
+	})
 }

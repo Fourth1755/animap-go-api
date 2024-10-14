@@ -9,7 +9,7 @@ type UserRepository interface {
 	Save(user *entities.User) error
 	GetUserByEmail(email string) (*entities.User, error)
 	GetById(id uint) (*entities.User, error)
-	GetBySid(sid string) (*entities.User, error)
+	GetByUUID(uuid string) (*entities.User, error)
 }
 
 type GormUserRepository struct {
@@ -46,9 +46,9 @@ func (r *GormUserRepository) GetById(id uint) (*entities.User, error) {
 	return user, nil
 }
 
-func (r *GormUserRepository) GetBySid(sid string) (*entities.User, error) {
+func (r *GormUserRepository) GetByUUID(uuid string) (*entities.User, error) {
 	user := new(entities.User)
-	result := r.db.Where("s_id = ?", sid).First(user)
+	result := r.db.Where("uuid = ?", uuid).First(user)
 	if result.Error != nil {
 		return nil, result.Error
 	}

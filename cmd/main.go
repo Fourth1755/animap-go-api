@@ -149,7 +149,7 @@ func InitRoutes() *gin.Engine {
 	store := cookie.NewStore([]byte("secret"))
 	router.Use(sessions.Sessions("auth-session", store))
 
-	router.GET("/login", authHandler.Login())
+	// router.GET("/login", authHandler.Login())
 	router.GET("/callback", authHandler.Callback)
 	router.GET("/logout", authHandler.Logout)
 
@@ -162,7 +162,7 @@ func InitRoutes() *gin.Engine {
 	router.GET("animes/category/:category_id", animeHandler.GetAnimeByCategory)
 
 	router.POST("user/anime-list", userAnimeHandler.AddAnimeToList)
-	router.GET("user/anime-list/:sid", userAnimeHandler.GetAnimeByUserId)
+	router.GET("user/anime-list/:uuid", userAnimeHandler.GetAnimeByUserId)
 	//router.GET("anime-list/:id", userAnimeHandler.GETAnimeByUserId)
 
 	router.POST("category", categoryHandler.CreateCategory)
