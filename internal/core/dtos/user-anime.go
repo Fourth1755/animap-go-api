@@ -15,8 +15,8 @@ type UserAnimeListDTO struct {
 }
 
 type AddAnimeToListRequest struct {
-	Sid     string  `json:"s_id"`
-	AnimeID uint    `json:"anime_id"`
-	Score   float32 `json:"score"`
-	Status  int     `json:"status"`
+	UserUUID string  `json:"user_uuid"`
+	AnimeID  uint    `json:"anime_id"`
+	Score    float32 `json:"score"`
+	Status   int     `json:"status"`
 }

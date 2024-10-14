@@ -10,7 +10,7 @@ import (
 
 type UserAnimeService interface {
 	AddAnimeToList(userAnime *dtos.AddAnimeToListRequest) error
-	GetAnimeByUserId(sid string) ([]dtos.UserAnimeListDTO, error)
+	GetAnimeByUserId(uuid string) ([]dtos.UserAnimeListDTO, error)
 }
 
 type userAnimeServiceImpl struct {
@@ -29,7 +29,7 @@ func (s *userAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListReques
 		return errs.NewNotFoundError("Anime not found")
 	}
 
-	user, err := s.userRepo.GetBySid(request.Sid)
+	user, err := s.userRepo.GetByUUID(request.UserUUID)
 	if err != nil {
 		logs.Error(err.Error())
 		return errs.NewNotFoundError("User not found")
@@ -49,8 +49,8 @@ func (s *userAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListReques
 	return nil
 }
 
-func (s *userAnimeServiceImpl) GetAnimeByUserId(sid string) ([]dtos.UserAnimeListDTO, error) {
-	user, err := s.userRepo.GetBySid(sid)
+func (s *userAnimeServiceImpl) GetAnimeByUserId(uuid string) ([]dtos.UserAnimeListDTO, error) {
+	user, err := s.userRepo.GetByUUID(uuid)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewNotFoundError("User not found")

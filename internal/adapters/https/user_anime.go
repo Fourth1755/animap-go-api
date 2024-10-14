@@ -33,9 +33,9 @@ func (h *HttpUserAnimeHandler) AddAnimeToList(c *gin.Context) {
 }
 
 func (h *HttpUserAnimeHandler) GetAnimeByUserId(c *gin.Context) {
-	sid := c.Param("sid")
+	uuid := c.Param("uuid")
 
-	animeList, err := h.service.GetAnimeByUserId(sid)
+	animeList, err := h.service.GetAnimeByUserId(uuid)
 	if err != nil {
 		handleError(c, err)
 		return

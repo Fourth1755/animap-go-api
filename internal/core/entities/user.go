@@ -1,6 +1,8 @@
 package entities
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type User struct {
 	gorm.Model
@@ -9,4 +11,5 @@ type User struct {
 	Name     string
 	SID      string
 	Animes   []Anime `gorm:"many2many:user_animes;"`
+	UUID     string  `gorm:"unique"`
 }
