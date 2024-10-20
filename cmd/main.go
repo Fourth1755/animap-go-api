@@ -29,7 +29,6 @@ var (
 	categoryHandler  *adapters.HttpCategoryHandler
 	songHandler      *adapters.HttpSongHandler
 	artistHandler    *adapters.HttpArtistHandler
-	authHandler      *adapters.HttpAuthHandler
 )
 
 func main() {
@@ -52,11 +51,6 @@ func main() {
 	songService := services.NewSongService(songRepo, animeRepo, artistRepo, songArtistRepo)
 	artistService := services.NewArtistService(artistRepo)
 
-	auth, err := services.NewAuthenticator()
-	if err != nil {
-		log.Fatalf("Failed to initialize the authenticator: %v", err)
-	}
-
 	//create handler
 	animeHandler = adapters.NewHttpAnimeHandler(animeService)
 	userHandler = adapters.NewHttpUserHandler(userService)
@@ -64,7 +58,6 @@ func main() {
 	categoryHandler = adapters.NewHttpCategoryHandler(categoryService)
 	songHandler = adapters.NewHttpSongHandler(songService)
 	artistHandler = adapters.NewHttpArtistHandler(artistService)
-	authHandler = adapters.NewHttpAuthHandler(auth)
 	rtr := InitRoutes()
 
 	log.Print("Server listening on http://localhost:8080/")
@@ -150,9 +143,6 @@ func InitRoutes() *gin.Engine {
 	router.Use(sessions.Sessions("auth-session", store))
 
 	// router.GET("/login", authHandler.Login())
-	router.GET("/callback", authHandler.Callback)
-	router.GET("/logout", authHandler.Logout)
-
 	router.POST("animes", animeHandler.CreateAnime)
 	router.GET("animes/:id", animeHandler.GetAnimeById)
 	router.GET("animes", animeHandler.GetAnimeList)

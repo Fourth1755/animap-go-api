@@ -13,7 +13,7 @@ type AnimeDetailCategories struct {
 	Name string `json:"name"`
 }
 
-type AnimeDetailResponse struct {
+type GetAnimeByIdResponse struct {
 	ID          uint                    `json:"id"`
 	Name        string                  `json:"name"`
 	NameEnglish string                  `json:"name_english"`
@@ -25,6 +25,8 @@ type AnimeDetailResponse struct {
 	Duration    string                  `json:"duration"`
 	Type        int                     `json:"type"`
 	Categories  []AnimeDetailCategories `json:"categories"`
+	Wallpaper   string                  `json:"wallpaper"`
+	Trailer     string                  `json:"trailer"`
 }
 
 type AnimeQueryDTO struct {

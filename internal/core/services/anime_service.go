@@ -12,7 +12,7 @@ import (
 
 type AnimeService interface {
 	CreateAnime(anime entities.Anime) error
-	GetAnimeById(id uint) (*dtos.AnimeDetailResponse, error)
+	GetAnimeById(id uint) (*dtos.GetAnimeByIdResponse, error)
 	GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeListResponse, error)
 	UpdateAnime(anime entities.Anime) error
 	DeleteAnime(id uint) error
@@ -39,7 +39,7 @@ func (s *animeServiceImpl) CreateAnime(anime entities.Anime) error {
 	return nil
 }
 
-func (s *animeServiceImpl) GetAnimeById(id uint) (*dtos.AnimeDetailResponse, error) {
+func (s *animeServiceImpl) GetAnimeById(id uint) (*dtos.GetAnimeByIdResponse, error) {
 	anime, err := s.repo.GetById(id)
 	if err != nil {
 		logs.Error(err.Error())
@@ -57,7 +57,7 @@ func (s *animeServiceImpl) GetAnimeById(id uint) (*dtos.AnimeDetailResponse, err
 		})
 	}
 
-	animeResponse := dtos.AnimeDetailResponse{
+	animeResponse := dtos.GetAnimeByIdResponse{
 		ID:          anime.ID,
 		Name:        anime.Name,
 		NameEnglish: anime.NameEnglish,
@@ -69,6 +69,8 @@ func (s *animeServiceImpl) GetAnimeById(id uint) (*dtos.AnimeDetailResponse, err
 		Type:        anime.Type,
 		Duration:    anime.Duration,
 		Categories:  categories,
+		Wallpaper:   anime.Wallpaper,
+		Trailer:     anime.Trailer,
 	}
 	return &animeResponse, nil
 }
