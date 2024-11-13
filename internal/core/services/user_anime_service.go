@@ -11,6 +11,8 @@ import (
 type UserAnimeService interface {
 	AddAnimeToList(userAnime *dtos.AddAnimeToListRequest) error
 	GetAnimeByUserId(uuid string) ([]dtos.UserAnimeListDTO, error)
+	GetMyTopAnime(uuid string) ([]dtos.GetMyTopAnimeResponse, error)
+	UpdateMyTopAnime(request *dtos.UpdateMyTopAnimeRequest) error
 }
 
 type userAnimeServiceImpl struct {
@@ -77,4 +79,60 @@ func (s *userAnimeServiceImpl) GetAnimeByUserId(uuid string) ([]dtos.UserAnimeLi
 		})
 	}
 	return animeList, nil
+}
+
+func (s *userAnimeServiceImpl) GetMyTopAnime(uuid string) ([]dtos.GetMyTopAnimeResponse, error) {
+	user, err := s.userRepo.GetByUUID(uuid)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil, errs.NewNotFoundError("User not found")
+	}
+
+	userAnimes, err := s.repo.GetMyTopAnimeByUserId(user.ID)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil, errs.NewUnexpectedError()
+	}
+
+	var response []dtos.GetMyTopAnimeResponse
+	for _, useranime := range userAnimes {
+		response = append(response, dtos.GetMyTopAnimeResponse{
+			AnimeID:            useranime.AnimeID,
+			AnimeName:          useranime.Anime.Name,
+			Score:              useranime.Score,
+			Description:        useranime.Anime.Description,
+			Episodes:           useranime.Anime.Description,
+			Image:              useranime.Anime.Image,
+			Status:             useranime.Status,
+			WatchAt:            useranime.WatchAt,
+			CreatedAt:          useranime.CreatedAt,
+			SequenceMyTopAnime: useranime.SequenceMyTopAnime,
+		})
+	}
+	return response, nil
+}
+
+func (s *userAnimeServiceImpl) UpdateMyTopAnime(request *dtos.UpdateMyTopAnimeRequest) error {
+	user, err := s.userRepo.GetByUUID(request.UserUUID)
+	if err != nil {
+		logs.Error(err.Error())
+		return errs.NewNotFoundError("User not found")
+	}
+
+	for _, item := range request.AnimeSequence {
+		userAnimes, err := s.repo.GetByUserIdAndAnimeId(user.ID, []uint{item.AnimeID})
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+		userAnimeUpdate := userAnimes[0]
+		userAnimeUpdate.SequenceMyTopAnime = item.Sequence
+
+		if err := s.repo.UpdateMyTopAnime(&userAnimeUpdate); err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+	}
+
+	return nil
 }

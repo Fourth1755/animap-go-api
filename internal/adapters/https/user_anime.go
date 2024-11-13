@@ -42,3 +42,29 @@ func (h *HttpUserAnimeHandler) GetAnimeByUserId(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, animeList)
 }
+
+func (h *HttpUserAnimeHandler) GetMyTopAnimeByUserId(c *gin.Context) {
+	uuid := c.Param("uuid")
+
+	animeList, err := h.service.GetMyTopAnime(uuid)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, animeList)
+}
+
+func (h *HttpUserAnimeHandler) UpdateMyTopAnime(c *gin.Context) {
+	userAnimeRequest := new(dtos.UpdateMyTopAnimeRequest)
+	if err := c.BindJSON(userAnimeRequest); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+
+	err := h.service.UpdateMyTopAnime(userAnimeRequest)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Update my top anime to list success."})
+}
