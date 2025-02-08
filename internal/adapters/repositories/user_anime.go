@@ -49,7 +49,11 @@ func (r *GormUserAnimeRepository) GetByUserIdAndAnimeId(id uint, animeIds []uint
 
 func (r *GormUserAnimeRepository) GetMyTopAnimeByUserId(id uint) ([]entities.UserAnime, error) {
 	var animes []entities.UserAnime
-	result := r.db.Limit(10).Preload("Anime").Where("user_id = ?", id).Where("sequence_my_top_anime <> 0").Find(&animes)
+	result := r.db.Limit(10).Preload("Anime").
+		Where("user_id = ?", id).
+		Where("sequence_my_top_anime <> 0").
+		Order("sequence_my_top_anime ASC").
+		Find(&animes)
 	if result.Error != nil {
 		return nil, result.Error
 	}
