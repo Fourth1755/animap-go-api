@@ -9,30 +9,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type HttpUserAnimeHandler struct {
-	service services.UserAnimeService
+type HttpMyAnimeHandler struct {
+	service services.MyAnimeService
 }
 
-func NewHttpUserAnimeHandler(service services.UserAnimeService) *HttpUserAnimeHandler {
-	return &HttpUserAnimeHandler{service: service}
+func NewHttpMyAnimeHandler(service services.MyAnimeService) *HttpMyAnimeHandler {
+	return &HttpMyAnimeHandler{service: service}
 }
 
-func (h *HttpUserAnimeHandler) AddAnimeToList(c *gin.Context) {
-	//userAnime := new(entities.UserAnime)
-	userAnimeRequest := new(dtos.AddAnimeToListRequest)
-	if err := c.BindJSON(userAnimeRequest); err != nil {
+func (h *HttpMyAnimeHandler) AddAnimeToList(c *gin.Context) {
+	MyAnimeRequest := new(dtos.AddAnimeToListRequest)
+	if err := c.BindJSON(MyAnimeRequest); err != nil {
 		handleError(c, errs.NewBadRequestError(err.Error()))
 		return
 	}
 
-	if err := h.service.AddAnimeToList(userAnimeRequest); err != nil {
+	if err := h.service.AddAnimeToList(MyAnimeRequest); err != nil {
 		handleError(c, err)
 		return
 	}
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Add anime to list success."})
 }
 
-func (h *HttpUserAnimeHandler) GetAnimeByUserId(c *gin.Context) {
+func (h *HttpMyAnimeHandler) GetAnimeByUserId(c *gin.Context) {
 	uuid := c.Param("uuid")
 
 	animeList, err := h.service.GetAnimeByUserId(uuid)
@@ -43,7 +42,7 @@ func (h *HttpUserAnimeHandler) GetAnimeByUserId(c *gin.Context) {
 	c.JSON(http.StatusOK, animeList)
 }
 
-func (h *HttpUserAnimeHandler) GetMyTopAnimeByUserId(c *gin.Context) {
+func (h *HttpMyAnimeHandler) GetMyTopAnimeByUserId(c *gin.Context) {
 	uuid := c.Param("uuid")
 
 	animeList, err := h.service.GetMyTopAnime(uuid)
@@ -54,14 +53,14 @@ func (h *HttpUserAnimeHandler) GetMyTopAnimeByUserId(c *gin.Context) {
 	c.JSON(http.StatusOK, animeList)
 }
 
-func (h *HttpUserAnimeHandler) UpdateMyTopAnime(c *gin.Context) {
-	userAnimeRequest := new(dtos.UpdateMyTopAnimeRequest)
-	if err := c.BindJSON(userAnimeRequest); err != nil {
+func (h *HttpMyAnimeHandler) UpdateMyTopAnime(c *gin.Context) {
+	MyAnimeRequest := new(dtos.UpdateMyTopAnimeRequest)
+	if err := c.BindJSON(MyAnimeRequest); err != nil {
 		handleError(c, errs.NewBadRequestError(err.Error()))
 		return
 	}
 
-	err := h.service.UpdateMyTopAnime(userAnimeRequest)
+	err := h.service.UpdateMyTopAnime(MyAnimeRequest)
 	if err != nil {
 		handleError(c, err)
 		return

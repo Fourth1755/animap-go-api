@@ -8,24 +8,24 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/logs"
 )
 
-type UserAnimeService interface {
+type MyAnimeService interface {
 	AddAnimeToList(userAnime *dtos.AddAnimeToListRequest) error
 	GetAnimeByUserId(uuid string) ([]dtos.UserAnimeListDTO, error)
 	GetMyTopAnime(uuid string) ([]dtos.GetMyTopAnimeResponse, error)
 	UpdateMyTopAnime(request *dtos.UpdateMyTopAnimeRequest) error
 }
 
-type userAnimeServiceImpl struct {
+type myAnimeServiceImpl struct {
 	repo      repositories.UserAnimeRepository
 	animeRepo repositories.AnimeRepository
 	userRepo  repositories.UserRepository
 }
 
-func NewUserAnimeService(repo repositories.UserAnimeRepository, animeRepo repositories.AnimeRepository, userRepo repositories.UserRepository) UserAnimeService {
-	return &userAnimeServiceImpl{repo: repo, animeRepo: animeRepo, userRepo: userRepo}
+func NewMyAnimeService(repo repositories.UserAnimeRepository, animeRepo repositories.AnimeRepository, userRepo repositories.UserRepository) MyAnimeService {
+	return &myAnimeServiceImpl{repo: repo, animeRepo: animeRepo, userRepo: userRepo}
 }
 
-func (s *userAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListRequest) error {
+func (s *myAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListRequest) error {
 	if _, err := s.animeRepo.GetById(request.AnimeID); err != nil {
 		logs.Error(err.Error())
 		return errs.NewNotFoundError("Anime not found")
@@ -51,7 +51,7 @@ func (s *userAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListReques
 	return nil
 }
 
-func (s *userAnimeServiceImpl) GetAnimeByUserId(uuid string) ([]dtos.UserAnimeListDTO, error) {
+func (s *myAnimeServiceImpl) GetAnimeByUserId(uuid string) ([]dtos.UserAnimeListDTO, error) {
 	user, err := s.userRepo.GetByUUID(uuid)
 	if err != nil {
 		logs.Error(err.Error())
@@ -81,7 +81,7 @@ func (s *userAnimeServiceImpl) GetAnimeByUserId(uuid string) ([]dtos.UserAnimeLi
 	return animeList, nil
 }
 
-func (s *userAnimeServiceImpl) GetMyTopAnime(uuid string) ([]dtos.GetMyTopAnimeResponse, error) {
+func (s *myAnimeServiceImpl) GetMyTopAnime(uuid string) ([]dtos.GetMyTopAnimeResponse, error) {
 	user, err := s.userRepo.GetByUUID(uuid)
 	if err != nil {
 		logs.Error(err.Error())
@@ -112,7 +112,7 @@ func (s *userAnimeServiceImpl) GetMyTopAnime(uuid string) ([]dtos.GetMyTopAnimeR
 	return response, nil
 }
 
-func (s *userAnimeServiceImpl) UpdateMyTopAnime(request *dtos.UpdateMyTopAnimeRequest) error {
+func (s *myAnimeServiceImpl) UpdateMyTopAnime(request *dtos.UpdateMyTopAnimeRequest) error {
 	user, err := s.userRepo.GetByUUID(request.UserUUID)
 	if err != nil {
 		logs.Error(err.Error())
