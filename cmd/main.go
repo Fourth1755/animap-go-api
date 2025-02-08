@@ -23,12 +23,12 @@ import (
 )
 
 var (
-	animeHandler     *adapters.HttpAnimeHandler
-	userHandler      *adapters.HttpUserHandler
-	userAnimeHandler *adapters.HttpUserAnimeHandler
-	categoryHandler  *adapters.HttpCategoryHandler
-	songHandler      *adapters.HttpSongHandler
-	artistHandler    *adapters.HttpArtistHandler
+	animeHandler    *adapters.HttpAnimeHandler
+	userHandler     *adapters.HttpUserHandler
+	myAnimeHandler  *adapters.HttpMyAnimeHandler
+	categoryHandler *adapters.HttpCategoryHandler
+	songHandler     *adapters.HttpSongHandler
+	artistHandler   *adapters.HttpArtistHandler
 )
 
 func main() {
@@ -46,7 +46,7 @@ func main() {
 	//create service
 	animeService := services.NewAnimeService(animeRepo, userRepo, animeCategoryRepo)
 	userService := services.NewUserService(userRepo)
-	userAnimeService := services.NewUserAnimeService(userAnimeRepo, animeRepo, userRepo)
+	myAnimeService := services.NewMyAnimeService(userAnimeRepo, animeRepo, userRepo)
 	categoryService := services.NewCategoryService(categoryRepo)
 	songService := services.NewSongService(songRepo, animeRepo, artistRepo, songArtistRepo)
 	artistService := services.NewArtistService(artistRepo)
@@ -54,7 +54,7 @@ func main() {
 	//create handler
 	animeHandler = adapters.NewHttpAnimeHandler(animeService)
 	userHandler = adapters.NewHttpUserHandler(userService)
-	userAnimeHandler = adapters.NewHttpUserAnimeHandler(userAnimeService)
+	myAnimeHandler = adapters.NewHttpMyAnimeHandler(myAnimeService)
 	categoryHandler = adapters.NewHttpCategoryHandler(categoryService)
 	songHandler = adapters.NewHttpSongHandler(songService)
 	artistHandler = adapters.NewHttpArtistHandler(artistService)
@@ -151,10 +151,10 @@ func InitRoutes() *gin.Engine {
 	router.POST("animes/category/:anime_id", animeHandler.AddCategoryToAnime)
 	router.GET("animes/category/:category_id", animeHandler.GetAnimeByCategory)
 
-	router.POST("user/anime-list", userAnimeHandler.AddAnimeToList)
-	router.GET("user/anime-list/:uuid", userAnimeHandler.GetAnimeByUserId)
-	router.GET("user/anime-list/my-top-anime/:uuid", userAnimeHandler.GetMyTopAnimeByUserId)
-	router.PATCH("user/anime-list/my-top-anime", userAnimeHandler.UpdateMyTopAnime)
+	router.POST("my-anime", myAnimeHandler.AddAnimeToList)
+	router.GET("my-anime/:uuid", myAnimeHandler.GetAnimeByUserId)
+	router.GET("my-anime/top-anime/:uuid", myAnimeHandler.GetMyTopAnimeByUserId)
+	router.PATCH("my-anime/top-anime", myAnimeHandler.UpdateMyTopAnime)
 
 	//router.GET("anime-list/:id", userAnimeHandler.GETAnimeByUserId)
 
