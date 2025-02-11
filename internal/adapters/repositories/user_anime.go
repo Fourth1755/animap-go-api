@@ -30,7 +30,10 @@ func (r *GormUserAnimeRepository) Save(userAnime *entities.UserAnime) error {
 
 func (r *GormUserAnimeRepository) GetByUserId(id uint) ([]entities.UserAnime, error) {
 	var animes []entities.UserAnime
-	result := r.db.Preload("Anime").Where("user_id = ?", id).Find(&animes)
+	result := r.db.Preload("Anime").
+		Where("user_id = ?", id).
+		Order("watched_year_at DESC").
+		Find(&animes)
 	if result.Error != nil {
 		return nil, result.Error
 	}

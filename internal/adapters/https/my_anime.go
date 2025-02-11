@@ -42,6 +42,17 @@ func (h *HttpMyAnimeHandler) GetAnimeByUserId(c *gin.Context) {
 	c.JSON(http.StatusOK, animeList)
 }
 
+func (h *HttpMyAnimeHandler) GetMyAnimeYearByUserId(c *gin.Context) {
+	uuid := c.Param("uuid")
+
+	animeList, err := h.service.GetMyAnimeYearByUserId(uuid)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, animeList)
+}
+
 func (h *HttpMyAnimeHandler) GetMyTopAnimeByUserId(c *gin.Context) {
 	uuid := c.Param("uuid")
 

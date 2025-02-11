@@ -153,6 +153,7 @@ func InitRoutes() *gin.Engine {
 
 	router.POST("my-anime", myAnimeHandler.AddAnimeToList)
 	router.GET("my-anime/:uuid", myAnimeHandler.GetAnimeByUserId)
+	router.GET("my-anime/anime-year-list/:uuid", myAnimeHandler.GetMyAnimeYearByUserId)
 	router.GET("my-anime/top-anime/:uuid", myAnimeHandler.GetMyTopAnimeByUserId)
 	router.PATCH("my-anime/top-anime", myAnimeHandler.UpdateMyTopAnime)
 

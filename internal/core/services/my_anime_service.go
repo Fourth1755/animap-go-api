@@ -10,7 +10,8 @@ import (
 
 type MyAnimeService interface {
 	AddAnimeToList(userAnime *dtos.AddAnimeToListRequest) error
-	GetAnimeByUserId(uuid string) ([]dtos.UserAnimeListDTO, error)
+	GetAnimeByUserId(uuid string) ([]dtos.GetAnimeByUserIdResponse, error)
+	GetMyAnimeYearByUserId(uuid string) (*dtos.GetMyAnimeYearByUserIdResponse, error)
 	GetMyTopAnime(uuid string) ([]dtos.GetMyTopAnimeResponse, error)
 	UpdateMyTopAnime(request *dtos.UpdateMyTopAnimeRequest) error
 }
@@ -37,10 +38,11 @@ func (s *myAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListRequest)
 		return errs.NewNotFoundError("User not found")
 	}
 	userAnime := entities.UserAnime{
-		UserID:  user.ID,
-		AnimeID: request.AnimeID,
-		Score:   request.Score,
-		Status:  request.Status,
+		UserID:        user.ID,
+		AnimeID:       request.AnimeID,
+		Score:         request.Score,
+		Status:        request.Status,
+		WatchedYearAt: request.WatchedYear,
 	}
 
 	if err := s.repo.Save(&userAnime); err != nil {
@@ -51,7 +53,7 @@ func (s *myAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListRequest)
 	return nil
 }
 
-func (s *myAnimeServiceImpl) GetAnimeByUserId(uuid string) ([]dtos.UserAnimeListDTO, error) {
+func (s *myAnimeServiceImpl) GetAnimeByUserId(uuid string) ([]dtos.GetAnimeByUserIdResponse, error) {
 	user, err := s.userRepo.GetByUUID(uuid)
 	if err != nil {
 		logs.Error(err.Error())
@@ -64,21 +66,72 @@ func (s *myAnimeServiceImpl) GetAnimeByUserId(uuid string) ([]dtos.UserAnimeList
 		return nil, errs.NewUnexpectedError()
 	}
 
-	var animeList []dtos.UserAnimeListDTO
+	var animeList []dtos.GetAnimeByUserIdResponse
 	for _, useranime := range userAnimes {
-		animeList = append(animeList, dtos.UserAnimeListDTO{
-			AnimeID:     useranime.AnimeID,
-			AnimeName:   useranime.Anime.Name,
-			Score:       useranime.Score,
-			Description: useranime.Anime.Description,
-			Episodes:    useranime.Anime.Description,
-			Image:       useranime.Anime.Image,
-			Status:      useranime.Status,
-			WatchAt:     useranime.WatchAt,
-			CreatedAt:   useranime.CreatedAt,
+		animeList = append(animeList, dtos.GetAnimeByUserIdResponse{
+			AnimeID:       useranime.AnimeID,
+			AnimeName:     useranime.Anime.Name,
+			Score:         useranime.Score,
+			Description:   useranime.Anime.Description,
+			Episodes:      useranime.Anime.Description,
+			Image:         useranime.Anime.Image,
+			Status:        useranime.Status,
+			WatchedAt:     useranime.WatchedAt,
+			WatchedYearAt: useranime.WatchedYearAt,
+			CreatedAt:     useranime.CreatedAt,
 		})
 	}
 	return animeList, nil
+}
+
+func (s *myAnimeServiceImpl) GetMyAnimeYearByUserId(uuid string) (*dtos.GetMyAnimeYearByUserIdResponse, error) {
+	user, err := s.userRepo.GetByUUID(uuid)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil, errs.NewNotFoundError("User not found")
+	}
+
+	userAnimes, err := s.repo.GetByUserId(user.ID)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil, errs.NewUnexpectedError()
+	}
+
+	var animeYearList []dtos.GetMyAnimeYearByUserIdResponse_AnimeYear
+	animeYearMap := make(map[string][]dtos.GetMyAnimeYearByUserIdResponse_AnimeYear_Anime)
+	yearList := []string{}
+	for _, userAnime := range userAnimes {
+		if animeYearMap[userAnime.WatchedYearAt] == nil {
+			yearList = append(yearList, userAnime.WatchedYearAt)
+		}
+		animeYearMap[userAnime.WatchedYearAt] = append(animeYearMap[userAnime.WatchedYearAt], dtos.GetMyAnimeYearByUserIdResponse_AnimeYear_Anime{
+			AnimeID:       userAnime.AnimeID,
+			AnimeName:     userAnime.Anime.Name,
+			Score:         userAnime.Score,
+			Description:   userAnime.Anime.Description,
+			Episodes:      userAnime.Anime.Description,
+			Image:         userAnime.Anime.Image,
+			Status:        userAnime.Status,
+			WatchedAt:     userAnime.WatchedAt,
+			WatchedYearAt: userAnime.WatchedYearAt,
+			CreatedAt:     userAnime.CreatedAt,
+		})
+	}
+
+	for _, year := range yearList {
+		if animeYearMap[year] != nil {
+			animeYearList = append(animeYearList, dtos.GetMyAnimeYearByUserIdResponse_AnimeYear{
+				Year:  year,
+				Anime: animeYearMap[year],
+			})
+		}
+	}
+
+	return &dtos.GetMyAnimeYearByUserIdResponse{
+		AnimeYear:  animeYearList,
+		TotalYear:  uint(len(yearList)),
+		TotalAnime: uint(len(userAnimes)),
+	}, nil
 }
 
 func (s *myAnimeServiceImpl) GetMyTopAnime(uuid string) ([]dtos.GetMyTopAnimeResponse, error) {
@@ -104,7 +157,7 @@ func (s *myAnimeServiceImpl) GetMyTopAnime(uuid string) ([]dtos.GetMyTopAnimeRes
 			Episodes:           useranime.Anime.Description,
 			Image:              useranime.Anime.Image,
 			Status:             useranime.Status,
-			WatchAt:            useranime.WatchAt,
+			WatchAt:            useranime.WatchedAt,
 			CreatedAt:          useranime.CreatedAt,
 			SequenceMyTopAnime: useranime.SequenceMyTopAnime,
 		})

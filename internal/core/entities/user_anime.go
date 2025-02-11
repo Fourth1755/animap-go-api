@@ -14,6 +14,7 @@ type UserAnime struct {
 	Anime              Anime
 	Score              float32   `json:"score"`
 	Status             int       `json:"status"`
-	WatchAt            time.Time `json:"watch_at"`
+	WatchedAt          time.Time `json:"watched_at"`
+	WatchedYearAt      string    `json:"watched_year_at"`
 	SequenceMyTopAnime int       `gorm:"default:0" json:"sequence_my_top_anime"`
 }
