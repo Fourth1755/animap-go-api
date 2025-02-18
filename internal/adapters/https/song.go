@@ -100,3 +100,16 @@ func (h *HttpSongHandler) GetSongByAnimeId(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, songs)
 }
+
+func (h *HttpSongHandler) CreateSongChannel(c *gin.Context) {
+	var songChannel dtos.CreateSongChannelRequest
+	if err := c.BindJSON(&songChannel); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	if err := h.service.CreateSongChannel(&songChannel); err != nil {
+		handleError(c, err)
+		return
+	}
+	c.IndentedJSON(http.StatusCreated, gin.H{"message": "Create song chennel success"})
+}

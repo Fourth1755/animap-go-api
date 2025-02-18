@@ -42,13 +42,14 @@ func main() {
 	songRepo := repositories.NewGormSongRepository(db)
 	artistRepo := repositories.NewGormArtistRepository(db)
 	songArtistRepo := repositories.NewGormSongArtistRepository(db)
+	songChannelRepo := repositories.NewGormSongChannelRepository(db)
 
 	//create service
 	animeService := services.NewAnimeService(animeRepo, userRepo, animeCategoryRepo)
 	userService := services.NewUserService(userRepo)
 	myAnimeService := services.NewMyAnimeService(userAnimeRepo, animeRepo, userRepo)
 	categoryService := services.NewCategoryService(categoryRepo)
-	songService := services.NewSongService(songRepo, animeRepo, artistRepo, songArtistRepo)
+	songService := services.NewSongService(songRepo, animeRepo, artistRepo, songArtistRepo, songChannelRepo)
 	artistService := services.NewArtistService(artistRepo)
 
 	//create handler
@@ -169,6 +170,7 @@ func InitRoutes() *gin.Engine {
 	router.PUT("songs/:id", songHandler.UpdateSong)
 	router.DELETE("songs/:id", songHandler.DeleteSong)
 	router.GET("songs/anime/:id", songHandler.GetSongByAnimeId)
+	router.POST("songs/channel", songHandler.CreateSongChannel)
 
 	router.POST("artists", artistHandler.CreateArtist)
 	router.GET("artists", artistHandler.GetArtistList)

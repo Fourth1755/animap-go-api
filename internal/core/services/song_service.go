@@ -15,21 +15,29 @@ type SongService interface {
 	UpdateSong(*entities.Song) error
 	DeleteSong(uint) error
 	GetSongByAnimeId(uint) (*dtos.SongDetailResponse, error)
+	CreateSongChannel(request *dtos.CreateSongChannelRequest) error
 }
 
 type songServiceImpl struct {
-	repo           repositories.SongRepository
-	animeRepo      repositories.AnimeRepository
-	artistRepo     repositories.ArtistRepository
-	songArtistRepo repositories.SongArtistRepository
+	repo            repositories.SongRepository
+	animeRepo       repositories.AnimeRepository
+	artistRepo      repositories.ArtistRepository
+	songArtistRepo  repositories.SongArtistRepository
+	songChannelRepo repositories.SongChannelRepository
 }
 
 func NewSongService(
 	repo repositories.SongRepository,
 	animeRepo repositories.AnimeRepository,
 	artistRepo repositories.ArtistRepository,
-	songArtistRepo repositories.SongArtistRepository) SongService {
-	return &songServiceImpl{repo: repo, animeRepo: animeRepo, artistRepo: artistRepo, songArtistRepo: songArtistRepo}
+	songArtistRepo repositories.SongArtistRepository,
+	songChannelRepo repositories.SongChannelRepository) SongService {
+	return &songServiceImpl{
+		repo:            repo,
+		animeRepo:       animeRepo,
+		artistRepo:      artistRepo,
+		songArtistRepo:  songArtistRepo,
+		songChannelRepo: songChannelRepo}
 }
 
 var songTypeMap = []string{"none", "opening", "ending", "soundtrack"}
@@ -199,4 +207,22 @@ func (s songServiceImpl) GetSongByAnimeId(animeId uint) (*dtos.SongDetailRespons
 		SoundtrackSong: soundtrack,
 	}
 	return &songResponse, nil
+}
+
+func (s songServiceImpl) CreateSongChannel(request *dtos.CreateSongChannelRequest) error {
+	songChannel := entities.SongChannel{
+		Channel: request.Channel,
+		Type:    request.Type,
+		Link:    request.Link,
+		SongID:  request.SongID,
+		IsMain:  request.IsMain,
+	}
+
+	//save song
+	err := s.songChannelRepo.Save(&songChannel)
+	if err != nil {
+		logs.Error(err)
+		return errs.NewUnexpectedError()
+	}
+	return nil
 }
