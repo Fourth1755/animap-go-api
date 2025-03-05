@@ -54,5 +54,4 @@ func (h *HttpArtistHandler) GetArtistList(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, artists)
-	return
 }

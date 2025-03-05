@@ -29,6 +29,7 @@ var (
 	categoryHandler *adapters.HttpCategoryHandler
 	songHandler     *adapters.HttpSongHandler
 	artistHandler   *adapters.HttpArtistHandler
+	studioHandler   *adapters.HttpStduioHandler
 )
 
 func main() {
@@ -43,6 +44,7 @@ func main() {
 	artistRepo := repositories.NewGormArtistRepository(db)
 	songArtistRepo := repositories.NewGormSongArtistRepository(db)
 	songChannelRepo := repositories.NewGormSongChannelRepository(db)
+	studioRepo := repositories.NewGormStudioRepository(db)
 
 	//create service
 	animeService := services.NewAnimeService(animeRepo, userRepo, animeCategoryRepo)
@@ -51,6 +53,7 @@ func main() {
 	categoryService := services.NewCategoryService(categoryRepo)
 	songService := services.NewSongService(songRepo, animeRepo, artistRepo, songArtistRepo, songChannelRepo)
 	artistService := services.NewArtistService(artistRepo)
+	studioService := services.NewStudioService(studioRepo)
 
 	//create handler
 	animeHandler = adapters.NewHttpAnimeHandler(animeService)
@@ -59,6 +62,7 @@ func main() {
 	categoryHandler = adapters.NewHttpCategoryHandler(categoryService)
 	songHandler = adapters.NewHttpSongHandler(songService)
 	artistHandler = adapters.NewHttpArtistHandler(artistService)
+	studioHandler = adapters.NewHttpStduioHandler(studioService)
 	rtr := InitRoutes()
 
 	log.Print("Server listening on http://localhost:8080/")
@@ -103,6 +107,7 @@ func InitDatabase() *gorm.DB {
 		&entities.SongChannel{},
 		&entities.Artist{},
 		&entities.SongArtist{},
+		&entities.Studio{},
 	)
 
 	return db
@@ -175,6 +180,8 @@ func InitRoutes() *gin.Engine {
 	router.POST("artists", artistHandler.CreateArtist)
 	router.GET("artists", artistHandler.GetArtistList)
 	router.GET("artists/:id", artistHandler.GetArtistById)
+
+	router.GET("studios", studioHandler.GetAllStduio)
 	return router
 }
 
