@@ -3,9 +3,7 @@ package adapters
 import (
 	"net/http"
 
-	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
-	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,12 +16,12 @@ func NewHttpStduioHandler(service services.StudioService) *HttpStduioHandler {
 }
 
 func (h *HttpStduioHandler) GetAllStduio(c *gin.Context) {
-	var studio dtos.StudioListRequest
-	if err := c.BindJSON(&studio); err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-	response, err := h.service.GetAllStudio(studio)
+	// var studio dtos.StudioListRequest
+	// if err := c.BindJSON(&studio); err != nil {
+	// 	handleError(c, errs.NewBadRequestError(err.Error()))
+	// 	return
+	// }
+	response, err := h.service.GetAllStudio()
 	if err != nil {
 		handleError(c, err)
 		return

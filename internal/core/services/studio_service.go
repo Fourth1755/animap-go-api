@@ -8,7 +8,7 @@ import (
 )
 
 type StudioService interface {
-	GetAllStudio(request dtos.StudioListRequest) ([]dtos.StudioListResponse, error)
+	GetAllStudio() ([]dtos.StudioListResponse, error)
 }
 
 type studioServiceImpl struct {
@@ -19,7 +19,7 @@ func NewStudioService(repo repositories.StudioRepository) StudioService {
 	return &studioServiceImpl{repo: repo}
 }
 
-func (s studioServiceImpl) GetAllStudio(request dtos.StudioListRequest) ([]dtos.StudioListResponse, error) {
+func (s studioServiceImpl) GetAllStudio() ([]dtos.StudioListResponse, error) {
 	stduios, err := s.repo.GetAll()
 	if err != nil {
 		logs.Error(err)

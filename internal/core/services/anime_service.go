@@ -11,7 +11,7 @@ import (
 )
 
 type AnimeService interface {
-	CreateAnime(anime entities.Anime) error
+	CreateAnime(anime dtos.CreateAnimeRequest) error
 	GetAnimeById(id uint) (*dtos.GetAnimeByIdResponse, error)
 	GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeListResponse, error)
 	UpdateAnime(anime entities.Anime) error
@@ -31,7 +31,22 @@ func NewAnimeService(repo repositories.AnimeRepository, userRepo repositories.Us
 	return &animeServiceImpl{repo: repo, userRepo: userRepo, animeCategoryRepo: animeCategoryRepo}
 }
 
-func (s *animeServiceImpl) CreateAnime(anime entities.Anime) error {
+func (s *animeServiceImpl) CreateAnime(request dtos.CreateAnimeRequest) error {
+	anime := entities.Anime{
+		Name:        request.Name,
+		NameEnglish: request.NameEnglish,
+		NameThai:    request.NameThai,
+		Episodes:    request.Episodes,
+		Image:       request.Image,
+		Description: request.Description,
+		Seasonal:    request.Seasonal,
+		Year:        request.Year,
+		Type:        request.Type,
+		Duration:    request.Duration,
+		Wallpaper:   request.Wallpaper,
+		Trailer:     request.Trailer,
+	}
+
 	if err := s.repo.Save(anime); err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()

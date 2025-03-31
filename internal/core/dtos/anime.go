@@ -38,3 +38,19 @@ type AddCategoryToAnimeRequest struct {
 	AnimeID    uint   `json:"anime_id"`
 	CategoryID []uint `json:"category_id"`
 }
+
+type CreateAnimeRequest struct {
+	Name        string   `json:"name"`
+	NameEnglish string   `json:"name_english"`
+	NameThai    string   `json:"name_thai"`
+	Episodes    int      `json:"episodes"`
+	Seasonal    string   `json:"seasonal"`
+	Image       string   `json:"image"`
+	Studio      []string `json:"studio"`
+	Description string   `json:"description"`
+	Duration    string   `json:"duration"`
+	Year        string   `json:"year"`
+	Type        int      `json:"type"`
+	Wallpaper   string   `json:"wallpaper"`
+	Trailer     string   `json:"trailer"`
+}
