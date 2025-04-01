@@ -7,7 +7,7 @@ import (
 )
 
 type AnimeRepository interface {
-	Save(anime entities.Anime) error
+	Save(anime entities.Anime) (*entities.Anime, error)
 	GetById(id uint) (*entities.Anime, error)
 	GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime, error)
 	Update(anime *entities.Anime) error
@@ -23,16 +23,20 @@ func NewGormAnimeRepository(db *gorm.DB) AnimeRepository {
 	return &GormAnimeRepository{db: db}
 }
 
-func (r *GormAnimeRepository) Save(anime entities.Anime) error {
+func (r *GormAnimeRepository) Save(anime entities.Anime) (*entities.Anime, error) {
 	if result := r.db.Create(&anime); result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
-	return nil
+	return &anime, nil
 }
 
 func (r *GormAnimeRepository) GetById(id uint) (*entities.Anime, error) {
 	var anime entities.Anime
-	if result := r.db.Preload("Songs").Preload("Categories").First(&anime, id); result.Error != nil {
+	if result := r.db.
+		Preload("Songs").
+		Preload("Categories").
+		Preload("Studios").
+		First(&anime, id); result.Error != nil {
 		return nil, result.Error
 	}
 	return &anime, nil

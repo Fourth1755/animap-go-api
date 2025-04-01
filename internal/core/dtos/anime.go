@@ -1,5 +1,7 @@
 package dtos
 
+import "github.com/google/uuid"
+
 type AnimeListResponse struct {
 	ID       uint   `json:"id"`
 	Name     string `json:"name"`
@@ -11,6 +13,11 @@ type AnimeListResponse struct {
 type AnimeDetailCategories struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name"`
+}
+
+type AnimeDetailStduios struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
 }
 
 type GetAnimeByIdResponse struct {
@@ -27,6 +34,7 @@ type GetAnimeByIdResponse struct {
 	Categories  []AnimeDetailCategories `json:"categories"`
 	Wallpaper   string                  `json:"wallpaper"`
 	Trailer     string                  `json:"trailer"`
+	Studios     []AnimeDetailStduios    `json:"studios"`
 }
 
 type AnimeQueryDTO struct {

@@ -20,7 +20,7 @@ func NewHttpAnimeHandler(service services.AnimeService) *HttpAnimeHandler {
 }
 
 func (h *HttpAnimeHandler) CreateAnime(c *gin.Context) {
-	var anime entities.Anime
+	var anime dtos.CreateAnimeRequest
 	if err := c.BindJSON(&anime); err != nil {
 		handleError(c, errs.NewBadRequestError(err.Error()))
 		return

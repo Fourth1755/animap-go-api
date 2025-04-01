@@ -15,4 +15,5 @@ type Studio struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   time.Time `gorm:"index"`
+	Animes      []Anime   `gorm:"many2many:anime_studios;"`
 }

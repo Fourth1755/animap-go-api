@@ -6,15 +6,15 @@ import (
 )
 
 type AnimeStudioRepository interface {
-	GetAll() ([]entities.Studio, error)
+	Save(animeStudio []entities.AnimeStudio) error
 }
 
 type GormAnimeStudioRepository struct {
 	db *gorm.DB
 }
 
-func NewGormAnimeStudioRepository(db *gorm.DB) SongRepository {
-	return &GormSongRepository{db: db}
+func NewGormAnimeStudioRepository(db *gorm.DB) AnimeStudioRepository {
+	return &GormAnimeStudioRepository{db: db}
 }
 
 func (r GormAnimeStudioRepository) Save(animeStudio []entities.AnimeStudio) error {

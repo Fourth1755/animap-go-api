@@ -16,6 +16,7 @@ type Anime struct {
 	Duration    string     `json:"duration"`
 	Categories  []Category `gorm:"many2many:anime_categories;"`
 	Songs       []Song
-	Wallpaper   string `json:"wallpaper"`
-	Trailer     string `json:"trailer"`
+	Wallpaper   string   `json:"wallpaper"`
+	Trailer     string   `json:"trailer"`
+	Studios     []Studio `gorm:"many2many:anime_studios;"`
 }

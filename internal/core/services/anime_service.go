@@ -8,6 +8,7 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
+	"github.com/google/uuid"
 )
 
 type AnimeService interface {
@@ -25,10 +26,20 @@ type animeServiceImpl struct {
 	repo              repositories.AnimeRepository
 	userRepo          repositories.UserRepository
 	animeCategoryRepo repositories.AnimeCategoryRepository
+	animeStudioRepo   repositories.AnimeStudioRepository
 }
 
-func NewAnimeService(repo repositories.AnimeRepository, userRepo repositories.UserRepository, animeCategoryRepo repositories.AnimeCategoryRepository) AnimeService {
-	return &animeServiceImpl{repo: repo, userRepo: userRepo, animeCategoryRepo: animeCategoryRepo}
+func NewAnimeService(
+	repo repositories.AnimeRepository,
+	userRepo repositories.UserRepository,
+	animeCategoryRepo repositories.AnimeCategoryRepository,
+	animeStudioRepo repositories.AnimeStudioRepository) AnimeService {
+	return &animeServiceImpl{
+		repo:              repo,
+		userRepo:          userRepo,
+		animeCategoryRepo: animeCategoryRepo,
+		animeStudioRepo:   animeStudioRepo,
+	}
 }
 
 func (s *animeServiceImpl) CreateAnime(request dtos.CreateAnimeRequest) error {
@@ -47,10 +58,24 @@ func (s *animeServiceImpl) CreateAnime(request dtos.CreateAnimeRequest) error {
 		Trailer:     request.Trailer,
 	}
 
-	if err := s.repo.Save(anime); err != nil {
+	animeCreate, err := s.repo.Save(anime)
+	if err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}
+
+	animeStudios := []entities.AnimeStudio{}
+	for _, studio := range request.Studio {
+		animeStudios = append(animeStudios, entities.AnimeStudio{
+			StudioId: uuid.MustParse(studio),
+			AnimeID:  animeCreate.ID,
+		})
+	}
+
+	if err := s.animeStudioRepo.Save(animeStudios); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -72,6 +97,14 @@ func (s *animeServiceImpl) GetAnimeById(id uint) (*dtos.GetAnimeByIdResponse, er
 		})
 	}
 
+	var studios []dtos.AnimeDetailStduios
+	for _, studio := range anime.Studios {
+		studios = append(studios, dtos.AnimeDetailStduios{
+			ID:   studio.ID,
+			Name: studio.Name,
+		})
+	}
+
 	animeResponse := dtos.GetAnimeByIdResponse{
 		ID:          anime.ID,
 		Name:        anime.Name,
@@ -86,6 +119,7 @@ func (s *animeServiceImpl) GetAnimeById(id uint) (*dtos.GetAnimeByIdResponse, er
 		Categories:  categories,
 		Wallpaper:   anime.Wallpaper,
 		Trailer:     anime.Trailer,
+		Studios:     studios,
 	}
 	return &animeResponse, nil
 }
