@@ -14,7 +14,7 @@ type SongService interface {
 	GetAllSongs() ([]dtos.SongListResponse, error)
 	UpdateSong(*entities.Song) error
 	DeleteSong(uint) error
-	GetSongByAnimeId(uint) (*dtos.SongDetailResponse, error)
+	GetSongByAnimeId(uint) (*dtos.GetSongByAnimeIdResponse, error)
 	CreateSongChannel(request *dtos.CreateSongChannelRequest) error
 }
 
@@ -154,7 +154,7 @@ func (s songServiceImpl) DeleteSong(id uint) error {
 	return nil
 }
 
-func (s songServiceImpl) GetSongByAnimeId(animeId uint) (*dtos.SongDetailResponse, error) {
+func (s songServiceImpl) GetSongByAnimeId(animeId uint) (*dtos.GetSongByAnimeIdResponse, error) {
 	_, err := s.animeRepo.GetById(animeId)
 	if err != nil {
 		logs.Error(err)
@@ -165,14 +165,14 @@ func (s songServiceImpl) GetSongByAnimeId(animeId uint) (*dtos.SongDetailRespons
 		logs.Error(err)
 		return nil, err
 	}
-	var openingSong []dtos.SongDetail
-	var endingSong []dtos.SongDetail
-	var soundtrack []dtos.SongDetail
+	var openingSong []dtos.GetSongByAnimeIdResponseSong
+	var endingSong []dtos.GetSongByAnimeIdResponseSong
+	var soundtrack []dtos.GetSongByAnimeIdResponseSong
 	SongType := NewSongType()
 	for _, song := range songs {
-		var songChannelData []dtos.SongChannel
+		var songChannelData []dtos.GetSongByAnimeIdResponseSongChannel
 		for _, channel := range song.SongChannel {
-			songChannel := dtos.SongChannel{
+			songChannel := dtos.GetSongByAnimeIdResponseSongChannel{
 				ID:      channel.ID,
 				Channel: channel.Channel,
 				Type:    channel.Type,
@@ -182,7 +182,16 @@ func (s songServiceImpl) GetSongByAnimeId(animeId uint) (*dtos.SongDetailRespons
 			songChannelData = append(songChannelData, songChannel)
 		}
 
-		songData := dtos.SongDetail{
+		var songArtistList []dtos.GetSongByAnimeIdResponseSongArtist
+		for _, artist := range song.Artist {
+			songArtist := dtos.GetSongByAnimeIdResponseSongArtist{
+				ID:    artist.ID,
+				Name:  artist.Name,
+				Image: artist.Image,
+			}
+			songArtistList = append(songArtistList, songArtist)
+		}
+		songData := dtos.GetSongByAnimeIdResponseSong{
 			ID:          song.ID,
 			Name:        song.Name,
 			Type:        song.Type,
@@ -192,6 +201,7 @@ func (s songServiceImpl) GetSongByAnimeId(animeId uint) (*dtos.SongDetailRespons
 			Year:        song.Year,
 			AnimeID:     song.AnimeID,
 			SongChannel: songChannelData,
+			SongArtist:  songArtistList,
 		}
 		if song.Type == SongType.Opening {
 			openingSong = append(openingSong, songData)
@@ -201,7 +211,7 @@ func (s songServiceImpl) GetSongByAnimeId(animeId uint) (*dtos.SongDetailRespons
 			soundtrack = append(soundtrack, songData)
 		}
 	}
-	songResponse := dtos.SongDetailResponse{
+	songResponse := dtos.GetSongByAnimeIdResponse{
 		OpeningSong:    openingSong,
 		EndingSong:     endingSong,
 		SoundtrackSong: soundtrack,

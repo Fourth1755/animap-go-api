@@ -44,13 +44,14 @@ func main() {
 	animeStudioRepo := repositories.NewGormAnimeStudioRepository(db)
 
 	//create service
-	animeService := services.NewAnimeService(animeRepo, userRepo, animeCategoryRepo, animeStudioRepo)
+	
 	userService := services.NewUserService(userRepo)
 	myAnimeService := services.NewMyAnimeService(userAnimeRepo, animeRepo, userRepo)
 	categoryService := services.NewCategoryService(categoryRepo)
 	songService := services.NewSongService(songRepo, animeRepo, artistRepo, songArtistRepo, songChannelRepo)
 	artistService := services.NewArtistService(artistRepo)
 	studioService := services.NewStudioService(studioRepo)
+	animeService := services.NewAnimeService(animeRepo, userRepo, animeCategoryRepo, animeStudioRepo, songRepo)
 
 	//create handler
 	animeHandler = adapters.NewHttpAnimeHandler(animeService)

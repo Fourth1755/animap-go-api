@@ -27,20 +27,28 @@ type animeServiceImpl struct {
 	userRepo          repositories.UserRepository
 	animeCategoryRepo repositories.AnimeCategoryRepository
 	animeStudioRepo   repositories.AnimeStudioRepository
+	songRepo          repositories.SongRepository
 }
 
 func NewAnimeService(
 	repo repositories.AnimeRepository,
 	userRepo repositories.UserRepository,
 	animeCategoryRepo repositories.AnimeCategoryRepository,
-	animeStudioRepo repositories.AnimeStudioRepository) AnimeService {
+	animeStudioRepo repositories.AnimeStudioRepository,
+	songRepo repositories.SongRepository) AnimeService {
 	return &animeServiceImpl{
 		repo:              repo,
 		userRepo:          userRepo,
 		animeCategoryRepo: animeCategoryRepo,
 		animeStudioRepo:   animeStudioRepo,
+		songRepo:          songRepo,
 	}
 }
+
+const (
+	ANIME_TYPE_TV    = 1
+	ANIME_TYPE_MOVIE = 2
+)
 
 func (s *animeServiceImpl) CreateAnime(request dtos.CreateAnimeRequest) error {
 	anime := entities.Anime{

@@ -1,3 +1,4 @@
+-- id = uuid v7
 INSERT INTO studios(id, name, image, created_at, updated_at)
 	VALUES 
     (
@@ -169,7 +170,7 @@ INSERT INTO studios(id, name, image, created_at, updated_at)
         now()
     ),
     (
-        '0195670c-355c-7c01-88a8-11c68157fec6',
+        '0195fc54-668f-723a-a993-0e6c5048a098',
         'Doga Kobo', 
         'https://cdn.myanimelist.net/s/common/company_logos/e820af66-29b6-48c2-bfba-43e9bd5d8c27_600x600_i?s=367d70746c45aaa5c1bb7295aeb46820', 
         now(), 

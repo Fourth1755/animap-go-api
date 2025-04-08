@@ -65,7 +65,7 @@ func (r *GormSongRepository) Delete(id uint) error {
 
 func (r *GormSongRepository) GetByAnimeId(id uint) ([]entities.Song, error) {
 	var songs []entities.Song
-	result := r.db.Preload("SongChannel").Where("anime_id = ?", id).Find(&songs)
+	result := r.db.Preload("Artist").Preload("SongChannel").Where("anime_id = ?", id).Find(&songs)
 	if result.Error != nil {
 		return nil, result.Error
 	}
