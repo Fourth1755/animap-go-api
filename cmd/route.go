@@ -21,6 +21,8 @@ func InitRoutes() *gin.Engine {
 	// }))
 	router.POST("register", userHandler.CreateUser)
 	router.POST("login", userHandler.Login)
+	router.GET("user/user-info", userHandler.GetUserInfo)
+	router.PATCH("user/user-info", userHandler.UpdateUserInfo)
 
 	// router.Use("animes", jwtware.New(jwtware.Config{
 	// 	SigningKey: []byte(os.GETenv("JWT_SECRET")),

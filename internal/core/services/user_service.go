@@ -17,6 +17,8 @@ import (
 type UserService interface {
 	CreateUser(user *entities.User) error
 	Login(user *entities.User) (*dtos.LoginResponse, error)
+	GetUserInfo(request *dtos.GetUserInfoRequest) (*dtos.GetUserInfoResponse, error)
+	UpdateUserInfo(request *dtos.UpdateUserInfoRequest) error
 }
 
 type UserServiceImpl struct {
@@ -77,4 +79,40 @@ func (s *UserServiceImpl) Login(user *entities.User) (*dtos.LoginResponse, error
 		UserID: selectUser.UUID,
 	}
 	return &loginResponse, nil
+}
+
+func (s *UserServiceImpl) GetUserInfo(request *dtos.GetUserInfoRequest) (*dtos.GetUserInfoResponse, error) {
+	user, err := s.repo.GetByUUID(request.UUID)
+	if err != nil {
+		return nil, err
+	}
+	return &dtos.GetUserInfoResponse{
+		Name:         user.Name,
+		UUID:         user.UUID,
+		Email:        user.Email,
+		ProfileImage: user.ProfileImage,
+		Description:  user.Description,
+	}, nil
+}
+
+func (s *UserServiceImpl) UpdateUserInfo(request *dtos.UpdateUserInfoRequest) error {
+	_, err := s.repo.GetByUUID(request.UUID)
+	if err != nil {
+		logs.Error(err)
+		return errs.NewNotFoundError("User not found")
+	}
+
+	user := entities.User{
+		Name:         request.Name,
+		Email:        request.Email,
+		ProfileImage: request.ProfileImage,
+		Description:  request.Description,
+	}
+
+	if err := s.repo.UpdateUser(&user); err != nil {
+		logs.Error(err)
+		return err
+	}
+
+	return nil
 }

@@ -10,6 +10,7 @@ type UserRepository interface {
 	GetUserByEmail(email string) (*entities.User, error)
 	GetById(id uint) (*entities.User, error)
 	GetByUUID(uuid string) (*entities.User, error)
+	UpdateUser(user *entities.User) error
 }
 
 type GormUserRepository struct {
@@ -53,4 +54,12 @@ func (r *GormUserRepository) GetByUUID(uuid string) (*entities.User, error) {
 		return nil, result.Error
 	}
 	return user, nil
+}
+
+func (r *GormUserRepository) UpdateUser(user *entities.User) error {
+	result := r.db.Model(&user).Updates(user)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

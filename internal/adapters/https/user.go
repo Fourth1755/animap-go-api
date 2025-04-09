@@ -3,6 +3,7 @@ package adapters
 import (
 	"net/http"
 
+	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
@@ -49,4 +50,31 @@ func (h *HttpUserHandler) Login(c *gin.Context) {
 		"token":   response.Token,
 		"user_id": response.UserID,
 	})
+}
+
+func (h *HttpUserHandler) GetUserInfo(c *gin.Context) {
+	var request dtos.GetUserInfoRequest
+	if err := c.BindJSON(&request); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	response, err := h.service.GetUserInfo(&request)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *HttpUserHandler) UpdateUserInfo(c *gin.Context) {
+	var request dtos.UpdateUserInfoRequest
+	if err := c.BindJSON(&request); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	if err := h.service.UpdateUserInfo(&request); err != nil {
+		handleError(c, err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Update user info success."})
 }
