@@ -2,13 +2,13 @@ package adapters
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type HttpAnimeHandler struct {
@@ -33,13 +33,8 @@ func (h *HttpAnimeHandler) CreateAnime(c *gin.Context) {
 }
 
 func (h *HttpAnimeHandler) GetAnimeById(c *gin.Context) {
-	animeId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-
-	anime, err := h.service.GetAnimeById(uint(animeId))
+	animeId := c.Param("id")
+	anime, err := h.service.GetAnimeById(uuid.MustParse(animeId))
 	if err != nil {
 		handleError(c, err)
 		return
@@ -63,19 +58,14 @@ func (h *HttpAnimeHandler) GetAnimeList(c *gin.Context) {
 }
 
 func (h *HttpAnimeHandler) UpdateAnime(c *gin.Context) {
-	animeId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-
+	animeId := c.Param("id")
 	animeUpdate := new(entities.Anime)
 	if err := c.BindJSON(animeUpdate); err != nil {
 		handleError(c, errs.NewBadRequestError(err.Error()))
 		return
 	}
-	animeUpdate.ID = uint(animeId)
-	err = h.service.UpdateAnime(*animeUpdate)
+	animeUpdate.ID = uuid.MustParse(animeId)
+	err := h.service.UpdateAnime(*animeUpdate)
 	if err != nil {
 		handleError(c, errs.NewBadRequestError(err.Error()))
 		return
@@ -84,13 +74,8 @@ func (h *HttpAnimeHandler) UpdateAnime(c *gin.Context) {
 }
 
 func (h *HttpAnimeHandler) DeleteAnime(c *gin.Context) {
-	animeId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-
-	if err = h.service.DeleteAnime(uint(animeId)); err != nil {
+	animeId := c.Param("id")
+	if err := h.service.DeleteAnime(uuid.MustParse(animeId)); err != nil {
 		handleError(c, err)
 		return
 	}
@@ -98,12 +83,8 @@ func (h *HttpAnimeHandler) DeleteAnime(c *gin.Context) {
 }
 
 func (h *HttpAnimeHandler) GetAnimeByUserId(c *gin.Context) {
-	user_id, err := strconv.Atoi(c.Param("user_id"))
-	if err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-	animes, err := h.service.GetAnimeByUserId(uint(user_id))
+	userId := c.Param("user_id")
+	animes, err := h.service.GetAnimeByUserId(uuid.MustParse(userId))
 	if err != nil {
 		handleError(c, err)
 		return
@@ -112,12 +93,8 @@ func (h *HttpAnimeHandler) GetAnimeByUserId(c *gin.Context) {
 }
 
 func (h *HttpAnimeHandler) GetAnimeByCategory(c *gin.Context) {
-	category_id, err := strconv.Atoi(c.Param("category_id"))
-	if err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-	animes, err := h.service.GetAnimeByCategoryId(uint(category_id))
+	categoryId := c.Param("category_id")
+	animes, err := h.service.GetAnimeByCategoryId(uuid.MustParse(categoryId))
 	if err != nil {
 		handleError(c, err)
 		return
@@ -126,7 +103,7 @@ func (h *HttpAnimeHandler) GetAnimeByCategory(c *gin.Context) {
 }
 
 func (h *HttpAnimeHandler) AddCategoryToAnime(c *gin.Context) {
-	categoryRequest := new(dtos.AddCategoryToAnimeRequest)
+	categoryRequest := new(dtos.EditCategoryToAnimeRequest)
 	if err := c.BindJSON(categoryRequest); err != nil {
 		handleError(c, errs.NewBadRequestError(err.Error()))
 		return

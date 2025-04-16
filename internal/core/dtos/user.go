@@ -1,26 +1,28 @@
 package dtos
 
+import "github.com/google/uuid"
+
 type LoginResponse struct {
-	Token  string `json:"token"`
-	UserID string `json:"user_id"`
+	Token  string    `json:"token"`
+	UserID uuid.UUID `json:"user_id"`
 }
 
 type GetUserInfoRequest struct {
-	UUID string `json:"uuid"`
+	UUID uuid.UUID `json:"uuid"`
 }
 
 type GetUserInfoResponse struct {
-	Name         string `json:"name"`
-	UUID         string `json:"uuid"`
-	Email        string `json:"emdil"`
-	ProfileImage string `json:"profile_image"`
-	Description  string `json:"description"`
+	ID           uuid.UUID `json:"uuid"`
+	Name         string    `json:"name"`
+	Email        string    `json:"emdil"`
+	ProfileImage string    `json:"profile_image"`
+	Description  string    `json:"description"`
 }
 
 type UpdateUserInfoRequest struct {
-	Name         string `json:"name"`
-	UUID         string `json:"uuid"`
-	Email        string `json:"emdil"`
-	ProfileImage string `json:"profile_image"`
-	Description  string `json:"description"`
+	ID           uuid.UUID `json:"uuid"`
+	Name         string    `json:"name"`
+	Email        string    `json:"emdil"`
+	ProfileImage string    `json:"profile_image"`
+	Description  string    `json:"description"`
 }

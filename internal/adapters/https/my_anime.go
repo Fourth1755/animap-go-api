@@ -7,6 +7,7 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type HttpMyAnimeHandler struct {
@@ -32,9 +33,8 @@ func (h *HttpMyAnimeHandler) AddAnimeToList(c *gin.Context) {
 }
 
 func (h *HttpMyAnimeHandler) GetAnimeByUserId(c *gin.Context) {
-	uuid := c.Param("uuid")
-
-	animeList, err := h.service.GetAnimeByUserId(uuid)
+	userId := c.Param("uuid")
+	animeList, err := h.service.GetAnimeByUserId(uuid.MustParse(userId))
 	if err != nil {
 		handleError(c, err)
 		return
@@ -43,9 +43,9 @@ func (h *HttpMyAnimeHandler) GetAnimeByUserId(c *gin.Context) {
 }
 
 func (h *HttpMyAnimeHandler) GetMyAnimeYearByUserId(c *gin.Context) {
-	uuid := c.Param("uuid")
+	userId := c.Param("uuid")
 
-	animeList, err := h.service.GetMyAnimeYearByUserId(uuid)
+	animeList, err := h.service.GetMyAnimeYearByUserId(uuid.MustParse(userId))
 	if err != nil {
 		handleError(c, err)
 		return
@@ -54,9 +54,9 @@ func (h *HttpMyAnimeHandler) GetMyAnimeYearByUserId(c *gin.Context) {
 }
 
 func (h *HttpMyAnimeHandler) GetMyTopAnimeByUserId(c *gin.Context) {
-	uuid := c.Param("uuid")
+	userId := c.Param("uuid")
 
-	animeList, err := h.service.GetMyTopAnime(uuid)
+	animeList, err := h.service.GetMyTopAnime(uuid.MustParse(userId))
 	if err != nil {
 		handleError(c, err)
 		return

@@ -2,12 +2,13 @@ package repositories
 
 import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type AnimeCategoryRepository interface {
 	Save(animeCategory []entities.AnimeCategory) error
-	GetByCategoryId(uint) ([]entities.AnimeCategory, error)
+	GetByCategoryId(uuid.UUID) ([]entities.AnimeCategory, error)
 }
 
 type GormAnimeCategoryRepository struct {
@@ -25,7 +26,7 @@ func (r GormAnimeCategoryRepository) Save(animeCategory []entities.AnimeCategory
 	return nil
 }
 
-func (r GormAnimeCategoryRepository) GetByCategoryId(category_id uint) ([]entities.AnimeCategory, error) {
+func (r GormAnimeCategoryRepository) GetByCategoryId(category_id uuid.UUID) ([]entities.AnimeCategory, error) {
 	var categoryAnime []entities.AnimeCategory
 	result := r.db.Preload("Anime").Where("category_id = ?", category_id).Find(&categoryAnime)
 	if result.Error != nil {

@@ -5,6 +5,7 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
+	"github.com/google/uuid"
 )
 
 type CategoryService interface {
@@ -22,6 +23,12 @@ func NewCategoryService(repo repositories.CategoryRepository) CategoryService {
 }
 
 func (s *CategoryServiceImpl) CreateCategory(category *entities.Category) error {
+	categoryId, err := uuid.NewV7()
+	if err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+	category.ID = categoryId
 	if err := s.repo.Save(category); err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()

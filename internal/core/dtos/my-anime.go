@@ -1,9 +1,13 @@
 package dtos
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type GetAnimeByUserIdResponse struct {
-	AnimeID       uint      `json:"anime_id"`
+	AnimeID       uuid.UUID `json:"anime_id"`
 	AnimeName     string    `json:"anime_name"`
 	Score         float32   `json:"score"`
 	Description   string    `json:"description"`
@@ -15,8 +19,8 @@ type GetAnimeByUserIdResponse struct {
 	CreatedAt     time.Time `json:"create_at"`
 }
 
-type GetMyAnimeYearByUserIdResponse_AnimeYear_Anime struct {
-	AnimeID       uint      `json:"anime_id"`
+type GetMyAnimeYearByUserIdResponseAnimeYearAnime struct {
+	AnimeID       uuid.UUID `json:"anime_id"`
 	AnimeName     string    `json:"anime_name"`
 	Score         float32   `json:"score"`
 	Description   string    `json:"description"`
@@ -28,27 +32,27 @@ type GetMyAnimeYearByUserIdResponse_AnimeYear_Anime struct {
 	CreatedAt     time.Time `json:"create_at"`
 }
 
-type GetMyAnimeYearByUserIdResponse_AnimeYear struct {
-	Year  string                                           `json:"year"`
-	Anime []GetMyAnimeYearByUserIdResponse_AnimeYear_Anime `json:"anime"`
+type GetMyAnimeYearByUserIdResponseAnimeYear struct {
+	Year  string                                         `json:"year"`
+	Anime []GetMyAnimeYearByUserIdResponseAnimeYearAnime `json:"anime"`
 }
 
 type GetMyAnimeYearByUserIdResponse struct {
-	AnimeYear  []GetMyAnimeYearByUserIdResponse_AnimeYear `json:"anime_year"`
-	TotalYear  uint                                       `json:"total_year"`
-	TotalAnime uint                                       `json:"total_anime"`
+	AnimeYear  []GetMyAnimeYearByUserIdResponseAnimeYear `json:"anime_year"`
+	TotalYear  uint                                      `json:"total_year"`
+	TotalAnime uint                                      `json:"total_anime"`
 }
 
 type AddAnimeToListRequest struct {
-	UserUUID    string  `json:"user_uuid"`
-	AnimeID     uint    `json:"anime_id"`
-	Score       float32 `json:"score"`
-	Status      int     `json:"status"`
-	WatchedYear string  `json:"watched_year"`
+	UserUUID    uuid.UUID `json:"user_uuid"`
+	AnimeID     uuid.UUID `json:"anime_id"`
+	Score       float32   `json:"score"`
+	Status      int       `json:"status"`
+	WatchedYear string    `json:"watched_year"`
 }
 
 type GetMyTopAnimeResponse struct {
-	AnimeID            uint      `json:"anime_id"`
+	AnimeID            uuid.UUID `json:"anime_id"`
 	AnimeName          string    `json:"anime_name"`
 	Score              float32   `json:"score"`
 	Description        string    `json:"description"`
@@ -61,10 +65,10 @@ type GetMyTopAnimeResponse struct {
 }
 
 type AnimeSequence struct {
-	AnimeID  uint `json:"anime_id"`
-	Sequence int  `json:"sequence"`
+	AnimeID  uuid.UUID `json:"anime_id"`
+	Sequence int       `json:"sequence"`
 }
 type UpdateMyTopAnimeRequest struct {
-	UserUUID      string          `json:"user_uuid"`
+	UserId        uuid.UUID       `json:"user_uuid"`
 	AnimeSequence []AnimeSequence `json:"anime_sequence"`
 }

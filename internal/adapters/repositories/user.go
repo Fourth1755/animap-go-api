@@ -2,14 +2,14 @@ package repositories
 
 import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
 	Save(user *entities.User) error
 	GetUserByEmail(email string) (*entities.User, error)
-	GetById(id uint) (*entities.User, error)
-	GetByUUID(uuid string) (*entities.User, error)
+	GetById(id uuid.UUID) (*entities.User, error)
 	UpdateUser(user *entities.User) error
 }
 
@@ -38,18 +38,9 @@ func (r *GormUserRepository) GetUserByEmail(email string) (*entities.User, error
 	return selectUser, nil
 }
 
-func (r *GormUserRepository) GetById(id uint) (*entities.User, error) {
+func (r *GormUserRepository) GetById(id uuid.UUID) (*entities.User, error) {
 	user := new(entities.User)
 	result := r.db.First(&user, id)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return user, nil
-}
-
-func (r *GormUserRepository) GetByUUID(uuid string) (*entities.User, error) {
-	user := new(entities.User)
-	result := r.db.Where("uuid = ?", uuid).First(user)
 	if result.Error != nil {
 		return nil, result.Error
 	}

@@ -6,13 +6,14 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
+	"github.com/google/uuid"
 )
 
 type MyAnimeService interface {
 	AddAnimeToList(userAnime *dtos.AddAnimeToListRequest) error
-	GetAnimeByUserId(uuid string) ([]dtos.GetAnimeByUserIdResponse, error)
-	GetMyAnimeYearByUserId(uuid string) (*dtos.GetMyAnimeYearByUserIdResponse, error)
-	GetMyTopAnime(uuid string) ([]dtos.GetMyTopAnimeResponse, error)
+	GetAnimeByUserId(uuid uuid.UUID) ([]dtos.GetAnimeByUserIdResponse, error)
+	GetMyAnimeYearByUserId(uuid uuid.UUID) (*dtos.GetMyAnimeYearByUserIdResponse, error)
+	GetMyTopAnime(uuid uuid.UUID) ([]dtos.GetMyTopAnimeResponse, error)
 	UpdateMyTopAnime(request *dtos.UpdateMyTopAnimeRequest) error
 }
 
@@ -31,14 +32,14 @@ func (s *myAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListRequest)
 		logs.Error(err.Error())
 		return errs.NewNotFoundError("Anime not found")
 	}
-
-	user, err := s.userRepo.GetByUUID(request.UserUUID)
+	userAnimeId, err := uuid.NewV7()
 	if err != nil {
 		logs.Error(err.Error())
-		return errs.NewNotFoundError("User not found")
+		return errs.NewUnexpectedError()
 	}
 	userAnime := entities.UserAnime{
-		UserID:        user.ID,
+		ID:            userAnimeId,
+		UserID:        request.UserUUID,
 		AnimeID:       request.AnimeID,
 		Score:         request.Score,
 		Status:        request.Status,
@@ -53,14 +54,8 @@ func (s *myAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListRequest)
 	return nil
 }
 
-func (s *myAnimeServiceImpl) GetAnimeByUserId(uuid string) ([]dtos.GetAnimeByUserIdResponse, error) {
-	user, err := s.userRepo.GetByUUID(uuid)
-	if err != nil {
-		logs.Error(err.Error())
-		return nil, errs.NewNotFoundError("User not found")
-	}
-
-	userAnimes, err := s.repo.GetByUserId(user.ID)
+func (s *myAnimeServiceImpl) GetAnimeByUserId(uuid uuid.UUID) ([]dtos.GetAnimeByUserIdResponse, error) {
+	userAnimes, err := s.repo.GetByUserId(uuid)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
@@ -84,27 +79,21 @@ func (s *myAnimeServiceImpl) GetAnimeByUserId(uuid string) ([]dtos.GetAnimeByUse
 	return animeList, nil
 }
 
-func (s *myAnimeServiceImpl) GetMyAnimeYearByUserId(uuid string) (*dtos.GetMyAnimeYearByUserIdResponse, error) {
-	user, err := s.userRepo.GetByUUID(uuid)
-	if err != nil {
-		logs.Error(err.Error())
-		return nil, errs.NewNotFoundError("User not found")
-	}
-
-	userAnimes, err := s.repo.GetByUserId(user.ID)
+func (s *myAnimeServiceImpl) GetMyAnimeYearByUserId(uuid uuid.UUID) (*dtos.GetMyAnimeYearByUserIdResponse, error) {
+	userAnimes, err := s.repo.GetByUserId(uuid)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
 	}
 
-	var animeYearList []dtos.GetMyAnimeYearByUserIdResponse_AnimeYear
-	animeYearMap := make(map[string][]dtos.GetMyAnimeYearByUserIdResponse_AnimeYear_Anime)
+	var animeYearList []dtos.GetMyAnimeYearByUserIdResponseAnimeYear
+	animeYearMap := make(map[string][]dtos.GetMyAnimeYearByUserIdResponseAnimeYearAnime)
 	yearList := []string{}
 	for _, userAnime := range userAnimes {
 		if animeYearMap[userAnime.WatchedYearAt] == nil {
 			yearList = append(yearList, userAnime.WatchedYearAt)
 		}
-		animeYearMap[userAnime.WatchedYearAt] = append(animeYearMap[userAnime.WatchedYearAt], dtos.GetMyAnimeYearByUserIdResponse_AnimeYear_Anime{
+		animeYearMap[userAnime.WatchedYearAt] = append(animeYearMap[userAnime.WatchedYearAt], dtos.GetMyAnimeYearByUserIdResponseAnimeYearAnime{
 			AnimeID:       userAnime.AnimeID,
 			AnimeName:     userAnime.Anime.Name,
 			Score:         userAnime.Score,
@@ -120,7 +109,7 @@ func (s *myAnimeServiceImpl) GetMyAnimeYearByUserId(uuid string) (*dtos.GetMyAni
 
 	for _, year := range yearList {
 		if animeYearMap[year] != nil {
-			animeYearList = append(animeYearList, dtos.GetMyAnimeYearByUserIdResponse_AnimeYear{
+			animeYearList = append(animeYearList, dtos.GetMyAnimeYearByUserIdResponseAnimeYear{
 				Year:  year,
 				Anime: animeYearMap[year],
 			})
@@ -134,14 +123,8 @@ func (s *myAnimeServiceImpl) GetMyAnimeYearByUserId(uuid string) (*dtos.GetMyAni
 	}, nil
 }
 
-func (s *myAnimeServiceImpl) GetMyTopAnime(uuid string) ([]dtos.GetMyTopAnimeResponse, error) {
-	user, err := s.userRepo.GetByUUID(uuid)
-	if err != nil {
-		logs.Error(err.Error())
-		return nil, errs.NewNotFoundError("User not found")
-	}
-
-	userAnimes, err := s.repo.GetMyTopAnimeByUserId(user.ID)
+func (s *myAnimeServiceImpl) GetMyTopAnime(userId uuid.UUID) ([]dtos.GetMyTopAnimeResponse, error) {
+	userAnimes, err := s.repo.GetMyTopAnimeByUserId(userId)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
@@ -166,14 +149,8 @@ func (s *myAnimeServiceImpl) GetMyTopAnime(uuid string) ([]dtos.GetMyTopAnimeRes
 }
 
 func (s *myAnimeServiceImpl) UpdateMyTopAnime(request *dtos.UpdateMyTopAnimeRequest) error {
-	user, err := s.userRepo.GetByUUID(request.UserUUID)
-	if err != nil {
-		logs.Error(err.Error())
-		return errs.NewNotFoundError("User not found")
-	}
-
 	for _, item := range request.AnimeSequence {
-		userAnimes, err := s.repo.GetByUserIdAndAnimeId(user.ID, []uint{item.AnimeID})
+		userAnimes, err := s.repo.GetByUserIdAndAnimeId(request.UserId, []uuid.UUID{item.AnimeID})
 		if err != nil {
 			logs.Error(err.Error())
 			return errs.NewUnexpectedError()

@@ -3,16 +3,17 @@ package repositories
 import (
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type AnimeRepository interface {
 	Save(anime entities.Anime) (*entities.Anime, error)
-	GetById(id uint) (*entities.Anime, error)
+	GetById(id uuid.UUID) (*entities.Anime, error)
 	GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime, error)
 	Update(anime *entities.Anime) error
-	Delete(id uint) error
-	GetByUserId(user_id uint) ([]entities.UserAnime, error)
+	Delete(id uuid.UUID) error
+	GetByUserId(user_id uuid.UUID) ([]entities.UserAnime, error)
 }
 
 type GormAnimeRepository struct {
@@ -30,7 +31,7 @@ func (r *GormAnimeRepository) Save(anime entities.Anime) (*entities.Anime, error
 	return &anime, nil
 }
 
-func (r *GormAnimeRepository) GetById(id uint) (*entities.Anime, error) {
+func (r *GormAnimeRepository) GetById(id uuid.UUID) (*entities.Anime, error) {
 	var anime entities.Anime
 	if result := r.db.
 		Preload("Songs").
@@ -65,7 +66,7 @@ func (r *GormAnimeRepository) Update(anime *entities.Anime) error {
 	return nil
 }
 
-func (r *GormAnimeRepository) Delete(id uint) error {
+func (r *GormAnimeRepository) Delete(id uuid.UUID) error {
 	var anime entities.Anime
 	result := r.db.Delete(&anime, id)
 	if result.Error != nil {
@@ -74,7 +75,7 @@ func (r *GormAnimeRepository) Delete(id uint) error {
 	return nil
 }
 
-func (r *GormAnimeRepository) GetByUserId(id uint) ([]entities.UserAnime, error) {
+func (r *GormAnimeRepository) GetByUserId(id uuid.UUID) ([]entities.UserAnime, error) {
 	var animes []entities.UserAnime
 	result := r.db.Preload("Anime").Where("user_id = ?", id).Find(&animes)
 	if result.Error != nil {

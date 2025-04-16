@@ -1,9 +1,16 @@
 package entities
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type SongArtist struct {
-	gorm.Model
-	SongId   uint `json:"song_id"`
-	ArtistId uint `json:"artist_id"`
+	ID        uuid.UUID `gorm:"primaryKey" json:"id"`
+	SongId    uuid.UUID `json:"song_id"`
+	ArtistId  uuid.UUID `json:"artist_id"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt time.Time `gorm:"index"`
 }

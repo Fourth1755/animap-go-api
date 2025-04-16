@@ -9,5 +9,5 @@ services:
     environment:
       POSTGRES_USER: animeMapUserAdmin
       POSTGRES_PASSWORD: 12131415
-      POSTGRES_DB: postgres
+      POSTGRES_DB: ms-anime
     restart: unless-stopped

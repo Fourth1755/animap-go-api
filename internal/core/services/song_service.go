@@ -6,15 +6,16 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
+	"github.com/google/uuid"
 )
 
 type SongService interface {
 	CreateSong(*dtos.CreateSongRequest) error
-	GetSongById(uint) (*entities.Song, error)
+	GetSongById(uuid.UUID) (*entities.Song, error)
 	GetAllSongs() ([]dtos.SongListResponse, error)
 	UpdateSong(*entities.Song) error
-	DeleteSong(uint) error
-	GetSongByAnimeId(uint) (*dtos.GetSongByAnimeIdResponse, error)
+	DeleteSong(uuid.UUID) error
+	GetSongByAnimeId(uuid.UUID) (*dtos.GetSongByAnimeIdResponse, error)
 	CreateSongChannel(request *dtos.CreateSongChannelRequest) error
 }
 
@@ -58,7 +59,13 @@ func (s songServiceImpl) CreateSong(songRequest *dtos.CreateSongRequest) error {
 
 	songChannel := []entities.SongChannel{}
 	for _, item := range songRequest.SongChannel {
+		songChannelId, err := uuid.NewV7()
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
 		songChannel = append(songChannel, entities.SongChannel{
+			ID:      songChannelId,
 			Channel: item.Channel,
 			Type:    item.Type,
 			Link:    item.Link,
@@ -66,7 +73,13 @@ func (s songServiceImpl) CreateSong(songRequest *dtos.CreateSongRequest) error {
 		})
 	}
 
+	songId, err := uuid.NewV7()
+	if err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
 	song := entities.Song{
+		ID:          songId,
 		Name:        songRequest.Name,
 		Image:       songRequest.Image,
 		Description: songRequest.Description,
@@ -78,7 +91,7 @@ func (s songServiceImpl) CreateSong(songRequest *dtos.CreateSongRequest) error {
 	}
 
 	//save song
-	songId, err := s.repo.Save(&song)
+	songId, err = s.repo.Save(&song)
 	if err != nil {
 		logs.Error(err)
 		return errs.NewUnexpectedError()
@@ -99,7 +112,7 @@ func (s songServiceImpl) CreateSong(songRequest *dtos.CreateSongRequest) error {
 	return nil
 }
 
-func (s songServiceImpl) GetSongById(id uint) (*entities.Song, error) {
+func (s songServiceImpl) GetSongById(id uuid.UUID) (*entities.Song, error) {
 	song, err := s.repo.GetById(id)
 	if err != nil {
 		logs.Error(err)
@@ -145,7 +158,7 @@ func (s songServiceImpl) UpdateSong(song *entities.Song) error {
 	return nil
 }
 
-func (s songServiceImpl) DeleteSong(id uint) error {
+func (s songServiceImpl) DeleteSong(id uuid.UUID) error {
 	err := s.repo.Delete(id)
 	if err != nil {
 		logs.Error(err)
@@ -154,7 +167,7 @@ func (s songServiceImpl) DeleteSong(id uint) error {
 	return nil
 }
 
-func (s songServiceImpl) GetSongByAnimeId(animeId uint) (*dtos.GetSongByAnimeIdResponse, error) {
+func (s songServiceImpl) GetSongByAnimeId(animeId uuid.UUID) (*dtos.GetSongByAnimeIdResponse, error) {
 	_, err := s.animeRepo.GetById(animeId)
 	if err != nil {
 		logs.Error(err)
@@ -220,7 +233,14 @@ func (s songServiceImpl) GetSongByAnimeId(animeId uint) (*dtos.GetSongByAnimeIdR
 }
 
 func (s songServiceImpl) CreateSongChannel(request *dtos.CreateSongChannelRequest) error {
+	songChannelId, err := uuid.NewV7()
+	if err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+
 	songChannel := entities.SongChannel{
+		ID:      songChannelId,
 		Channel: request.Channel,
 		Type:    request.Type,
 		Link:    request.Link,
@@ -229,7 +249,7 @@ func (s songServiceImpl) CreateSongChannel(request *dtos.CreateSongChannelReques
 	}
 
 	//save song
-	err := s.songChannelRepo.Save(&songChannel)
+	err = s.songChannelRepo.Save(&songChannel)
 	if err != nil {
 		logs.Error(err)
 		return errs.NewUnexpectedError()

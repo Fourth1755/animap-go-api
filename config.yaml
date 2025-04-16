@@ -6,4 +6,4 @@ db:
   port: 5432
   username: "animeMapUserAdmin"
   password: "12131415"
-  databaseName: "postgres"
+  databaseName: "ms-anime"

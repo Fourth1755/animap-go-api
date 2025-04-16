@@ -2,14 +2,15 @@ package repositories
 
 import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type UserAnimeRepository interface {
 	Save(userAnime *entities.UserAnime) error
-	GetByUserId(id uint) ([]entities.UserAnime, error)
-	GetByUserIdAndAnimeId(id uint, animeIds []uint) ([]entities.UserAnime, error)
-	GetMyTopAnimeByUserId(id uint) ([]entities.UserAnime, error)
+	GetByUserId(id uuid.UUID) ([]entities.UserAnime, error)
+	GetByUserIdAndAnimeId(id uuid.UUID, animeIds []uuid.UUID) ([]entities.UserAnime, error)
+	GetMyTopAnimeByUserId(id uuid.UUID) ([]entities.UserAnime, error)
 	UpdateMyTopAnime(userAnime *entities.UserAnime) error
 }
 
@@ -28,7 +29,7 @@ func (r *GormUserAnimeRepository) Save(userAnime *entities.UserAnime) error {
 	return nil
 }
 
-func (r *GormUserAnimeRepository) GetByUserId(id uint) ([]entities.UserAnime, error) {
+func (r *GormUserAnimeRepository) GetByUserId(id uuid.UUID) ([]entities.UserAnime, error) {
 	var animes []entities.UserAnime
 	result := r.db.Preload("Anime").
 		Where("user_id = ?", id).
@@ -40,7 +41,7 @@ func (r *GormUserAnimeRepository) GetByUserId(id uint) ([]entities.UserAnime, er
 	return animes, nil
 }
 
-func (r *GormUserAnimeRepository) GetByUserIdAndAnimeId(id uint, animeIds []uint) ([]entities.UserAnime, error) {
+func (r *GormUserAnimeRepository) GetByUserIdAndAnimeId(id uuid.UUID, animeIds []uuid.UUID) ([]entities.UserAnime, error) {
 	var animes []entities.UserAnime
 
 	result := r.db.Preload("Anime").Where("user_id = ?", id).Where("anime_id in (?)", animeIds).Find(&animes)
@@ -50,7 +51,7 @@ func (r *GormUserAnimeRepository) GetByUserIdAndAnimeId(id uint, animeIds []uint
 	return animes, nil
 }
 
-func (r *GormUserAnimeRepository) GetMyTopAnimeByUserId(id uint) ([]entities.UserAnime, error) {
+func (r *GormUserAnimeRepository) GetMyTopAnimeByUserId(id uuid.UUID) ([]entities.UserAnime, error) {
 	var animes []entities.UserAnime
 	result := r.db.Limit(10).Preload("Anime").
 		Where("user_id = ?", id).

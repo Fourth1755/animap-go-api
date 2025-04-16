@@ -2,16 +2,17 @@ package repositories
 
 import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type SongRepository interface {
-	Save(*entities.Song) (uint, error)
-	GetById(uint) (*entities.Song, error)
+	Save(*entities.Song) (uuid.UUID, error)
+	GetById(uuid.UUID) (*entities.Song, error)
 	GetAll() ([]entities.Song, error)
 	Update(*entities.Song) error
-	Delete(uint) error
-	GetByAnimeId(uint) ([]entities.Song, error)
+	Delete(uuid.UUID) error
+	GetByAnimeId(uuid.UUID) ([]entities.Song, error)
 }
 
 type GormSongRepository struct {
@@ -22,15 +23,15 @@ func NewGormSongRepository(db *gorm.DB) SongRepository {
 	return &GormSongRepository{db: db}
 }
 
-func (r *GormSongRepository) Save(song *entities.Song) (uint, error) {
+func (r *GormSongRepository) Save(song *entities.Song) (uuid.UUID, error) {
 	result := r.db.Create(&song)
 	if result.Error != nil {
-		return 0, result.Error
+		return uuid.Nil, result.Error
 	}
 	return song.ID, nil
 }
 
-func (r *GormSongRepository) GetById(id uint) (*entities.Song, error) {
+func (r *GormSongRepository) GetById(id uuid.UUID) (*entities.Song, error) {
 	song := new(entities.Song)
 	if result := r.db.Preload("Artist").Preload("SongChannel").First(&song, id); result.Error != nil {
 		return nil, result.Error
@@ -54,7 +55,7 @@ func (r *GormSongRepository) Update(song *entities.Song) error {
 	return nil
 }
 
-func (r *GormSongRepository) Delete(id uint) error {
+func (r *GormSongRepository) Delete(id uuid.UUID) error {
 	song := new(entities.Song)
 	result := r.db.Delete(&song, id)
 	if result.Error != nil {
@@ -63,7 +64,7 @@ func (r *GormSongRepository) Delete(id uint) error {
 	return nil
 }
 
-func (r *GormSongRepository) GetByAnimeId(id uint) ([]entities.Song, error) {
+func (r *GormSongRepository) GetByAnimeId(id uuid.UUID) ([]entities.Song, error) {
 	var songs []entities.Song
 	result := r.db.Preload("Artist").Preload("SongChannel").Where("anime_id = ?", id).Find(&songs)
 	if result.Error != nil {

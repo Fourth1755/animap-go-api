@@ -5,6 +5,7 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
+	"github.com/google/uuid"
 )
 
 type ArtistService interface {
@@ -22,6 +23,12 @@ func NewArtistService(repo repositories.ArtistRepository) ArtistService {
 }
 
 func (s ArtistServiceImpl) CreateArtist(artist *entities.Artist) error {
+	artistId, err := uuid.NewV7()
+	if err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+	artist.ID = artistId
 	if err := s.repo.Save(artist); err != nil {
 		logs.Error(err)
 		return errs.NewUnexpectedError()

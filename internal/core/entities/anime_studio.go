@@ -1,14 +1,18 @@
 package entities
 
 import (
+	"time"
+
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type AnimeStudio struct {
-	gorm.Model
-	StudioId uuid.UUID `json:"studio_id"`
-	Studio   Studio
-	AnimeID  uint `json:"anime_id"`
-	Anime    Anime
+	ID        uuid.UUID `gorm:"primarykey"`
+	StudioId  uuid.UUID `json:"studio_id"`
+	Studio    Studio
+	AnimeID   uuid.UUID `json:"anime_id"`
+	Anime     Anime
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt time.Time `gorm:"index"`
 }

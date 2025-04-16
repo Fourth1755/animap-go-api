@@ -1,14 +1,21 @@
 package entities
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type AnimeCategory struct {
-	gorm.Model
-	CategoryID       uint `json:"category_id"`
+	ID               uuid.UUID `gorm:"primarykey"`
+	CategoryID       uuid.UUID `json:"category_id"`
 	Category         Category
-	AnimeID          uint `json:"anime_id"`
+	AnimeID          uuid.UUID `json:"anime_id"`
 	Anime            Anime
 	Description      string `json:"description"`
 	Sequence         int    `json:"sequence"`
 	SequenceTimeLine int    `json:"sequence_time_line"`
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	DeletedAt        time.Time `gorm:"index"`
 }

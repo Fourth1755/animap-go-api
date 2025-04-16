@@ -10,7 +10,7 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
 	"github.com/golang-jwt/jwt"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -39,9 +39,13 @@ func (s *UserServiceImpl) CreateUser(user *entities.User) error {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}
-	uuid := uuid.NewV4()
+	userId, err := uuid.NewV7()
+	if err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+	user.ID = userId
 	user.Password = string(hashPassword)
-	user.UUID = uuid.String()
 	err = s.repo.Save(user)
 	if err != nil {
 		logs.Error(err.Error())
@@ -76,19 +80,19 @@ func (s *UserServiceImpl) Login(user *entities.User) (*dtos.LoginResponse, error
 	}
 	loginResponse := dtos.LoginResponse{
 		Token:  t,
-		UserID: selectUser.UUID,
+		UserID: selectUser.ID,
 	}
 	return &loginResponse, nil
 }
 
 func (s *UserServiceImpl) GetUserInfo(request *dtos.GetUserInfoRequest) (*dtos.GetUserInfoResponse, error) {
-	user, err := s.repo.GetByUUID(request.UUID)
+	user, err := s.repo.GetById(request.UUID)
 	if err != nil {
 		return nil, err
 	}
 	return &dtos.GetUserInfoResponse{
+		ID:           user.ID,
 		Name:         user.Name,
-		UUID:         user.UUID,
 		Email:        user.Email,
 		ProfileImage: user.ProfileImage,
 		Description:  user.Description,
@@ -96,7 +100,7 @@ func (s *UserServiceImpl) GetUserInfo(request *dtos.GetUserInfoRequest) (*dtos.G
 }
 
 func (s *UserServiceImpl) UpdateUserInfo(request *dtos.UpdateUserInfoRequest) error {
-	_, err := s.repo.GetByUUID(request.UUID)
+	_, err := s.repo.GetById(request.ID)
 	if err != nil {
 		logs.Error(err)
 		return errs.NewNotFoundError("User not found")

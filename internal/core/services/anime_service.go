@@ -1,7 +1,9 @@
 package services
 
 import (
-	"gorm.io/gorm"
+	"fmt"
+	"net/url"
+	"strings"
 
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
@@ -9,17 +11,18 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type AnimeService interface {
 	CreateAnime(anime dtos.CreateAnimeRequest) error
-	GetAnimeById(id uint) (*dtos.GetAnimeByIdResponse, error)
+	GetAnimeById(id uuid.UUID) (*dtos.GetAnimeByIdResponse, error)
 	GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeListResponse, error)
 	UpdateAnime(anime entities.Anime) error
-	DeleteAnime(id uint) error
-	GetAnimeByUserId(user_id uint) ([]entities.UserAnime, error)
-	GetAnimeByCategoryId(category_id uint) ([]dtos.AnimeListResponse, error)
-	AddCategoryToAnime(request dtos.AddCategoryToAnimeRequest) error
+	DeleteAnime(id uuid.UUID) error
+	GetAnimeByUserId(user_id uuid.UUID) ([]entities.UserAnime, error)
+	GetAnimeByCategoryId(category_id uuid.UUID) ([]dtos.AnimeListResponse, error)
+	AddCategoryToAnime(request dtos.EditCategoryToAnimeRequest) error
 }
 
 type animeServiceImpl struct {
@@ -51,19 +54,35 @@ const (
 )
 
 func (s *animeServiceImpl) CreateAnime(request dtos.CreateAnimeRequest) error {
+	animeId, err := uuid.NewV7()
+	if err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+
+	trailerEmbed := ""
+	if request.Trailer != "" {
+		trailerEmbed, err = convertYouTubeURLToEmbed(request.Trailer)
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+	}
 	anime := entities.Anime{
-		Name:        request.Name,
-		NameEnglish: request.NameEnglish,
-		NameThai:    request.NameThai,
-		Episodes:    request.Episodes,
-		Image:       request.Image,
-		Description: request.Description,
-		Seasonal:    request.Seasonal,
-		Year:        request.Year,
-		Type:        request.Type,
-		Duration:    request.Duration,
-		Wallpaper:   request.Wallpaper,
-		Trailer:     request.Trailer,
+		ID:           animeId,
+		Name:         request.Name,
+		NameEnglish:  request.NameEnglish,
+		NameThai:     request.NameThai,
+		Episodes:     request.Episodes,
+		Image:        request.Image,
+		Description:  request.Description,
+		Seasonal:     request.Seasonal,
+		Year:         request.Year,
+		Type:         request.Type,
+		Duration:     request.Duration,
+		Wallpaper:    request.Wallpaper,
+		Trailer:      request.Trailer,
+		TrailerEmbed: trailerEmbed,
 	}
 
 	animeCreate, err := s.repo.Save(anime)
@@ -74,7 +93,14 @@ func (s *animeServiceImpl) CreateAnime(request dtos.CreateAnimeRequest) error {
 
 	animeStudios := []entities.AnimeStudio{}
 	for _, studio := range request.Studio {
+		animeStudioId, err := uuid.NewV7()
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+
 		animeStudios = append(animeStudios, entities.AnimeStudio{
+			ID:       animeStudioId,
 			StudioId: uuid.MustParse(studio),
 			AnimeID:  animeCreate.ID,
 		})
@@ -87,7 +113,33 @@ func (s *animeServiceImpl) CreateAnime(request dtos.CreateAnimeRequest) error {
 	return nil
 }
 
-func (s *animeServiceImpl) GetAnimeById(id uint) (*dtos.GetAnimeByIdResponse, error) {
+func convertYouTubeURLToEmbed(youtubeURL string) (string, error) {
+	parsedURL, err := url.Parse(youtubeURL)
+	if err != nil {
+		return "", err
+	}
+
+	var videoID string
+
+	switch parsedURL.Host {
+	case "www.youtube.com", "youtube.com":
+		queryParams := parsedURL.Query()
+		videoID = queryParams.Get("v")
+	case "youtu.be":
+		videoID = strings.TrimPrefix(parsedURL.Path, "/")
+	default:
+		return "", fmt.Errorf("unsupported YouTube URL")
+	}
+
+	if videoID == "" {
+		return "", fmt.Errorf("could not extract video ID")
+	}
+
+	embedURL := fmt.Sprintf("https://www.youtube.com/embed/%s", videoID)
+	return embedURL, nil
+}
+
+func (s *animeServiceImpl) GetAnimeById(id uuid.UUID) (*dtos.GetAnimeByIdResponse, error) {
 	anime, err := s.repo.GetById(id)
 	if err != nil {
 		logs.Error(err.Error())
@@ -100,7 +152,7 @@ func (s *animeServiceImpl) GetAnimeById(id uint) (*dtos.GetAnimeByIdResponse, er
 	var categories []dtos.AnimeDetailCategories
 	var universe dtos.AnimeDataUniverse
 	for _, category := range anime.Categories {
-		if category.IsUniverse == true {
+		if category.IsUniverse {
 			universe = dtos.AnimeDataUniverse{
 				ID:   category.ID,
 				Name: category.Name,
@@ -179,7 +231,7 @@ func (s *animeServiceImpl) UpdateAnime(anime entities.Anime) error {
 	return nil
 }
 
-func (s *animeServiceImpl) DeleteAnime(id uint) error {
+func (s *animeServiceImpl) DeleteAnime(id uuid.UUID) error {
 	_, err := s.repo.GetById(id)
 	if err != nil {
 		logs.Error(err.Error())
@@ -196,12 +248,12 @@ func (s *animeServiceImpl) DeleteAnime(id uint) error {
 	return nil
 }
 
-func (s *animeServiceImpl) GetAnimeByUserId(user_id uint) ([]entities.UserAnime, error) {
-	if _, err := s.userRepo.GetById(user_id); err != nil {
+func (s *animeServiceImpl) GetAnimeByUserId(userId uuid.UUID) ([]entities.UserAnime, error) {
+	if _, err := s.userRepo.GetById(userId); err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewNotFoundError("User not found")
 	}
-	result, err := s.repo.GetByUserId(user_id)
+	result, err := s.repo.GetByUserId(userId)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
@@ -209,7 +261,7 @@ func (s *animeServiceImpl) GetAnimeByUserId(user_id uint) ([]entities.UserAnime,
 	return result, nil
 }
 
-func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uint) ([]dtos.AnimeListResponse, error) {
+func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uuid.UUID) ([]dtos.AnimeListResponse, error) {
 	animeCategories, err := s.animeCategoryRepo.GetByCategoryId(category_id)
 	if err != nil {
 		logs.Error(err.Error())
@@ -229,12 +281,19 @@ func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uint) ([]dtos.AnimeL
 	return animesReponse, nil
 }
 
-func (s *animeServiceImpl) AddCategoryToAnime(request dtos.AddCategoryToAnimeRequest) error {
+// need to enhance
+func (s *animeServiceImpl) AddCategoryToAnime(request dtos.EditCategoryToAnimeRequest) error {
 	animeCategory := []entities.AnimeCategory{}
 	for _, catrgory := range request.CategoryID {
+		animeCategoryId, err := uuid.NewV7()
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
 		animeCategory = append(animeCategory, entities.AnimeCategory{
+			ID:         animeCategoryId,
 			AnimeID:    request.AnimeID,
-			CategoryID: uint(catrgory),
+			CategoryID: catrgory,
 		})
 	}
 	if err := s.animeCategoryRepo.Save(animeCategory); err != nil {

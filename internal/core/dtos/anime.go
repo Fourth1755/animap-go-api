@@ -3,16 +3,16 @@ package dtos
 import "github.com/google/uuid"
 
 type AnimeListResponse struct {
-	ID       uint   `json:"id"`
-	Name     string `json:"name"`
-	Episodes int    `json:"episodes"`
-	Seasonal string `json:"seasonal"`
-	Year     string `json:"year"`
-	Image    string `json:"image"`
+	ID       uuid.UUID `json:"id"`
+	Name     string    `json:"name"`
+	Episodes int       `json:"episodes"`
+	Seasonal string    `json:"seasonal"`
+	Year     string    `json:"year"`
+	Image    string    `json:"image"`
 }
 type AnimeDetailCategories struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
 }
 
 type AnimeDetailStduios struct {
@@ -21,11 +21,11 @@ type AnimeDetailStduios struct {
 }
 
 type AnimeDataUniverse struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
 }
 type GetAnimeByIdResponse struct {
-	ID          uint                    `json:"id"`
+	ID          uuid.UUID               `json:"id"`
 	Name        string                  `json:"name"`
 	NameEnglish string                  `json:"name_english"`
 	Episodes    int                     `json:"episodes"`
@@ -47,9 +47,9 @@ type AnimeQueryDTO struct {
 	Year     string
 }
 
-type AddCategoryToAnimeRequest struct {
-	AnimeID    uint   `json:"anime_id"`
-	CategoryID []uint `json:"category_ids"`
+type EditCategoryToAnimeRequest struct {
+	AnimeID    uuid.UUID   `json:"anime_id"`
+	CategoryID []uuid.UUID `json:"category_ids"`
 }
 
 type CreateAnimeRequest struct {

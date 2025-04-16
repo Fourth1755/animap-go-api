@@ -2,13 +2,13 @@ package adapters
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type HttpSongHandler struct {
@@ -33,12 +33,8 @@ func (h *HttpSongHandler) CreateSong(c *gin.Context) {
 }
 
 func (h *HttpSongHandler) GetSongById(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-	song, err := h.service.GetSongById(uint(id))
+	songId := c.Param("id")
+	song, err := h.service.GetSongById(uuid.MustParse(songId))
 	if err != nil {
 		handleError(c, err)
 		return
@@ -56,17 +52,13 @@ func (h *HttpSongHandler) GetSongAll(c *gin.Context) {
 }
 
 func (h *HttpSongHandler) UpdateSong(c *gin.Context) {
-	songId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
+	songId := c.Param("id")
 	song := new(entities.Song)
 	if err := c.BindJSON(&song); err != nil {
 		handleError(c, err)
 		return
 	}
-	song.ID = uint(songId)
+	song.ID = uuid.MustParse(songId)
 	if err := h.service.UpdateSong(song); err != nil {
 		handleError(c, err)
 		return
@@ -75,12 +67,8 @@ func (h *HttpSongHandler) UpdateSong(c *gin.Context) {
 }
 
 func (h *HttpSongHandler) DeleteSong(c *gin.Context) {
-	songId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-	if err := h.service.DeleteSong(uint(songId)); err != nil {
+	songId := c.Param("id")
+	if err := h.service.DeleteSong(uuid.MustParse(songId)); err != nil {
 		handleError(c, err)
 		return
 	}
@@ -88,12 +76,8 @@ func (h *HttpSongHandler) DeleteSong(c *gin.Context) {
 }
 
 func (h *HttpSongHandler) GetSongByAnimeId(c *gin.Context) {
-	animeId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-	songs, err := h.service.GetSongByAnimeId(uint(animeId))
+	animeId := c.Param("id")
+	songs, err := h.service.GetSongByAnimeId(uuid.MustParse(animeId))
 	if err != nil {
 		handleError(c, err)
 		return
