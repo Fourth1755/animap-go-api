@@ -1,0 +1,13 @@
+version: '3'
+services:
+  postgres:
+    container_name: container-pg
+    image: postgres
+    hostname: localhost
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: animeMapUserAdmin
+      POSTGRES_PASSWORD: 12131415
+      POSTGRES_DB: postgres
+    restart: unless-stopped

@@ -4,6 +4,6 @@ app:
 db:
   host: "localhost"
   port: 5432
-  username: "postgres"
+  username: "animeMapUserAdmin"
   password: "12131415"
   databaseName: "postgres"

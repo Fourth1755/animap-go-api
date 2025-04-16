@@ -20,6 +20,10 @@ type AnimeDetailStduios struct {
 	Name string    `json:"name"`
 }
 
+type AnimeDataUniverse struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+}
 type GetAnimeByIdResponse struct {
 	ID          uint                    `json:"id"`
 	Name        string                  `json:"name"`
@@ -35,6 +39,7 @@ type GetAnimeByIdResponse struct {
 	Wallpaper   string                  `json:"wallpaper"`
 	Trailer     string                  `json:"trailer"`
 	Studios     []AnimeDetailStduios    `json:"studios"`
+	Universe    AnimeDataUniverse       `json:"universe"`
 }
 
 type AnimeQueryDTO struct {
@@ -44,7 +49,7 @@ type AnimeQueryDTO struct {
 
 type AddCategoryToAnimeRequest struct {
 	AnimeID    uint   `json:"anime_id"`
-	CategoryID []uint `json:"category_id"`
+	CategoryID []uint `json:"category_ids"`
 }
 
 type CreateAnimeRequest struct {

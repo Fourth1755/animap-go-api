@@ -126,22 +126,15 @@ func (h *HttpAnimeHandler) GetAnimeByCategory(c *gin.Context) {
 }
 
 func (h *HttpAnimeHandler) AddCategoryToAnime(c *gin.Context) {
-	animeId, err := strconv.Atoi(c.Param("anime_id"))
-	if err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-
 	categoryRequest := new(dtos.AddCategoryToAnimeRequest)
 	if err := c.BindJSON(categoryRequest); err != nil {
 		handleError(c, errs.NewBadRequestError(err.Error()))
 		return
 	}
 
-	categoryRequest.AnimeID = uint(animeId)
 	if err := h.service.AddCategoryToAnime(*categoryRequest); err != nil {
 		handleError(c, err)
 		return
 	}
-	c.IndentedJSON(http.StatusOK, gin.H{"message": "Add anime to category success."})
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Edit anime to category success."})
 }
