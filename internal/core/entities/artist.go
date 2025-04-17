@@ -18,6 +18,6 @@ type Artist struct {
 	Description string         `json:"description"`
 	RecordLabel string         `json:"record_label"`
 	IsMusicBand bool           `json:"is_music_band"`
-	Member      pq.StringArray `gorm:"type:string[]" json:"member"`
+	Member      pq.StringArray `gorm:"type:text[]" json:"member"`
 	Song        []Song         `gorm:"many2many:song_artists;"`
 }

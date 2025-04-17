@@ -10,4 +10,9 @@ INSERT INTO categories(id, name, image, is_universe, created_at, updated_at)
     ('01963e76-0ecd-7b7b-9b38-0c35697cf604','Mystery','',FALSE,now(),now()),
     ('01963e76-2b88-7c01-a11b-385c2b5095c4','Fantasy','',FALSE,now(),now()),
     ('01963e76-44a3-7507-a33a-b42cb5a8c443','Slice of Life','',FALSE,now(),now()),
-    ('01963e76-5d27-782f-abe5-158727ee7bf8','Supernatural Anime','',FALSE,now(),now());
+    ('01963e76-5d27-782f-abe5-158727ee7bf8','Supernatural','',FALSE,now(),now()),
+    ('0196446a-bd06-710f-aa71-3133bd05bb9b','Harem','',FALSE,now(),now()),
+    ('0196446c-b32c-7662-a828-569349f0a692','Anthropomorphic','',FALSE,now(),now()),
+    ('0196446d-9a8e-7513-8340-a7f533f772ae','Historical','',FALSE,now(),now()),
+    ('0196446e-1b1f-75c4-8eb0-5eab754f333c','Music','',FALSE,now(),now()),
+    ('0196446e-4f2a-73be-823e-53f7363d2deb','School','',FALSE,now(),now());
