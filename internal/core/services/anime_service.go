@@ -174,21 +174,22 @@ func (s *animeServiceImpl) GetAnimeById(id uuid.UUID) (*dtos.GetAnimeByIdRespons
 	}
 
 	animeResponse := dtos.GetAnimeByIdResponse{
-		ID:          anime.ID,
-		Name:        anime.Name,
-		NameEnglish: anime.NameEnglish,
-		Episodes:    anime.Episodes,
-		Seasonal:    anime.Seasonal,
-		Year:        anime.Year,
-		Image:       anime.Image,
-		Description: anime.Description,
-		Type:        anime.Type,
-		Duration:    anime.Duration,
-		Categories:  categories,
-		Wallpaper:   anime.Wallpaper,
-		Trailer:     anime.Trailer,
-		Studios:     studios,
-		Universe:    universe,
+		ID:           anime.ID,
+		Name:         anime.Name,
+		NameEnglish:  anime.NameEnglish,
+		Episodes:     anime.Episodes,
+		Seasonal:     anime.Seasonal,
+		Year:         anime.Year,
+		Image:        anime.Image,
+		Description:  anime.Description,
+		Type:         anime.Type,
+		Duration:     anime.Duration,
+		Categories:   categories,
+		Wallpaper:    anime.Wallpaper,
+		Trailer:      anime.Trailer,
+		TrailerEmbed: anime.TrailerEmbed,
+		Studios:      studios,
+		Universe:     universe,
 	}
 	return &animeResponse, nil
 }

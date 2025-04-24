@@ -32,11 +32,13 @@ func (s *myAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListRequest)
 		logs.Error(err.Error())
 		return errs.NewNotFoundError("Anime not found")
 	}
+
 	userAnimeId, err := uuid.NewV7()
 	if err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}
+
 	userAnime := entities.UserAnime{
 		ID:            userAnimeId,
 		UserID:        request.UserUUID,
@@ -44,6 +46,16 @@ func (s *myAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListRequest)
 		Score:         request.Score,
 		Status:        request.Status,
 		WatchedYearAt: request.WatchedYear,
+	}
+
+	myTopAnime, err := s.repo.GetMyTopAnimeByUserId(request.UserUUID)
+	if err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+
+	if len(myTopAnime) <= 5 {
+		userAnime.SequenceMyTopAnime = len(myTopAnime) + 1
 	}
 
 	if err := s.repo.Save(&userAnime); err != nil {
