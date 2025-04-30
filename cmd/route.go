@@ -41,7 +41,7 @@ func InitRoutes() *gin.Engine {
 	router.GET("animes", animeHandler.GetAnimeList)
 	router.PUT("animes/:id", animeHandler.UpdateAnime)
 	router.DELETE("animes/:id", animeHandler.DeleteAnime)
-	router.POST("animes/category/edit-category-anime", animeHandler.AddCategoryToAnime)
+	router.PUT("animes/category/edit-category-anime", animeHandler.AddCategoryToAnime)
 	router.GET("animes/category/:category_id", animeHandler.GetAnimeByCategory)
 
 	router.POST("my-anime", myAnimeHandler.AddAnimeToList)
