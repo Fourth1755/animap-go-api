@@ -203,4 +203,26 @@ INSERT INTO studios(id, name, image, created_at, updated_at)
         'https://cdn.myanimelist.net/s/common/company_logos/17557685-c55a-4aa3-9990-a13667e7c1b5_600x600_i?s=c81759de42fc570ba43e173dff286257', 
         now(), 
         now()
+    ),
+    (
+        '01968746-54d4-7178-a788-40ecb937824c',
+        'SILVER LINK.', 
+        'https://cdn.myanimelist.net/s/common/company_logos/1a9d42cc-7f3d-4a45-8d4d-137d2594e797_600x600_i?s=6d48b120428087576743810225726392', 
+        now(), 
+        now()
+    ),
+    (
+        '01968747-e6cc-7806-a264-9f445e4e7b49',
+        'OLM', 
+        'https://cdn.myanimelist.net/s/common/company_logos/4b41f888-3ec1-478e-aadd-882b78b4e3af_600x600_i?s=f2cd42bd452b467ee5deed362ca179d6', 
+        now(), 
+        now()
+    ),
+    (
+        '0196874d-cdfc-73f5-a383-7deec5f88cca',
+        'LIDENFILMS', 
+        'https://cdn.myanimelist.net/s/common/company_logos/c7537634-ea2e-4e5b-acb3-53b4fadc8d51_600x600_i?s=80fedafe87a731b52dd7c32f18195f2b', 
+        now(), 
+        now()
     );
+    	

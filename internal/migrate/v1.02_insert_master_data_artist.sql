@@ -117,4 +117,13 @@ INSERT INTO artists(id, name, image, is_music_band, created_at, updated_at, memb
         now(),
         now(),
         null
+    ),
+    (
+        '01966861-6df2-74f2-b194-020ac8162e4d',
+        'CHiCO with HoneyWorks',
+        'https://i.scdn.co/image/ab6761610000e5ebf1ea1a5c44fd4d35fe1cf297',
+        TRUE,
+        now(),
+        now(),
+        null
     );

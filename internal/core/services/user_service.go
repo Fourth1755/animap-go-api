@@ -67,9 +67,12 @@ func (s *UserServiceImpl) Login(user *entities.User) (*dtos.LoginResponse, error
 	}
 	// Create the Claims
 	claims := jwt.MapClaims{
-		"email": selectUser.Email,
-		"role":  "admin",
-		"exp":   time.Now().Add(time.Hour * TokenDuration).Unix(),
+		"uuid":    selectUser.ID,
+		"picture": selectUser.ProfileImage,
+		"name":    selectUser.Name,
+		"email":   selectUser.Email,
+		"role":    "admin",
+		"exp":     time.Now().Add(time.Hour * TokenDuration).Unix(),
 	}
 	// Create token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

@@ -68,3 +68,32 @@ type CreateAnimeRequest struct {
 	Wallpaper   string   `json:"wallpaper"`
 	Trailer     string   `json:"trailer"`
 }
+
+type GetAnimeBySeasonAndYearRequest struct {
+	Year     string `json:"year"`
+	Seasonal string `json:"seasonal"`
+}
+
+type GetAnimeBySeasonAndYearResponseAnime struct {
+	ID           uuid.UUID               `json:"id"`
+	Name         string                  `json:"name"`
+	NameEnglish  string                  `json:"name_english"`
+	Episodes     int                     `json:"episodes"`
+	Seasonal     string                  `json:"seasonal"`
+	Year         string                  `json:"year"`
+	Image        string                  `json:"image"`
+	Description  string                  `json:"description"`
+	Duration     string                  `json:"duration"`
+	Type         int                     `json:"type"`
+	Categories   []AnimeDetailCategories `json:"categories"`
+	Wallpaper    string                  `json:"wallpaper"`
+	Trailer      string                  `json:"trailer"`
+	TrailerEmbed string                  `json:"trailer_embed"`
+	Studios      []AnimeDetailStduios    `json:"studios"`
+	Universe     AnimeDataUniverse       `json:"universe"`
+}
+type GetAnimeBySeasonAndYearResponse struct {
+	Year      string                                 `json:"year"`
+	Seasonal  string                                 `json:"seasonal"`
+	AnimeList []GetAnimeBySeasonAndYearResponseAnime `json:"anime_list"`
+}

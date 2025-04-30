@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"net/url"
+	"slices"
 	"strings"
 
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
@@ -23,6 +24,7 @@ type AnimeService interface {
 	GetAnimeByUserId(user_id uuid.UUID) ([]entities.UserAnime, error)
 	GetAnimeByCategoryId(category_id uuid.UUID) ([]dtos.AnimeListResponse, error)
 	AddCategoryToAnime(request dtos.EditCategoryToAnimeRequest) error
+	GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) (*dtos.GetAnimeBySeasonAndYearResponse, error)
 }
 
 type animeServiceImpl struct {
@@ -302,4 +304,46 @@ func (s *animeServiceImpl) AddCategoryToAnime(request dtos.EditCategoryToAnimeRe
 		return errs.NewUnexpectedError()
 	}
 	return nil
+}
+
+func (s *animeServiceImpl) GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) (*dtos.GetAnimeBySeasonAndYearResponse, error) {
+	seasonal := []string{"winter", "spring", "summer", "fall"}
+	if !slices.Contains(seasonal, request.Seasonal) {
+		errorMessage := "Invalid seasonal request."
+		logs.Error(errorMessage)
+		return nil, errs.NewBadRequestError(errorMessage)
+	}
+	if len(request.Year) != 4 {
+		errorMessage := "Invalid year request."
+		logs.Error(errorMessage)
+		return nil, errs.NewBadRequestError(errorMessage)
+	}
+	animeList, err := s.repo.GetBySeasonalAndYear(request)
+	if err != nil {
+		logs.Error(err)
+		return nil, errs.NewUnexpectedError()
+	}
+	var animesReponse []dtos.GetAnimeBySeasonAndYearResponseAnime
+	for _, anime := range animeList {
+		animesReponse = append(animesReponse, dtos.GetAnimeBySeasonAndYearResponseAnime{
+			ID:           anime.ID,
+			Name:         anime.Name,
+			NameEnglish:  anime.NameEnglish,
+			Episodes:     anime.Episodes,
+			Seasonal:     anime.Seasonal,
+			Year:         anime.Year,
+			Image:        anime.Image,
+			Description:  anime.Description,
+			Type:         anime.Type,
+			Duration:     anime.Duration,
+			Wallpaper:    anime.Wallpaper,
+			Trailer:      anime.Trailer,
+			TrailerEmbed: anime.TrailerEmbed,
+		})
+	}
+	return &dtos.GetAnimeBySeasonAndYearResponse{
+		Year:      request.Year,
+		Seasonal:  request.Seasonal,
+		AnimeList: animesReponse,
+	}, nil
 }
