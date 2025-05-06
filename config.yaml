@@ -7,3 +7,8 @@ db:
   username: "animeMapUserAdmin"
   password: "12131415"
   databaseName: "ms-anime"
+
+service:
+  common:
+    animeSeasonalYear:
+      firstYear: 1990 

@@ -9,6 +9,7 @@ import (
 
 	adapters "github.com/Fourth1755/animap-go-api/internal/adapters/https"
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
+	"github.com/Fourth1755/animap-go-api/internal/core/config"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
@@ -26,10 +27,14 @@ var (
 	songHandler     *adapters.HttpSongHandler
 	artistHandler   *adapters.HttpArtistHandler
 	studioHandler   *adapters.HttpStduioHandler
+	commonHandler   *adapters.HttpCommonHandler
 )
 
 func main() {
 	db := InitDatabase()
+	// init config
+	configService := config.NewConfigService()
+
 	//create repository
 	animeRepo := repositories.NewGormAnimeRepository(db)
 	userRepo := repositories.NewGormUserRepository(db)
@@ -44,7 +49,6 @@ func main() {
 	animeStudioRepo := repositories.NewGormAnimeStudioRepository(db)
 
 	//create service
-	
 	userService := services.NewUserService(userRepo)
 	myAnimeService := services.NewMyAnimeService(userAnimeRepo, animeRepo, userRepo)
 	categoryService := services.NewCategoryService(categoryRepo)
@@ -52,6 +56,7 @@ func main() {
 	artistService := services.NewArtistService(artistRepo)
 	studioService := services.NewStudioService(studioRepo)
 	animeService := services.NewAnimeService(animeRepo, userRepo, animeCategoryRepo, animeStudioRepo, songRepo)
+	commonService := services.NewCommonService(configService)
 
 	//create handler
 	animeHandler = adapters.NewHttpAnimeHandler(animeService)
@@ -61,6 +66,8 @@ func main() {
 	songHandler = adapters.NewHttpSongHandler(songService)
 	artistHandler = adapters.NewHttpArtistHandler(artistService)
 	studioHandler = adapters.NewHttpStduioHandler(studioService)
+	commonHandler = adapters.NewHttpCommonHandler(commonService)
+
 	rtr := InitRoutes()
 
 	log.Print("Server listening on http://localhost:8080/")

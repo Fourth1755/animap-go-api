@@ -69,6 +69,8 @@ func InitRoutes() *gin.Engine {
 	router.GET("artists/:id", artistHandler.GetArtistById)
 
 	router.GET("studios", studioHandler.GetAllStduio)
+
+	router.GET("common/seasonal-year", commonHandler.GetSeasonalAndYear)
 	return router
 }
 
