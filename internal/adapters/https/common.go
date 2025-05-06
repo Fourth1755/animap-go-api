@@ -3,9 +3,7 @@ package adapters
 import (
 	"net/http"
 
-	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
-	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,12 +16,7 @@ func NewHttpCommonHandler(service services.CommonService) *HttpCommonHandler {
 }
 
 func (h *HttpCommonHandler) GetSeasonalAndYear(c *gin.Context) {
-	request := new(dtos.GetSeasonalAndYearRequest)
-	if err := c.BindJSON(request); err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-	response, err := h.service.GetSeasonalAndYear(*request)
+	response, err := h.service.GetSeasonalAndYear()
 	if err != nil {
 		handleError(c, err)
 		return

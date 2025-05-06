@@ -1,16 +1,10 @@
 package dtos
 
-type GetSeasonalAndYearRequest struct {
-	Year     string
-	Seasonal string
-}
-
 type GetSeasonalAndYearResponseData struct {
-	Year     string
-	Seasonal string
-	IsMain   bool
+	Year     string `json:"year"`
+	Seasonal string `json:"seasonal"`
 }
 
 type GetSeasonalAndYearResponse struct {
-	Data []GetSeasonalAndYearResponseData
+	Data []GetSeasonalAndYearResponseData `json:"data"`
 }

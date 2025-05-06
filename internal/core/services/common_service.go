@@ -9,7 +9,7 @@ import (
 )
 
 type CommonService interface {
-	GetSeasonalAndYear(params dtos.GetSeasonalAndYearRequest) (*dtos.GetSeasonalAndYearResponse, error)
+	GetSeasonalAndYear() (*dtos.GetSeasonalAndYearResponse, error)
 }
 
 type commonService struct {
@@ -29,7 +29,7 @@ const (
 	FALL   = "fall"
 )
 
-func (s commonService) GetSeasonalAndYear(params dtos.GetSeasonalAndYearRequest) (*dtos.GetSeasonalAndYearResponse, error) {
+func (s commonService) GetSeasonalAndYear() (*dtos.GetSeasonalAndYearResponse, error) {
 	yearNow := time.Now().Year()
 	firstYear := s.configService.GetCommon().AnimeSeasonalYear.FirstYear
 	listOfSeasonal := []string{WINTER, SPRING, SUMMER, FALL}
@@ -38,15 +38,13 @@ func (s commonService) GetSeasonalAndYear(params dtos.GetSeasonalAndYearRequest)
 	for year := firstYear; year <= yearNow+1; year++ {
 		for _, season := range listOfSeasonal {
 			yearStr := strconv.Itoa(year)
-			isMain := false
-			if params.Seasonal == season && params.Year == yearStr {
-				isMain = true
-			}
+			// if params.Seasonal == season && params.Year == yearStr {
+			// 	isMain = true
+			// }
 
 			responseData = append(responseData, dtos.GetSeasonalAndYearResponseData{
 				Seasonal: season,
 				Year:     yearStr,
-				IsMain:   isMain,
 			})
 		}
 	}
