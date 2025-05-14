@@ -9,6 +9,7 @@ import (
 type AnimeCategoryRepository interface {
 	Save(animeCategory []entities.AnimeCategory) error
 	GetByCategoryId(uuid.UUID) ([]entities.AnimeCategory, error)
+	GetByAnimeIdAndCategoryIds(anime_id uuid.UUID, category_ids []uuid.UUID) ([]entities.AnimeCategory, error)
 }
 
 type GormAnimeCategoryRepository struct {
@@ -29,6 +30,15 @@ func (r GormAnimeCategoryRepository) Save(animeCategory []entities.AnimeCategory
 func (r GormAnimeCategoryRepository) GetByCategoryId(category_id uuid.UUID) ([]entities.AnimeCategory, error) {
 	var categoryAnime []entities.AnimeCategory
 	result := r.db.Preload("Anime").Where("category_id = ?", category_id).Find(&categoryAnime)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return categoryAnime, nil
+}
+
+func (r GormAnimeCategoryRepository) GetByAnimeIdAndCategoryIds(anime_id uuid.UUID, category_ids []uuid.UUID) ([]entities.AnimeCategory, error) {
+	var categoryAnime []entities.AnimeCategory
+	result := r.db.Where("anime_id = ?", anime_id).Where("category_id in (?)", category_ids).Find(&categoryAnime)
 	if result.Error != nil {
 		return nil, result.Error
 	}

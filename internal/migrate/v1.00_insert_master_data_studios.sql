@@ -224,5 +224,19 @@ INSERT INTO studios(id, name, image, created_at, updated_at)
         'https://cdn.myanimelist.net/s/common/company_logos/c7537634-ea2e-4e5b-acb3-53b4fadc8d51_600x600_i?s=80fedafe87a731b52dd7c32f18195f2b', 
         now(), 
         now()
+    ),
+    (
+        '0196bf03-a609-7255-a9f8-ebd5837a6eb2',
+        'Actas', 
+        'https://cdn.myanimelist.net/s/common/company_logos/10619a5a-b806-4069-a62c-e74be5c6bdff_600x600_i?s=21a09a7adc0b15bda331f578a354f6b6', 
+        now(), 
+        now()
+    ),
+    (
+        '0196bf0a-9970-7e01-86ae-a8f90c6f7bd5',
+        'The Answer Studio', 
+        'https://cdn.myanimelist.net/s/common/company_logos/b0ad506b-a784-4b9b-b48f-3dc3c95a4b00_600x600_i?s=87005760a47acaf7ef6f0e0f5a837482', 
+        now(), 
+        now()
     );
     	

@@ -115,3 +115,17 @@ func (h *HttpAnimeHandler) AddCategoryToAnime(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Edit anime to category success."})
 }
+
+func (h *HttpAnimeHandler) GetAnimeBySeasonalAndYear(c *gin.Context) {
+	request := new(dtos.GetAnimeBySeasonAndYearRequest)
+	if err := c.BindJSON(request); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	response, err := h.service.GetAnimeBySeasonalAndYear(*request)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, response)
+}

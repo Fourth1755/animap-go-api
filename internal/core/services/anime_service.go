@@ -287,6 +287,18 @@ func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uuid.UUID) ([]dtos.A
 // need to enhance
 func (s *animeServiceImpl) AddCategoryToAnime(request dtos.EditCategoryToAnimeRequest) error {
 	animeCategory := []entities.AnimeCategory{}
+	// check dup
+	animeCategoryDup, err := s.animeCategoryRepo.GetByAnimeIdAndCategoryIds(request.AnimeID, request.CategoryID)
+	if err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+	if len(animeCategoryDup) != 0 {
+		errMessage := "Category in anime is duplicate."
+		logs.Error(errMessage)
+		return errs.NewBadRequestError(errMessage)
+	}
+
 	for _, catrgory := range request.CategoryID {
 		animeCategoryId, err := uuid.NewV7()
 		if err != nil {
