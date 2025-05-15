@@ -2,13 +2,14 @@ package repositories
 
 import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type CategoryRepository interface {
 	Save(category *entities.Category) error
 	GetAll() ([]entities.Category, error)
-	GetById(id uint) (*entities.Category, error)
+	GetById(id uuid.UUID) (*entities.Category, error)
 }
 
 type GormCategoryRepository struct {
@@ -34,7 +35,7 @@ func (r *GormCategoryRepository) GetAll() ([]entities.Category, error) {
 	return categorise, nil
 }
 
-func (r *GormCategoryRepository) GetById(id uint) (*entities.Category, error) {
+func (r *GormCategoryRepository) GetById(id uuid.UUID) (*entities.Category, error) {
 	category := new(entities.Category)
 	if result := r.db.First(&category, id); result.Error != nil {
 		return nil, result.Error

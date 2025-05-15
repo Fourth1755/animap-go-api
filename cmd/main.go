@@ -55,7 +55,7 @@ func main() {
 	songService := services.NewSongService(songRepo, animeRepo, artistRepo, songArtistRepo, songChannelRepo)
 	artistService := services.NewArtistService(artistRepo)
 	studioService := services.NewStudioService(studioRepo)
-	animeService := services.NewAnimeService(animeRepo, userRepo, animeCategoryRepo, animeStudioRepo, songRepo)
+	animeService := services.NewAnimeService(animeRepo, userRepo, animeCategoryRepo, animeStudioRepo, songRepo, categoryRepo)
 	commonService := services.NewCommonService(configService)
 
 	//create handler

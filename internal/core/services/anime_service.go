@@ -22,7 +22,7 @@ type AnimeService interface {
 	UpdateAnime(anime entities.Anime) error
 	DeleteAnime(id uuid.UUID) error
 	GetAnimeByUserId(user_id uuid.UUID) ([]entities.UserAnime, error)
-	GetAnimeByCategoryId(category_id uuid.UUID) ([]dtos.AnimeListResponse, error)
+	GetAnimeByCategoryId(category_id uuid.UUID) (*dtos.GetAnimeByCategoryIdResponse, error)
 	AddCategoryToAnime(request dtos.EditCategoryToAnimeRequest) error
 	GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) (*dtos.GetAnimeBySeasonAndYearResponse, error)
 }
@@ -33,6 +33,7 @@ type animeServiceImpl struct {
 	animeCategoryRepo repositories.AnimeCategoryRepository
 	animeStudioRepo   repositories.AnimeStudioRepository
 	songRepo          repositories.SongRepository
+	categoryRepo      repositories.CategoryRepository
 }
 
 func NewAnimeService(
@@ -40,13 +41,15 @@ func NewAnimeService(
 	userRepo repositories.UserRepository,
 	animeCategoryRepo repositories.AnimeCategoryRepository,
 	animeStudioRepo repositories.AnimeStudioRepository,
-	songRepo repositories.SongRepository) AnimeService {
+	songRepo repositories.SongRepository,
+	categoryRepo repositories.CategoryRepository) AnimeService {
 	return &animeServiceImpl{
 		repo:              repo,
 		userRepo:          userRepo,
 		animeCategoryRepo: animeCategoryRepo,
 		animeStudioRepo:   animeStudioRepo,
 		songRepo:          songRepo,
+		categoryRepo:      categoryRepo,
 	}
 }
 
@@ -264,15 +267,21 @@ func (s *animeServiceImpl) GetAnimeByUserId(userId uuid.UUID) ([]entities.UserAn
 	return result, nil
 }
 
-func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uuid.UUID) ([]dtos.AnimeListResponse, error) {
+func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uuid.UUID) (*dtos.GetAnimeByCategoryIdResponse, error) {
+	category, err := s.categoryRepo.GetById(category_id)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil, errs.NewUnexpectedError()
+	}
+
 	animeCategories, err := s.animeCategoryRepo.GetByCategoryId(category_id)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
 	}
-	var animesReponse []dtos.AnimeListResponse
+	var animesReponse []dtos.GetAnimeByCategoryIdResponseAnimeList
 	for _, anime := range animeCategories {
-		animesReponse = append(animesReponse, dtos.AnimeListResponse{
+		animesReponse = append(animesReponse, dtos.GetAnimeByCategoryIdResponseAnimeList{
 			ID:       anime.ID,
 			Name:     anime.Anime.Name,
 			Episodes: anime.Anime.Episodes,
@@ -281,7 +290,12 @@ func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uuid.UUID) ([]dtos.A
 			Image:    anime.Anime.Image,
 		})
 	}
-	return animesReponse, nil
+	return &dtos.GetAnimeByCategoryIdResponse{
+		ID:        category.ID,
+		Name:      category.Name,
+		Wallpaper: category.Image,
+		AnimeList: animesReponse,
+	}, nil
 }
 
 // need to enhance

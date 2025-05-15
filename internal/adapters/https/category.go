@@ -2,12 +2,12 @@ package adapters
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type HttpCategoryHandler struct {
@@ -41,12 +41,8 @@ func (h *HttpCategoryHandler) Getcategorise(c *gin.Context) {
 }
 
 func (h *HttpCategoryHandler) GetCategoryById(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-	category, err := h.service.GetCategoryById(uint(id))
+	categoryId := c.Param("category_id")
+	category, err := h.service.GetCategoryById(uuid.MustParse(categoryId))
 	if err != nil {
 		handleError(c, err)
 		return

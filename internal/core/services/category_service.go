@@ -11,7 +11,7 @@ import (
 type CategoryService interface {
 	CreateCategory(category *entities.Category) error
 	Getcategorise() ([]entities.Category, error)
-	GetCategoryById(id uint) (*entities.Category, error)
+	GetCategoryById(id uuid.UUID) (*entities.Category, error)
 }
 
 type CategoryServiceImpl struct {
@@ -45,7 +45,7 @@ func (s *CategoryServiceImpl) Getcategorise() ([]entities.Category, error) {
 	return category, nil
 }
 
-func (s *CategoryServiceImpl) GetCategoryById(id uint) (*entities.Category, error) {
+func (s *CategoryServiceImpl) GetCategoryById(id uuid.UUID) (*entities.Category, error) {
 	category, err := s.repo.GetById(id)
 	if err != nil {
 		logs.Error(err.Error())

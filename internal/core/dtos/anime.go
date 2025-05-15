@@ -97,3 +97,19 @@ type GetAnimeBySeasonAndYearResponse struct {
 	Seasonal  string                                 `json:"seasonal"`
 	AnimeList []GetAnimeBySeasonAndYearResponseAnime `json:"anime_list"`
 }
+type GetAnimeByCategoryIdResponseAnimeList struct {
+	ID       uuid.UUID `json:"id"`
+	Name     string    `json:"name"`
+	Episodes int       `json:"episodes"`
+	Seasonal string    `json:"seasonal"`
+	Year     string    `json:"year"`
+	Image    string    `json:"image"`
+}
+
+type GetAnimeByCategoryIdResponse struct {
+	ID         uuid.UUID                               `json:"id"`
+	Name       string                                  `json:"name"`
+	IsUniverse string                                  `json:"is_universe"`
+	Wallpaper  string                                  `json:"wallpaper"`
+	AnimeList  []GetAnimeByCategoryIdResponseAnimeList `json:"anime_list"`
+}
