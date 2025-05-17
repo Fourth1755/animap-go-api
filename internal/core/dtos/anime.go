@@ -53,6 +53,11 @@ type EditCategoryToAnimeRequest struct {
 	CategoryID []uuid.UUID `json:"category_ids"`
 }
 
+type EditCategoryUniverseToAnimeRequest struct {
+	AnimeID            uuid.UUID   `json:"anime_id"`
+	CategoryUniverseID []uuid.UUID `json:"category_universe_ids"`
+}
+
 type CreateAnimeRequest struct {
 	Name        string   `json:"name"`
 	NameEnglish string   `json:"name_english"`

@@ -24,16 +24,18 @@ type AnimeService interface {
 	GetAnimeByUserId(user_id uuid.UUID) ([]entities.UserAnime, error)
 	GetAnimeByCategoryId(category_id uuid.UUID) (*dtos.GetAnimeByCategoryIdResponse, error)
 	AddCategoryToAnime(request dtos.EditCategoryToAnimeRequest) error
+	AddCategoryUniverseToAnime(request dtos.EditCategoryUniverseToAnimeRequest) error
 	GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) (*dtos.GetAnimeBySeasonAndYearResponse, error)
 }
 
 type animeServiceImpl struct {
-	repo              repositories.AnimeRepository
-	userRepo          repositories.UserRepository
-	animeCategoryRepo repositories.AnimeCategoryRepository
-	animeStudioRepo   repositories.AnimeStudioRepository
-	songRepo          repositories.SongRepository
-	categoryRepo      repositories.CategoryRepository
+	repo                        repositories.AnimeRepository
+	userRepo                    repositories.UserRepository
+	animeCategoryRepo           repositories.AnimeCategoryRepository
+	animeStudioRepo             repositories.AnimeStudioRepository
+	songRepo                    repositories.SongRepository
+	categoryRepo                repositories.CategoryRepository
+	animeCategorryUnivserseRepo repositories.AnimeCategoryUniverseRepository
 }
 
 func NewAnimeService(
@@ -42,14 +44,17 @@ func NewAnimeService(
 	animeCategoryRepo repositories.AnimeCategoryRepository,
 	animeStudioRepo repositories.AnimeStudioRepository,
 	songRepo repositories.SongRepository,
-	categoryRepo repositories.CategoryRepository) AnimeService {
+	categoryRepo repositories.CategoryRepository,
+	animeCategorryUnivserseRepo repositories.AnimeCategoryUniverseRepository,
+) AnimeService {
 	return &animeServiceImpl{
-		repo:              repo,
-		userRepo:          userRepo,
-		animeCategoryRepo: animeCategoryRepo,
-		animeStudioRepo:   animeStudioRepo,
-		songRepo:          songRepo,
-		categoryRepo:      categoryRepo,
+		repo:                        repo,
+		userRepo:                    userRepo,
+		animeCategoryRepo:           animeCategoryRepo,
+		animeStudioRepo:             animeStudioRepo,
+		songRepo:                    songRepo,
+		categoryRepo:                categoryRepo,
+		animeCategorryUnivserseRepo: animeCategorryUnivserseRepo,
 	}
 }
 
@@ -326,6 +331,40 @@ func (s *animeServiceImpl) AddCategoryToAnime(request dtos.EditCategoryToAnimeRe
 		})
 	}
 	if err := s.animeCategoryRepo.Save(animeCategory); err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+	return nil
+}
+
+// need to enhance
+func (s *animeServiceImpl) AddCategoryUniverseToAnime(request dtos.EditCategoryUniverseToAnimeRequest) error {
+	animeCategory := []entities.AnimeCategoryUniverse{}
+	// check dup
+	animeCategoryDup, err := s.animeCategorryUnivserseRepo.GetByAnimeIdAndCategoryUniverseIds(request.AnimeID, request.CategoryUniverseID)
+	if err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+	if len(animeCategoryDup) != 0 {
+		errMessage := "Category Universe in anime is duplicate."
+		logs.Error(errMessage)
+		return errs.NewBadRequestError(errMessage)
+	}
+
+	for _, catrgory := range request.CategoryUniverseID {
+		animeCategoryId, err := uuid.NewV7()
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+		animeCategory = append(animeCategory, entities.AnimeCategoryUniverse{
+			ID:                 animeCategoryId,
+			AnimeID:            request.AnimeID,
+			CategoryUniverseID: catrgory,
+		})
+	}
+	if err := s.animeCategorryUnivserseRepo.Save(animeCategory); err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}

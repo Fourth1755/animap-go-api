@@ -42,6 +42,7 @@ func InitRoutes() *gin.Engine {
 	router.PUT("animes/:id", animeHandler.UpdateAnime)
 	router.DELETE("animes/:id", animeHandler.DeleteAnime)
 	router.PUT("animes/category/edit-category-anime", animeHandler.AddCategoryToAnime)
+	router.PUT("animes/category-universe/edit-category-universe-anime", animeHandler.AddCategoryUniverseToAnime)
 	router.GET("animes/category/:category_id", animeHandler.GetAnimeByCategory)
 	router.POST("animes/seasonal-year", animeHandler.GetAnimeBySeasonalAndYear)
 

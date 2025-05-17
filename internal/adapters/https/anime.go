@@ -116,6 +116,20 @@ func (h *HttpAnimeHandler) AddCategoryToAnime(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Edit anime to category success."})
 }
 
+func (h *HttpAnimeHandler) AddCategoryUniverseToAnime(c *gin.Context) {
+	categoryRequest := new(dtos.EditCategoryUniverseToAnimeRequest)
+	if err := c.BindJSON(categoryRequest); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+
+	if err := h.service.AddCategoryUniverseToAnime(*categoryRequest); err != nil {
+		handleError(c, err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Edit anime to category success."})
+}
+
 func (h *HttpAnimeHandler) GetAnimeBySeasonalAndYear(c *gin.Context) {
 	request := new(dtos.GetAnimeBySeasonAndYearRequest)
 	if err := c.BindJSON(request); err != nil {

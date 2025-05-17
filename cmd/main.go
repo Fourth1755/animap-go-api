@@ -47,6 +47,7 @@ func main() {
 	songChannelRepo := repositories.NewGormSongChannelRepository(db)
 	studioRepo := repositories.NewGormStudioRepository(db)
 	animeStudioRepo := repositories.NewGormAnimeStudioRepository(db)
+	animeCategorryUnivserseRepo := repositories.NewGormAnimeCategoryUniverseRepository(db)
 
 	//create service
 	userService := services.NewUserService(userRepo)
@@ -55,7 +56,7 @@ func main() {
 	songService := services.NewSongService(songRepo, animeRepo, artistRepo, songArtistRepo, songChannelRepo)
 	artistService := services.NewArtistService(artistRepo)
 	studioService := services.NewStudioService(studioRepo)
-	animeService := services.NewAnimeService(animeRepo, userRepo, animeCategoryRepo, animeStudioRepo, songRepo, categoryRepo)
+	animeService := services.NewAnimeService(animeRepo, userRepo, animeCategoryRepo, animeStudioRepo, songRepo, categoryRepo, animeCategorryUnivserseRepo)
 	commonService := services.NewCommonService(configService)
 
 	//create handler
@@ -114,6 +115,8 @@ func InitDatabase() *gorm.DB {
 		&entities.SongArtist{},
 		&entities.Studio{},
 		&entities.AnimeStudio{},
+		&entities.CategoryUniverse{},
+		&entities.AnimeCategoryUniverse{},
 	)
 
 	return db

@@ -8,7 +8,7 @@ INSERT INTO categories(id, name, name_th , image, is_universe, created_at, updat
     ('01963e75-bee4-7241-b733-6dfbbf6bed68','Adventure','ผจญภัย','https://i0.wp.com/nftartwithlauren.com/wp-content/uploads/2024/01/laurenmcdonaghpereiraphoto_anime_Adventure_Friends_on_a_journ_4899bc97-3f98-4a52-9a59-6798f0892d01_2.png?fit=1024%2C574&ssl=1',FALSE,now(),now()),
     ('01963e75-dfd3-7b39-831a-577f1cf67fb7','Comedy','ตลก','',FALSE,now(),now()),
     ('01963e76-0ecd-7b7b-9b38-0c35697cf604','Mystery','ลึกลับ','',FALSE,now(),now()),
-    ('01963e76-2b88-7c01-a11b-385c2b5095c4','Fantasy','แฟนตาซี','https://wallpapers.com/images/hd/fantasy-anime-1280-x-720-wallpaper-7uy30qxtjfznd5fs.jpg',FALSE,now(),now()),
+    ('01963e76-2b88-7c01-a11b-385c2b5095c4','Fantasy','แฟนตาซี','https://images8.alphacoders.com/135/1351412.png',FALSE,now(),now()),
     ('01963e76-44a3-7507-a33a-b42cb5a8c443','Slice of Life','เสี้ยวชีวิต','',FALSE,now(),now()),
     ('01963e76-5d27-782f-abe5-158727ee7bf8','Supernatural','เหนือธรรมชาติ','',FALSE,now(),now()),
     ('0196446a-bd06-710f-aa71-3133bd05bb9b','Harem','ฮาเร็ม','https://wallpapercat.com/w/full/f/e/8/1629977-3840x2160-desktop-4k-date-a-live-background.jpg',FALSE,now(),now()),
