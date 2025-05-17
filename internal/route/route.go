@@ -1,14 +1,25 @@
-package main
+package route
 
 import (
 	"encoding/gob"
 
+	adapters "github.com/Fourth1755/animap-go-api/internal/adapters/https"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 )
 
-func InitRoutes() *gin.Engine {
+func InitRoutes(
+	animeHandler *adapters.HttpAnimeHandler,
+	userHandler *adapters.HttpUserHandler,
+	myAnimeHandler *adapters.HttpMyAnimeHandler,
+	categoryHandler *adapters.HttpCategoryHandler,
+	songHandler *adapters.HttpSongHandler,
+	artistHandler *adapters.HttpArtistHandler,
+	studioHandler *adapters.HttpStduioHandler,
+	commonHandler *adapters.HttpCommonHandler,
+	categoryUniverseHandler *adapters.HttpCategoryUniverseHandler) *gin.Engine {
+
 	router := gin.Default()
 	router.Use(CORSMiddleware())
 	// router.Use(cors.New(cors.Config{
@@ -57,6 +68,8 @@ func InitRoutes() *gin.Engine {
 	router.POST("category", categoryHandler.CreateCategory)
 	router.GET("category", categoryHandler.Getcategorise)
 	router.GET("category/:id", categoryHandler.GetCategoryById)
+
+	router.GET("category-universe", categoryUniverseHandler.Getcategorise)
 
 	router.POST("songs", songHandler.CreateSong)
 	router.GET("songs", songHandler.GetSongAll)

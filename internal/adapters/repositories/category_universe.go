@@ -6,22 +6,30 @@ import (
 	"gorm.io/gorm"
 )
 
-type CategoryUniverse interface {
+type CategoryUniverseRepository interface {
+	Save(category *entities.CategoryUniverse) error
 	GetAll() ([]entities.CategoryUniverse, error)
 	GetById(id uuid.UUID) (*entities.CategoryUniverse, error)
 }
 
-type GormCategoryUniverse struct {
+type GormCategoryUniverseRepository struct {
 	db *gorm.DB
 }
 
-func NewGormCategoryUniverseRepository(db *gorm.DB) CategoryUniverse {
-	return &GormCategoryUniverse{
+func NewGormCategoryUniverseRepository(db *gorm.DB) CategoryUniverseRepository {
+	return &GormCategoryUniverseRepository{
 		db: db,
 	}
 }
 
-func (r *GormCategoryUniverse) GetAll() ([]entities.CategoryUniverse, error) {
+func (r *GormCategoryUniverseRepository) Save(category *entities.CategoryUniverse) error {
+	if result := r.db.Create(&category); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *GormCategoryUniverseRepository) GetAll() ([]entities.CategoryUniverse, error) {
 	var categorise []entities.CategoryUniverse
 	if result := r.db.Find(&categorise); result.Error != nil {
 		return nil, result.Error
@@ -29,7 +37,7 @@ func (r *GormCategoryUniverse) GetAll() ([]entities.CategoryUniverse, error) {
 	return categorise, nil
 }
 
-func (r *GormCategoryUniverse) GetById(id uuid.UUID) (*entities.CategoryUniverse, error) {
+func (r *GormCategoryUniverseRepository) GetById(id uuid.UUID) (*entities.CategoryUniverse, error) {
 	category := new(entities.CategoryUniverse)
 	if result := r.db.First(&category, id); result.Error != nil {
 		return nil, result.Error

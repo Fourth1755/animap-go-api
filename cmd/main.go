@@ -13,21 +13,11 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
+	"github.com/Fourth1755/animap-go-api/internal/route"
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-)
-
-var (
-	animeHandler    *adapters.HttpAnimeHandler
-	userHandler     *adapters.HttpUserHandler
-	myAnimeHandler  *adapters.HttpMyAnimeHandler
-	categoryHandler *adapters.HttpCategoryHandler
-	songHandler     *adapters.HttpSongHandler
-	artistHandler   *adapters.HttpArtistHandler
-	studioHandler   *adapters.HttpStduioHandler
-	commonHandler   *adapters.HttpCommonHandler
 )
 
 func main() {
@@ -48,6 +38,7 @@ func main() {
 	studioRepo := repositories.NewGormStudioRepository(db)
 	animeStudioRepo := repositories.NewGormAnimeStudioRepository(db)
 	animeCategorryUnivserseRepo := repositories.NewGormAnimeCategoryUniverseRepository(db)
+	categoryUniverseRepo := repositories.NewGormCategoryUniverseRepository(db)
 
 	//create service
 	userService := services.NewUserService(userRepo)
@@ -58,18 +49,28 @@ func main() {
 	studioService := services.NewStudioService(studioRepo)
 	animeService := services.NewAnimeService(animeRepo, userRepo, animeCategoryRepo, animeStudioRepo, songRepo, categoryRepo, animeCategorryUnivserseRepo)
 	commonService := services.NewCommonService(configService)
+	categoryUniverseService := services.NewCategoryUniverseService(categoryUniverseRepo)
 
 	//create handler
-	animeHandler = adapters.NewHttpAnimeHandler(animeService)
-	userHandler = adapters.NewHttpUserHandler(userService)
-	myAnimeHandler = adapters.NewHttpMyAnimeHandler(myAnimeService)
-	categoryHandler = adapters.NewHttpCategoryHandler(categoryService)
-	songHandler = adapters.NewHttpSongHandler(songService)
-	artistHandler = adapters.NewHttpArtistHandler(artistService)
-	studioHandler = adapters.NewHttpStduioHandler(studioService)
-	commonHandler = adapters.NewHttpCommonHandler(commonService)
+	animeHandler := adapters.NewHttpAnimeHandler(animeService)
+	userHandler := adapters.NewHttpUserHandler(userService)
+	myAnimeHandler := adapters.NewHttpMyAnimeHandler(myAnimeService)
+	categoryHandler := adapters.NewHttpCategoryHandler(categoryService)
+	songHandler := adapters.NewHttpSongHandler(songService)
+	artistHandler := adapters.NewHttpArtistHandler(artistService)
+	studioHandler := adapters.NewHttpStduioHandler(studioService)
+	commonHandler := adapters.NewHttpCommonHandler(commonService)
+	categoryUniverseHandler := adapters.NewHttpCategoryUniverseHandler(categoryUniverseService)
 
-	rtr := InitRoutes()
+	rtr := route.InitRoutes(animeHandler,
+		userHandler,
+		myAnimeHandler,
+		categoryHandler,
+		songHandler,
+		artistHandler,
+		studioHandler,
+		commonHandler,
+		categoryUniverseHandler)
 
 	log.Print("Server listening on http://localhost:8080/")
 	if err := http.ListenAndServe("0.0.0.0:8080", rtr); err != nil {
