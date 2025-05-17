@@ -160,19 +160,24 @@ func (s *animeServiceImpl) GetAnimeById(id uuid.UUID) (*dtos.GetAnimeByIdRespons
 	}
 
 	var categories []dtos.AnimeDetailCategories
-	var universe dtos.AnimeDataUniverse
 	for _, category := range anime.Categories {
-		if category.IsUniverse {
-			universe = dtos.AnimeDataUniverse{
-				ID:   category.ID,
-				Name: category.Name,
-			}
-		} else {
-			categories = append(categories, dtos.AnimeDetailCategories{
-				ID:   category.ID,
-				Name: category.Name,
-			})
-		}
+		categories = append(categories, dtos.AnimeDetailCategories{
+			ID:   category.ID,
+			Name: category.Name,
+		})
+	}
+
+	var categoryUniverse []dtos.AnimeDataUniverse
+	for _, category := range anime.CategoryUniverses {
+		categoryUniverse = append(categoryUniverse, dtos.AnimeDataUniverse{
+			ID:   category.ID,
+			Name: category.Name,
+		})
+	}
+
+	var universe dtos.AnimeDataUniverse
+	if len(categoryUniverse) != 0 {
+		universe = categoryUniverse[0]
 	}
 
 	var studios []dtos.AnimeDetailStduios
