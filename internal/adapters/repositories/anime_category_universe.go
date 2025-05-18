@@ -29,7 +29,9 @@ func (r GormAnimeCategoryUniverseRepository) Save(animeCategory []entities.Anime
 
 func (r GormAnimeCategoryUniverseRepository) GetByCategoryUniverseId(category_id uuid.UUID) ([]entities.AnimeCategoryUniverse, error) {
 	var categoryAnime []entities.AnimeCategoryUniverse
-	result := r.db.Preload("Anime").Where("category_id = ?", category_id).Find(&categoryAnime)
+	result := r.db.Preload("Anime").
+		Where("category_universe_id = ?", category_id).
+		Find(&categoryAnime)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -38,7 +40,10 @@ func (r GormAnimeCategoryUniverseRepository) GetByCategoryUniverseId(category_id
 
 func (r GormAnimeCategoryUniverseRepository) GetByAnimeIdAndCategoryUniverseIds(anime_id uuid.UUID, category_ids []uuid.UUID) ([]entities.AnimeCategoryUniverse, error) {
 	var categoryAnime []entities.AnimeCategoryUniverse
-	result := r.db.Where("anime_id = ?", anime_id).Where("category_universe_id in (?)", category_ids).Find(&categoryAnime)
+	result := r.db.
+		Where("anime_id = ?", anime_id).
+		Where("category_universe_id in (?)", category_ids).
+		Find(&categoryAnime)
 	if result.Error != nil {
 		return nil, result.Error
 	}

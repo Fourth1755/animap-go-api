@@ -25,22 +25,22 @@ type AnimeDataUniverse struct {
 	Name string    `json:"name"`
 }
 type GetAnimeByIdResponse struct {
-	ID           uuid.UUID               `json:"id"`
-	Name         string                  `json:"name"`
-	NameEnglish  string                  `json:"name_english"`
-	Episodes     int                     `json:"episodes"`
-	Seasonal     string                  `json:"seasonal"`
-	Year         string                  `json:"year"`
-	Image        string                  `json:"image"`
-	Description  string                  `json:"description"`
-	Duration     string                  `json:"duration"`
-	Type         int                     `json:"type"`
-	Categories   []AnimeDetailCategories `json:"categories"`
-	Wallpaper    string                  `json:"wallpaper"`
-	Trailer      string                  `json:"trailer"`
-	TrailerEmbed string                  `json:"trailer_embed"`
-	Studios      []AnimeDetailStduios    `json:"studios"`
-	Universe     AnimeDataUniverse       `json:"universe"`
+	ID               uuid.UUID               `json:"id"`
+	Name             string                  `json:"name"`
+	NameEnglish      string                  `json:"name_english"`
+	Episodes         int                     `json:"episodes"`
+	Seasonal         string                  `json:"seasonal"`
+	Year             string                  `json:"year"`
+	Image            string                  `json:"image"`
+	Description      string                  `json:"description"`
+	Duration         string                  `json:"duration"`
+	Type             int                     `json:"type"`
+	Categories       []AnimeDetailCategories `json:"categories"`
+	Wallpaper        string                  `json:"wallpaper"`
+	Trailer          string                  `json:"trailer"`
+	TrailerEmbed     string                  `json:"trailer_embed"`
+	Studios          []AnimeDetailStduios    `json:"studios"`
+	CategoryUniverse []AnimeDataUniverse     `json:"categoryUniverse"`
 }
 
 type AnimeQueryDTO struct {
@@ -117,4 +117,26 @@ type GetAnimeByCategoryIdResponse struct {
 	IsUniverse string                                  `json:"is_universe"`
 	Wallpaper  string                                  `json:"wallpaper"`
 	AnimeList  []GetAnimeByCategoryIdResponseAnimeList `json:"anime_list"`
+}
+
+type GetAnimeByCategoryUniverseIdResponseAnimeList struct {
+	ID          uuid.UUID               `json:"id"`
+	Name        string                  `json:"name"`
+	Episodes    int                     `json:"episodes"`
+	Seasonal    string                  `json:"seasonal"`
+	Year        string                  `json:"year"`
+	Image       string                  `json:"image"`
+	Description string                  `json:"description"`
+	Duration    string                  `json:"duration"`
+	Type        int                     `json:"type"`
+	Categories  []AnimeDetailCategories `json:"categories"`
+	Wallpaper   string                  `json:"wallpaper"`
+	Studios     []AnimeDetailStduios    `json:"studios"`
+}
+
+type GetAnimeByCategoryUniverseIdResponse struct {
+	ID        uuid.UUID                                       `json:"id"`
+	Name      string                                          `json:"name"`
+	Wallpaper string                                          `json:"wallpaper"`
+	AnimeList []GetAnimeByCategoryUniverseIdResponseAnimeList `json:"anime_list"`
 }

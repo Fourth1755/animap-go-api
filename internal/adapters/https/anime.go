@@ -102,6 +102,16 @@ func (h *HttpAnimeHandler) GetAnimeByCategory(c *gin.Context) {
 	c.JSON(http.StatusOK, animes)
 }
 
+func (h *HttpAnimeHandler) GetAnimeByCategoryUniverse(c *gin.Context) {
+	categoryId := c.Param("category_id")
+	animes, err := h.service.GetAnimeByCategoryUniverseId(uuid.MustParse(categoryId))
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, animes)
+}
+
 func (h *HttpAnimeHandler) AddCategoryToAnime(c *gin.Context) {
 	categoryRequest := new(dtos.EditCategoryToAnimeRequest)
 	if err := c.BindJSON(categoryRequest); err != nil {
