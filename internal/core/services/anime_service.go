@@ -97,6 +97,7 @@ func (s *animeServiceImpl) CreateAnime(request dtos.CreateAnimeRequest) error {
 		Wallpaper:    request.Wallpaper,
 		Trailer:      request.Trailer,
 		TrailerEmbed: trailerEmbed,
+		AiredAt:      request.AiredAt,
 	}
 
 	animeCreate, err := s.repo.Save(anime)
@@ -319,18 +320,47 @@ func (s *animeServiceImpl) GetAnimeByCategoryUniverseId(category_id uuid.UUID) (
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
 	}
+
+	var animeIds []uuid.UUID
+	for _, animeItem := range animeCategories {
+		animeIds = append(animeIds, animeItem.AnimeID)
+	}
+
+	animeList, err := s.repo.GetByIds(animeIds)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil, errs.NewUnexpectedError()
+	}
 	var animesReponse []dtos.GetAnimeByCategoryUniverseIdResponseAnimeList
-	for _, anime := range animeCategories {
+	for _, anime := range animeList {
+		var categories []dtos.AnimeDetailCategories
+		for _, category := range anime.Categories {
+			categories = append(categories, dtos.AnimeDetailCategories{
+				ID:   category.ID,
+				Name: category.Name,
+			})
+		}
+
+		var studios []dtos.AnimeDetailStduios
+		for _, studio := range anime.Studios {
+			studios = append(studios, dtos.AnimeDetailStduios{
+				ID:   studio.ID,
+				Name: studio.Name,
+			})
+		}
+
 		animesReponse = append(animesReponse, dtos.GetAnimeByCategoryUniverseIdResponseAnimeList{
 			ID:          anime.ID,
-			Name:        anime.Anime.Name,
-			Episodes:    anime.Anime.Episodes,
-			Seasonal:    anime.Anime.Seasonal,
-			Year:        anime.Anime.Year,
-			Image:       anime.Anime.Image,
-			Description: anime.Anime.Description,
-			Type:        anime.Anime.Type,
-			Duration:    anime.Anime.Duration,
+			Name:        anime.Name,
+			Episodes:    anime.Episodes,
+			Seasonal:    anime.Seasonal,
+			Year:        anime.Year,
+			Image:       anime.Image,
+			Description: anime.Description,
+			Type:        anime.Type,
+			Duration:    anime.Duration,
+			Studios:     studios,
+			Categories:  categories,
 		})
 	}
 	return &dtos.GetAnimeByCategoryUniverseIdResponse{

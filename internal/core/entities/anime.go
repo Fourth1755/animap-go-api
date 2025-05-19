@@ -25,6 +25,7 @@ type Anime struct {
 	TrailerEmbed      string             `json:"trailer_embed"`
 	Studios           []Studio           `gorm:"many2many:anime_studios;"`
 	CategoryUniverses []CategoryUniverse `gorm:"many2many:anime_category_universes;"`
+	AiredAt           time.Time          `json:"aired_at"`
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 	DeletedAt         time.Time `gorm:"index"`

@@ -1,6 +1,10 @@
 package dtos
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type AnimeListResponse struct {
 	ID       uuid.UUID `json:"id"`
@@ -59,19 +63,20 @@ type EditCategoryUniverseToAnimeRequest struct {
 }
 
 type CreateAnimeRequest struct {
-	Name        string   `json:"name"`
-	NameEnglish string   `json:"name_english"`
-	NameThai    string   `json:"name_thai"`
-	Episodes    int      `json:"episodes"`
-	Seasonal    string   `json:"seasonal"`
-	Image       string   `json:"image"`
-	Studio      []string `json:"studio"`
-	Description string   `json:"description"`
-	Duration    string   `json:"duration"`
-	Year        string   `json:"year"`
-	Type        int      `json:"type"`
-	Wallpaper   string   `json:"wallpaper"`
-	Trailer     string   `json:"trailer"`
+	Name        string    `json:"name"`
+	NameEnglish string    `json:"name_english"`
+	NameThai    string    `json:"name_thai"`
+	Episodes    int       `json:"episodes"`
+	Seasonal    string    `json:"seasonal"`
+	Image       string    `json:"image"`
+	Studio      []string  `json:"studio"`
+	Description string    `json:"description"`
+	Duration    string    `json:"duration"`
+	Year        string    `json:"year"`
+	Type        int       `json:"type"`
+	Wallpaper   string    `json:"wallpaper"`
+	Trailer     string    `json:"trailer"`
+	AiredAt     time.Time `json:"aired_at"`
 }
 
 type GetAnimeBySeasonAndYearRequest struct {

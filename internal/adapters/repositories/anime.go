@@ -10,6 +10,7 @@ import (
 type AnimeRepository interface {
 	Save(anime entities.Anime) (*entities.Anime, error)
 	GetById(id uuid.UUID) (*entities.Anime, error)
+	GetByIds(ids []uuid.UUID) ([]entities.Anime, error)
 	GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime, error)
 	Update(anime *entities.Anime) error
 	Delete(id uuid.UUID) error
@@ -43,6 +44,20 @@ func (r *GormAnimeRepository) GetById(id uuid.UUID) (*entities.Anime, error) {
 		return nil, result.Error
 	}
 	return &anime, nil
+}
+
+func (r *GormAnimeRepository) GetByIds(ids []uuid.UUID) ([]entities.Anime, error) {
+	var animes []entities.Anime
+	if result := r.db.
+		Preload("Songs").
+		Preload("Categories").
+		Preload("Studios").
+		Preload("CategoryUniverses").
+		Order("aired_at asc").
+		Where("id in (?)", ids).Find(&animes); result.Error != nil {
+		return nil, result.Error
+	}
+	return animes, nil
 }
 
 func (r *GormAnimeRepository) GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime, error) {
