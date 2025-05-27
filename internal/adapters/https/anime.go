@@ -153,3 +153,13 @@ func (h *HttpAnimeHandler) GetAnimeBySeasonalAndYear(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *HttpAnimeHandler) GetAnimeByStudio(c *gin.Context) {
+	studioId := c.Param("studio_id")
+	animes, err := h.service.GetAnimeByStudio(uuid.MustParse(studioId))
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, animes)
+}

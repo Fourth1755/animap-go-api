@@ -145,3 +145,29 @@ type GetAnimeByCategoryUniverseIdResponse struct {
 	Wallpaper string                                          `json:"wallpaper"`
 	AnimeList []GetAnimeByCategoryUniverseIdResponseAnimeList `json:"anime_list"`
 }
+
+type GetAnimeByStudioRequest struct {
+	StudioId uuid.UUID `json:"studio_id"`
+}
+
+type GetAnimeByStudioResponseAnimeList struct {
+	ID          uuid.UUID               `json:"id"`
+	Name        string                  `json:"name"`
+	Episodes    int                     `json:"episodes"`
+	Seasonal    string                  `json:"seasonal"`
+	Year        string                  `json:"year"`
+	Image       string                  `json:"image"`
+	Description string                  `json:"description"`
+	Duration    string                  `json:"duration"`
+	Type        int                     `json:"type"`
+	Categories  []AnimeDetailCategories `json:"categories"`
+	Wallpaper   string                  `json:"wallpaper"`
+	Studios     []AnimeDetailStduios    `json:"studios"`
+}
+
+type GetAnimeByStudioResponse struct {
+	ID        uuid.UUID                           `json:"id"`
+	Name      string                              `json:"name"`
+	Wallpaper string                              `json:"wallpaper"`
+	AnimeList []GetAnimeByStudioResponseAnimeList `json:"anime_list"`
+}

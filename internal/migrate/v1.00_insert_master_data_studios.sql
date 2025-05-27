@@ -238,5 +238,12 @@ INSERT INTO studios(id, name, image, created_at, updated_at)
         'https://cdn.myanimelist.net/s/common/company_logos/b0ad506b-a784-4b9b-b48f-3dc3c95a4b00_600x600_i?s=87005760a47acaf7ef6f0e0f5a837482', 
         now(), 
         now()
+    ),
+    (
+        '0196f35e-7bf4-730f-8985-6fd5a658e5eb',
+        'TOHO animation STUDIO', 
+        'https://cdn.myanimelist.net/s/common/company_logos/d951115c-6e20-47fb-adeb-20c0318fdc49_600x600_i?s=93cf138891ede64a3016c2ccdc63452d', 
+        now(), 
+        now()
     );
     	

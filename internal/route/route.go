@@ -57,6 +57,7 @@ func InitRoutes(
 	router.GET("animes/category/:category_id", animeHandler.GetAnimeByCategory)
 	router.GET("animes/category-universe/:category_id", animeHandler.GetAnimeByCategoryUniverse)
 	router.POST("animes/seasonal-year", animeHandler.GetAnimeBySeasonalAndYear)
+	router.GET("animes/studio/:studio_id", animeHandler.GetAnimeByStudio)
 
 	router.POST("my-anime", myAnimeHandler.AddAnimeToList)
 	router.GET("my-anime/:uuid", myAnimeHandler.GetAnimeByUserId)

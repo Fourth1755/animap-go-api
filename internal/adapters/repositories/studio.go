@@ -9,6 +9,7 @@ import (
 type StudioRepository interface {
 	GetAll() ([]entities.Studio, error)
 	GetByIds(ids []uuid.UUID) ([]entities.Studio, error)
+	GetById(id uuid.UUID) (*entities.Studio, error)
 }
 
 type GormStudioRepository struct {
@@ -31,6 +32,14 @@ func (r GormStudioRepository) GetByIds(ids []uuid.UUID) ([]entities.Studio, erro
 	var studio []entities.Studio
 	if result := r.db.Where("id in (?)", ids).
 		Find(&studio); result.Error != nil {
+		return nil, result.Error
+	}
+	return studio, nil
+}
+
+func (r GormStudioRepository) GetById(id uuid.UUID) (*entities.Studio, error) {
+	studio := new(entities.Studio)
+	if result := r.db.First(&studio, id); result.Error != nil {
 		return nil, result.Error
 	}
 	return studio, nil

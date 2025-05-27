@@ -27,6 +27,7 @@ type AnimeService interface {
 	AddCategoryToAnime(request dtos.EditCategoryToAnimeRequest) error
 	AddCategoryUniverseToAnime(request dtos.EditCategoryUniverseToAnimeRequest) error
 	GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) (*dtos.GetAnimeBySeasonAndYearResponse, error)
+	GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeByStudioResponse, error)
 }
 
 type animeServiceImpl struct {
@@ -38,6 +39,7 @@ type animeServiceImpl struct {
 	categoryRepo                repositories.CategoryRepository
 	animeCategorryUnivserseRepo repositories.AnimeCategoryUniverseRepository
 	categoryUniverseRepo        repositories.CategoryUniverseRepository
+	studioRepo                  repositories.StudioRepository
 }
 
 func NewAnimeService(
@@ -49,6 +51,7 @@ func NewAnimeService(
 	categoryRepo repositories.CategoryRepository,
 	animeCategorryUnivserseRepo repositories.AnimeCategoryUniverseRepository,
 	categoryUniverseRepo repositories.CategoryUniverseRepository,
+	studioRepo repositories.StudioRepository,
 ) AnimeService {
 	return &animeServiceImpl{
 		repo:                        repo,
@@ -59,6 +62,7 @@ func NewAnimeService(
 		categoryRepo:                categoryRepo,
 		animeCategorryUnivserseRepo: animeCategorryUnivserseRepo,
 		categoryUniverseRepo:        categoryUniverseRepo,
+		studioRepo:                  studioRepo,
 	}
 }
 
@@ -292,7 +296,7 @@ func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uuid.UUID) (*dtos.Ge
 	var animesReponse []dtos.GetAnimeByCategoryIdResponseAnimeList
 	for _, anime := range animeCategories {
 		animesReponse = append(animesReponse, dtos.GetAnimeByCategoryIdResponseAnimeList{
-			ID:       anime.ID,
+			ID:       anime.Anime.ID,
 			Name:     anime.Anime.Name,
 			Episodes: anime.Anime.Episodes,
 			Seasonal: anime.Anime.Seasonal,
@@ -477,6 +481,68 @@ func (s *animeServiceImpl) GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeas
 	return &dtos.GetAnimeBySeasonAndYearResponse{
 		Year:      request.Year,
 		Seasonal:  request.Seasonal,
+		AnimeList: animesReponse,
+	}, nil
+}
+
+func (s *animeServiceImpl) GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeByStudioResponse, error) {
+	studio, err := s.studioRepo.GetById(studioId)
+	if err != nil {
+		logs.Error(err)
+		return nil, errs.NewNotFoundError("Studio Not Found" + studioId.String())
+	}
+	animeStudio, err := s.animeStudioRepo.GetByStudioId(studioId)
+	if err != nil {
+		logs.Error(err)
+		return nil, errs.NewUnexpectedError()
+	}
+
+	var animeIds []uuid.UUID
+	for _, animeItem := range animeStudio {
+		animeIds = append(animeIds, animeItem.AnimeID)
+	}
+
+	animeList, err := s.repo.GetByIds(animeIds)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil, errs.NewUnexpectedError()
+	}
+	var animesReponse []dtos.GetAnimeByStudioResponseAnimeList
+	for _, anime := range animeList {
+		var categories []dtos.AnimeDetailCategories
+		for _, category := range anime.Categories {
+			categories = append(categories, dtos.AnimeDetailCategories{
+				ID:   category.ID,
+				Name: category.Name,
+			})
+		}
+
+		var studios []dtos.AnimeDetailStduios
+		for _, studio := range anime.Studios {
+			studios = append(studios, dtos.AnimeDetailStduios{
+				ID:   studio.ID,
+				Name: studio.Name,
+			})
+		}
+
+		animesReponse = append(animesReponse, dtos.GetAnimeByStudioResponseAnimeList{
+			ID:          anime.ID,
+			Name:        anime.Name,
+			Episodes:    anime.Episodes,
+			Seasonal:    anime.Seasonal,
+			Year:        anime.Year,
+			Image:       anime.Image,
+			Description: anime.Description,
+			Type:        anime.Type,
+			Duration:    anime.Duration,
+			Studios:     studios,
+			Categories:  categories,
+		})
+	}
+	return &dtos.GetAnimeByStudioResponse{
+		ID:        studio.ID,
+		Name:      studio.Name,
+		Wallpaper: studio.Image,
 		AnimeList: animesReponse,
 	}, nil
 }
