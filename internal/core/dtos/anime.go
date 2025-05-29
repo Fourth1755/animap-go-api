@@ -169,5 +169,6 @@ type GetAnimeByStudioResponse struct {
 	ID        uuid.UUID                           `json:"id"`
 	Name      string                              `json:"name"`
 	Wallpaper string                              `json:"wallpaper"`
+	MainColor string                              `json:"main_color"`
 	AnimeList []GetAnimeByStudioResponseAnimeList `json:"anime_list"`
 }

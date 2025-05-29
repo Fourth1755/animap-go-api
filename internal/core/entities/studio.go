@@ -16,4 +16,5 @@ type Studio struct {
 	UpdatedAt   time.Time
 	DeletedAt   time.Time `gorm:"index"`
 	Animes      []Anime   `gorm:"many2many:anime_studios;"`
+	MainColor   string    `json:"main_color"`
 }

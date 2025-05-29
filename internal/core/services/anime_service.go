@@ -543,6 +543,7 @@ func (s *animeServiceImpl) GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeB
 		ID:        studio.ID,
 		Name:      studio.Name,
 		Wallpaper: studio.Image,
+		MainColor: studio.MainColor,
 		AnimeList: animesReponse,
 	}, nil
 }
