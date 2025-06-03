@@ -2,11 +2,13 @@ package repositories
 
 import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type EpisodeRepository interface {
 	BulkSave(episodes []entities.Episode) error
+	GetByAnimeId(anime_id uuid.UUID) ([]entities.Episode, error)
 }
 
 type GormEpisodeRepository struct {
@@ -22,4 +24,13 @@ func (r *GormEpisodeRepository) BulkSave(episodes []entities.Episode) error {
 		return result.Error
 	}
 	return nil
+}
+
+func (r *GormEpisodeRepository) GetByAnimeId(anime_id uuid.UUID) ([]entities.Episode, error) {
+	var animeEpisode []entities.Episode
+	result := r.db.Where("anime_id = ?", anime_id).Find(&animeEpisode)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return animeEpisode, nil
 }

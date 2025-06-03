@@ -7,6 +7,7 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type HttpEpisodeHandler struct {
@@ -29,4 +30,14 @@ func (h *HttpEpisodeHandler) CreateEpisode(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusCreated, gin.H{"message": "Create Episode success"})
+}
+
+func (h *HttpEpisodeHandler) GetByAnimeId(c *gin.Context) {
+	animeId := c.Param("anime_id")
+	anime, err := h.service.GetByAnimeId(uuid.MustParse(animeId))
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, anime)
 }

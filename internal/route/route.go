@@ -91,6 +91,7 @@ func InitRoutes(
 	router.GET("common/seasonal-year", commonHandler.GetSeasonalAndYear)
 
 	router.POST("episode", episodeHandler.CreateEpisode)
+	router.GET("episode/:anime_id", episodeHandler.GetByAnimeId)
 	return router
 }
 
