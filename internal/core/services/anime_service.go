@@ -40,6 +40,7 @@ type animeServiceImpl struct {
 	animeCategorryUnivserseRepo repositories.AnimeCategoryUniverseRepository
 	categoryUniverseRepo        repositories.CategoryUniverseRepository
 	studioRepo                  repositories.StudioRepository
+	episodeRepo                 repositories.EpisodeRepository
 }
 
 func NewAnimeService(
@@ -52,6 +53,7 @@ func NewAnimeService(
 	animeCategorryUnivserseRepo repositories.AnimeCategoryUniverseRepository,
 	categoryUniverseRepo repositories.CategoryUniverseRepository,
 	studioRepo repositories.StudioRepository,
+	episodeRepo repositories.EpisodeRepository,
 ) AnimeService {
 	return &animeServiceImpl{
 		repo:                        repo,
@@ -63,6 +65,7 @@ func NewAnimeService(
 		animeCategorryUnivserseRepo: animeCategorryUnivserseRepo,
 		categoryUniverseRepo:        categoryUniverseRepo,
 		studioRepo:                  studioRepo,
+		episodeRepo:                 episodeRepo,
 	}
 }
 
@@ -537,6 +540,7 @@ func (s *animeServiceImpl) GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeB
 			Duration:    anime.Duration,
 			Studios:     studios,
 			Categories:  categories,
+			Wallpaper:   anime.Wallpaper,
 		})
 	}
 	return &dtos.GetAnimeByStudioResponse{

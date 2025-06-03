@@ -18,7 +18,8 @@ func InitRoutes(
 	artistHandler *adapters.HttpArtistHandler,
 	studioHandler *adapters.HttpStduioHandler,
 	commonHandler *adapters.HttpCommonHandler,
-	categoryUniverseHandler *adapters.HttpCategoryUniverseHandler) *gin.Engine {
+	categoryUniverseHandler *adapters.HttpCategoryUniverseHandler,
+	episodeHandler *adapters.HttpEpisodeHandler) *gin.Engine {
 
 	router := gin.Default()
 	router.Use(CORSMiddleware())
@@ -88,6 +89,8 @@ func InitRoutes(
 	router.GET("studios", studioHandler.GetAllStduio)
 
 	router.GET("common/seasonal-year", commonHandler.GetSeasonalAndYear)
+
+	router.POST("episode", episodeHandler.CreateEpisode)
 	return router
 }
 

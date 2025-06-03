@@ -39,6 +39,7 @@ func main() {
 	animeStudioRepo := repositories.NewGormAnimeStudioRepository(db)
 	animeCategorryUnivserseRepo := repositories.NewGormAnimeCategoryUniverseRepository(db)
 	categoryUniverseRepo := repositories.NewGormCategoryUniverseRepository(db)
+	episodeRepo := repositories.NewGormEpisodeRepository(db)
 
 	//create service
 	userService := services.NewUserService(userRepo)
@@ -57,9 +58,11 @@ func main() {
 		animeCategorryUnivserseRepo,
 		categoryUniverseRepo,
 		studioRepo,
+		episodeRepo,
 	)
 	commonService := services.NewCommonService(configService)
 	categoryUniverseService := services.NewCategoryUniverseService(categoryUniverseRepo)
+	episodeService := services.NewEpisodeService(episodeRepo, animeRepo)
 
 	//create handler
 	animeHandler := adapters.NewHttpAnimeHandler(animeService)
@@ -71,6 +74,7 @@ func main() {
 	studioHandler := adapters.NewHttpStduioHandler(studioService)
 	commonHandler := adapters.NewHttpCommonHandler(commonService)
 	categoryUniverseHandler := adapters.NewHttpCategoryUniverseHandler(categoryUniverseService)
+	episodeHandler := adapters.NewHttpEpisodeHandler(episodeService)
 
 	rtr := route.InitRoutes(animeHandler,
 		userHandler,
@@ -80,7 +84,8 @@ func main() {
 		artistHandler,
 		studioHandler,
 		commonHandler,
-		categoryUniverseHandler)
+		categoryUniverseHandler,
+		episodeHandler)
 
 	log.Print("Server listening on http://localhost:8080/")
 	if err := http.ListenAndServe("0.0.0.0:8080", rtr); err != nil {
@@ -128,6 +133,7 @@ func InitDatabase() *gorm.DB {
 		&entities.AnimeStudio{},
 		&entities.CategoryUniverse{},
 		&entities.AnimeCategoryUniverse{},
+		&entities.Episode{},
 	)
 
 	return db
