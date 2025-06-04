@@ -16,6 +16,7 @@ type AnimeRepository interface {
 	Delete(id uuid.UUID) error
 	GetByUserId(user_id uuid.UUID) ([]entities.UserAnime, error)
 	GetBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) ([]entities.Anime, error)
+	UpdateIsCreateEpisode(animeId uuid.UUID) error
 }
 
 type GormAnimeRepository struct {
@@ -77,6 +78,15 @@ func (r *GormAnimeRepository) GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime
 
 func (r *GormAnimeRepository) Update(anime *entities.Anime) error {
 	result := r.db.Model(&anime).Updates(anime)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *GormAnimeRepository) UpdateIsCreateEpisode(animeId uuid.UUID) error {
+	var animes []entities.Anime
+	result := r.db.Raw("UPDATE animes SET is_create_episode = ? WHERE id = ? ", true, animeId).Scan(&animes)
 	if result.Error != nil {
 		return result.Error
 	}

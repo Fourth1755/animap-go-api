@@ -15,5 +15,5 @@ type GetEpisodeResponseEpisode struct {
 }
 
 type GetEpisodeResponse struct {
-	Episodes []GetEpisodeResponseEpisode
+	Episodes []GetEpisodeResponseEpisode `json:"episodes"`
 }

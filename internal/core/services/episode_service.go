@@ -41,7 +41,13 @@ func (s *episodeServiceImpl) CreateEpisode(anime_id uuid.UUID) error {
 
 	var episodes []entities.Episode
 	for i := 1; i <= anime.Episodes; i++ {
+		episodeId, err := uuid.NewV7()
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
 		episodes = append(episodes, entities.Episode{
+			ID:      episodeId,
 			AnimeID: anime_id,
 			Number:  uint(i),
 		})
@@ -53,9 +59,7 @@ func (s *episodeServiceImpl) CreateEpisode(anime_id uuid.UUID) error {
 		return errs.NewUnexpectedError()
 	}
 
-	anime.IsCreateEpisode = true
-
-	err = s.animeRepo.Update(anime)
+	err = s.animeRepo.UpdateIsCreateEpisode(anime.ID)
 	if err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
