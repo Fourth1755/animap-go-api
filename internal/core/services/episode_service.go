@@ -1,6 +1,8 @@
 package services
 
 import (
+	"slices"
+
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
@@ -12,7 +14,7 @@ import (
 
 type EpisodeService interface {
 	CreateEpisode(id uuid.UUID) error
-	GetByAnimeId(anime_id uuid.UUID) (*dtos.GetEpisodeResponse, error)
+	GetEpisodesByAnimeId(anime_id uuid.UUID, filter string) (*dtos.GetEpisodeResponse, error)
 	UpdateEpisode(request dtos.UpdateEpisodeRequest) error
 	AddCharactersToEpisode(request dtos.AddCharacterToEpisodeRequest) error
 }
@@ -75,11 +77,59 @@ func (s *episodeServiceImpl) CreateEpisode(animeId uuid.UUID) error {
 	return nil
 }
 
-func (s *episodeServiceImpl) GetByAnimeId(anime_id uuid.UUID) (*dtos.GetEpisodeResponse, error) {
+// filter = FIRST_APPEARANCE  -> FirstAppearance default
+// filter = APPEARANCE        -> Appearance
+func (s *episodeServiceImpl) GetEpisodesByAnimeId(anime_id uuid.UUID, filter string) (*dtos.GetEpisodeResponse, error) {
+	showCharcaterFormatList := []string{FIRST_APPEARANCE, APPEARANCE}
+	if !slices.Contains(showCharcaterFormatList, filter) {
+		errorMessage := "Invalid filter."
+		logs.Error(errorMessage)
+		return nil, errs.NewBadRequestError(errorMessage)
+	}
+
 	episodes, err := s.episodeRepo.GetByAnimeId(anime_id)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
+	}
+
+	var episodeIds []uuid.UUID
+	for _, item := range episodes {
+		episodeIds = append(episodeIds, item.ID)
+	}
+
+	episodeCharacterList, err := s.episodeCharacterRepo.GetByEpisodeIds(episodeIds)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil, errs.NewUnexpectedError()
+	}
+
+	showCharcaterFormat := ""
+	if filter == "" {
+		showCharcaterFormat = FIRST_APPEARANCE
+	} else {
+		showCharcaterFormat = filter
+	}
+
+	episodeCharacterMap := make(map[uuid.UUID][]dtos.GetEpisodeResponseEpisodeCharacter)
+	for _, item := range episodeCharacterList {
+		episodeCharacter := dtos.GetEpisodeResponseEpisodeCharacter{
+			ID:              item.CharacterID,
+			Name:            item.Character.Name,
+			FullName:        item.Character.LastName + "" + item.Character.FirstName,
+			Image:           item.Character.Image,
+			ImageStyleX:     item.Character.ImageStyleX,
+			ImageStyleY:     item.Character.ImageStyleY,
+			Description:     item.Description,
+			FirstAppearance: item.FirstAppearance,
+			Appearance:      item.Appearance,
+		}
+		if episodeCharacter.FirstAppearance && showCharcaterFormat == FIRST_APPEARANCE {
+			episodeCharacterMap[item.EpisodeID] = append(episodeCharacterMap[item.EpisodeID], episodeCharacter)
+		} else if episodeCharacter.Appearance && showCharcaterFormat == APPEARANCE {
+			episodeCharacterMap[item.EpisodeID] = append(episodeCharacterMap[item.EpisodeID], episodeCharacter)
+		}
+
 	}
 
 	var episodeResponse []dtos.GetEpisodeResponseEpisode
@@ -90,8 +140,10 @@ func (s *episodeServiceImpl) GetByAnimeId(anime_id uuid.UUID) (*dtos.GetEpisodeR
 			Name:        episode.Name,
 			NameThai:    episode.NameThai,
 			NameEnglish: episode.NameEnglish,
+			Characters:  episodeCharacterMap[episode.ID],
 		})
 	}
+
 	return &dtos.GetEpisodeResponse{
 		Episodes: episodeResponse,
 	}, nil

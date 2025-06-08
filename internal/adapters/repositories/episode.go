@@ -29,16 +29,16 @@ func (r *GormEpisodeRepository) BulkSave(episodes []entities.Episode) error {
 }
 
 func (r *GormEpisodeRepository) GetByAnimeId(anime_id uuid.UUID) ([]entities.Episode, error) {
-	var animeEpisode []entities.Episode
-	result := r.db.Where("anime_id = ?", anime_id).Find(&animeEpisode)
+	var episode []entities.Episode
+	result := r.db.Where("anime_id = ?", anime_id).Find(&episode)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return animeEpisode, nil
+	return episode, nil
 }
 
-func (r *GormEpisodeRepository) Update(animeEpisode *entities.Episode) error {
-	result := r.db.Model(&animeEpisode).Updates(animeEpisode)
+func (r *GormEpisodeRepository) Update(episode *entities.Episode) error {
+	result := r.db.Model(&episode).Updates(episode)
 	if result.Error != nil {
 		return result.Error
 	}

@@ -6,12 +6,25 @@ type CreateEpisodeRequest struct {
 	AnimeId uuid.UUID `json:"anime_id"`
 }
 
+type GetEpisodeResponseEpisodeCharacter struct {
+	ID              uuid.UUID `json:"id"`
+	Name            string    `json:"name"`
+	FullName        string    `json:"full_name"`
+	Image           string    `json:"image"`
+	ImageStyleX     uint      `json:"image_style_x"`
+	ImageStyleY     uint      `json:"image_style_y"`
+	Description     string    `json:"description"`
+	FirstAppearance bool      `json:"firstAppearance"`
+	Appearance      bool      `json:"appearance"`
+}
+
 type GetEpisodeResponseEpisode struct {
-	ID          uuid.UUID `json:"id"`
-	Number      uint      `json:"number"`
-	Name        string    `json:"name"`
-	NameThai    string    `json:"name_thai"`
-	NameEnglish string    `json:"name_english"`
+	ID          uuid.UUID                            `json:"id"`
+	Number      uint                                 `json:"number"`
+	Name        string                               `json:"name"`
+	NameThai    string                               `json:"name_thai"`
+	NameEnglish string                               `json:"name_english"`
+	Characters  []GetEpisodeResponseEpisodeCharacter `json:"characters"`
 }
 
 type GetEpisodeResponse struct {
@@ -29,11 +42,11 @@ type UpdateEpisodeRequest struct {
 type AddCharacterToEpisodeRequestCharacter struct {
 	ID              uuid.UUID `json:"id"`
 	Description     string    `json:"description"`
-	FirstAppearance bool      `json:"firstAppearance"`
+	FirstAppearance bool      `json:"first_appearance"`
 	Appearance      bool      `json:"appearance"`
 }
 
 type AddCharacterToEpisodeRequest struct {
-	EpisodeID  uuid.UUID `json:"episode_id"`
-	Characters []AddCharacterToEpisodeRequestCharacter
+	EpisodeID  uuid.UUID                               `json:"episode_id"`
+	Characters []AddCharacterToEpisodeRequestCharacter `json:"characters"`
 }

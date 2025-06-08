@@ -15,7 +15,8 @@ type Episode struct {
 	Image       string    `json:"image"`
 	AnimeID     uuid.UUID `json:"anime_id"`
 	Anime       Anime
-	AiredAt     time.Time `json:"aired_at"`
+	Character   []Character `gorm:"many2many:episode_characters;"`
+	AiredAt     time.Time   `json:"aired_at"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   time.Time `gorm:"index"`

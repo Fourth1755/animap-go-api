@@ -42,6 +42,7 @@ func main() {
 	episodeRepo := repositories.NewGormEpisodeRepository(db)
 	characterRepo := repositories.NewGormCharacterRepository(db)
 	animeCharacterRepo := repositories.NewGormAnimeCharacterRepository(db)
+	episodeCharacterRepo := repositories.NewGormEpisodeCharacterRepository(db)
 
 	//create service
 	userService := services.NewUserService(userRepo)
@@ -64,7 +65,7 @@ func main() {
 	)
 	commonService := services.NewCommonService(configService)
 	categoryUniverseService := services.NewCategoryUniverseService(categoryUniverseRepo)
-	episodeService := services.NewEpisodeService(episodeRepo, animeRepo)
+	episodeService := services.NewEpisodeService(episodeRepo, animeRepo, episodeCharacterRepo)
 	characterService := services.NewCharacterService(characterRepo, animeCharacterRepo, animeRepo)
 
 	//create handler

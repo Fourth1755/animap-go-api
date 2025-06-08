@@ -32,9 +32,10 @@ func (h *HttpEpisodeHandler) CreateEpisode(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, gin.H{"message": "Create Episode success"})
 }
 
-func (h *HttpEpisodeHandler) GetByAnimeId(c *gin.Context) {
+func (h *HttpEpisodeHandler) GetEpisodesByAnimeId(c *gin.Context) {
+	filter := c.Query("filter")
 	animeId := c.Param("anime_id")
-	anime, err := h.service.GetByAnimeId(uuid.MustParse(animeId))
+	anime, err := h.service.GetEpisodesByAnimeId(uuid.MustParse(animeId), filter)
 	if err != nil {
 		handleError(c, err)
 		return
