@@ -27,8 +27,8 @@ func NewEpisodeService(episodeRepo repositories.EpisodeRepository, animeRepo rep
 		animeRepo:   animeRepo}
 }
 
-func (s *episodeServiceImpl) CreateEpisode(anime_id uuid.UUID) error {
-	anime, err := s.animeRepo.GetById(anime_id)
+func (s *episodeServiceImpl) CreateEpisode(animeId uuid.UUID) error {
+	anime, err := s.animeRepo.GetById(animeId)
 	if err != nil {
 		logs.Error(err.Error())
 		if err == gorm.ErrRecordNotFound {
@@ -49,7 +49,7 @@ func (s *episodeServiceImpl) CreateEpisode(anime_id uuid.UUID) error {
 		}
 		episodes = append(episodes, entities.Episode{
 			ID:      episodeId,
-			AnimeID: anime_id,
+			AnimeID: animeId,
 			Number:  uint(i),
 		})
 	}

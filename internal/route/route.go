@@ -19,7 +19,8 @@ func InitRoutes(
 	studioHandler *adapters.HttpStduioHandler,
 	commonHandler *adapters.HttpCommonHandler,
 	categoryUniverseHandler *adapters.HttpCategoryUniverseHandler,
-	episodeHandler *adapters.HttpEpisodeHandler) *gin.Engine {
+	episodeHandler *adapters.HttpEpisodeHandler,
+	characterHandler *adapters.HttpCharacterHandler) *gin.Engine {
 
 	router := gin.Default()
 	router.Use(CORSMiddleware())
@@ -93,6 +94,9 @@ func InitRoutes(
 	router.POST("episode", episodeHandler.CreateEpisode)
 	router.GET("episode/:anime_id", episodeHandler.GetByAnimeId)
 	router.PUT("episode", episodeHandler.UpdateEpisode)
+
+	router.POST("characters", characterHandler.CreateCharacter)
+	router.GET("characters/:anime_id", characterHandler.GetCharacterByAnimeId)
 
 	return router
 }
