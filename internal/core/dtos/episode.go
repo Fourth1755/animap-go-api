@@ -17,3 +17,11 @@ type GetEpisodeResponseEpisode struct {
 type GetEpisodeResponse struct {
 	Episodes []GetEpisodeResponseEpisode `json:"episodes"`
 }
+
+type UpdateEpisodeRequest struct {
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	NameThai    string    `json:"name_thai"`
+	NameEnglish string    `json:"name_english"`
+	Image       string    `json:"image"`
+}

@@ -41,3 +41,17 @@ func (h *HttpEpisodeHandler) GetByAnimeId(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, anime)
 }
+
+func (h *HttpEpisodeHandler) UpdateEpisode(c *gin.Context) {
+	request := new(dtos.UpdateEpisodeRequest)
+	if err := c.BindJSON(request); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	err := h.service.UpdateEpisode(*request)
+	if err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Update Episode success"})
+}

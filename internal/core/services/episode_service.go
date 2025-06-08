@@ -13,6 +13,7 @@ import (
 type EpisodeService interface {
 	CreateEpisode(id uuid.UUID) error
 	GetByAnimeId(anime_id uuid.UUID) (*dtos.GetEpisodeResponse, error)
+	UpdateEpisode(request dtos.UpdateEpisodeRequest) error
 }
 
 type episodeServiceImpl struct {
@@ -88,4 +89,29 @@ func (s *episodeServiceImpl) GetByAnimeId(anime_id uuid.UUID) (*dtos.GetEpisodeR
 	return &dtos.GetEpisodeResponse{
 		Episodes: episodeResponse,
 	}, nil
+}
+
+func (s *episodeServiceImpl) UpdateEpisode(request dtos.UpdateEpisodeRequest) error {
+	_, err := s.episodeRepo.GetById(request.ID)
+	if err != nil {
+		logs.Error(err.Error())
+		if err == gorm.ErrRecordNotFound {
+			return errs.NewNotFoundError("Episode not found")
+		}
+		return errs.NewUnexpectedError()
+	}
+
+	episodeUpdate := entities.Episode{
+		ID:          request.ID,
+		Name:        request.Name,
+		NameThai:    request.NameThai,
+		NameEnglish: request.NameEnglish,
+	}
+
+	if err := s.episodeRepo.Update(&episodeUpdate); err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+
+	return nil
 }

@@ -92,6 +92,8 @@ func InitRoutes(
 
 	router.POST("episode", episodeHandler.CreateEpisode)
 	router.GET("episode/:anime_id", episodeHandler.GetByAnimeId)
+	router.PUT("episode", episodeHandler.UpdateEpisode)
+
 	return router
 }
 

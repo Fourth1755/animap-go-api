@@ -9,6 +9,8 @@ import (
 type EpisodeRepository interface {
 	BulkSave(episodes []entities.Episode) error
 	GetByAnimeId(anime_id uuid.UUID) ([]entities.Episode, error)
+	Update(animeEpisode *entities.Episode) error
+	GetById(id uuid.UUID) (*entities.Episode, error)
 }
 
 type GormEpisodeRepository struct {
@@ -33,4 +35,21 @@ func (r *GormEpisodeRepository) GetByAnimeId(anime_id uuid.UUID) ([]entities.Epi
 		return nil, result.Error
 	}
 	return animeEpisode, nil
+}
+
+func (r *GormEpisodeRepository) Update(animeEpisode *entities.Episode) error {
+	result := r.db.Model(&animeEpisode).Updates(animeEpisode)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *GormEpisodeRepository) GetById(id uuid.UUID) (*entities.Episode, error) {
+	var episode entities.Episode
+	if result := r.db.
+		First(&episode, id); result.Error != nil {
+		return nil, result.Error
+	}
+	return &episode, nil
 }
