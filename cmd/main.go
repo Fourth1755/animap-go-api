@@ -141,6 +141,7 @@ func InitDatabase() *gorm.DB {
 		&entities.Episode{},
 		&entities.Character{},
 		&entities.AnimeCharacter{},
+		&entities.EpisodeCharacter{},
 	)
 
 	return db

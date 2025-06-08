@@ -7,7 +7,7 @@ import (
 )
 
 type CharacterRepository interface {
-	Save(category *entities.Character) (*entities.Character, error)
+	Save(character *entities.Character) (*entities.Character, error)
 	GetById(id uuid.UUID) (*entities.Character, error)
 	GetByIds(ids []uuid.UUID) ([]entities.Character, error)
 }

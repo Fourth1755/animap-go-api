@@ -55,3 +55,17 @@ func (h *HttpEpisodeHandler) UpdateEpisode(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Update Episode success"})
 }
+
+func (h *HttpEpisodeHandler) AddCharactersToEpisode(c *gin.Context) {
+	request := new(dtos.AddCharacterToEpisodeRequest)
+	if err := c.BindJSON(request); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	err := h.service.AddCharactersToEpisode(*request)
+	if err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Add Characters to Episode success"})
+}

@@ -14,17 +14,23 @@ type EpisodeService interface {
 	CreateEpisode(id uuid.UUID) error
 	GetByAnimeId(anime_id uuid.UUID) (*dtos.GetEpisodeResponse, error)
 	UpdateEpisode(request dtos.UpdateEpisodeRequest) error
+	AddCharactersToEpisode(request dtos.AddCharacterToEpisodeRequest) error
 }
 
 type episodeServiceImpl struct {
-	episodeRepo repositories.EpisodeRepository
-	animeRepo   repositories.AnimeRepository
+	episodeRepo          repositories.EpisodeRepository
+	animeRepo            repositories.AnimeRepository
+	episodeCharacterRepo repositories.EpisodeCharacterRepository
 }
 
-func NewEpisodeService(episodeRepo repositories.EpisodeRepository, animeRepo repositories.AnimeRepository) EpisodeService {
+func NewEpisodeService(
+	episodeRepo repositories.EpisodeRepository,
+	animeRepo repositories.AnimeRepository,
+	episodeCharacterRepo repositories.EpisodeCharacterRepository) EpisodeService {
 	return &episodeServiceImpl{
-		episodeRepo: episodeRepo,
-		animeRepo:   animeRepo}
+		episodeRepo:          episodeRepo,
+		animeRepo:            animeRepo,
+		episodeCharacterRepo: episodeCharacterRepo}
 }
 
 func (s *episodeServiceImpl) CreateEpisode(animeId uuid.UUID) error {
@@ -109,6 +115,41 @@ func (s *episodeServiceImpl) UpdateEpisode(request dtos.UpdateEpisodeRequest) er
 	}
 
 	if err := s.episodeRepo.Update(&episodeUpdate); err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+
+	return nil
+}
+
+func (s *episodeServiceImpl) AddCharactersToEpisode(request dtos.AddCharacterToEpisodeRequest) error {
+	_, err := s.episodeRepo.GetById(request.EpisodeID)
+	if err != nil {
+		logs.Error(err.Error())
+		if err == gorm.ErrRecordNotFound {
+			return errs.NewNotFoundError("Episode not found")
+		}
+		return errs.NewUnexpectedError()
+	}
+
+	var episodeCharacters []entities.EpisodeCharacter
+	for _, character := range request.Characters {
+		episodeCharacterId, err := uuid.NewV7()
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+		episodeCharacters = append(episodeCharacters, entities.EpisodeCharacter{
+			ID:              episodeCharacterId,
+			EpisodeID:       request.EpisodeID,
+			CharacterID:     character.ID,
+			Description:     character.Description,
+			Appearance:      character.Appearance,
+			FirstAppearance: character.FirstAppearance,
+		})
+	}
+
+	if err = s.episodeCharacterRepo.BulkSave(episodeCharacters); err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}

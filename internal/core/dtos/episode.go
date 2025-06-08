@@ -25,3 +25,15 @@ type UpdateEpisodeRequest struct {
 	NameEnglish string    `json:"name_english"`
 	Image       string    `json:"image"`
 }
+
+type AddCharacterToEpisodeRequestCharacter struct {
+	ID              uuid.UUID `json:"id"`
+	Description     string    `json:"description"`
+	FirstAppearance bool      `json:"firstAppearance"`
+	Appearance      bool      `json:"appearance"`
+}
+
+type AddCharacterToEpisodeRequest struct {
+	EpisodeID  uuid.UUID `json:"episode_id"`
+	Characters []AddCharacterToEpisodeRequestCharacter
+}
