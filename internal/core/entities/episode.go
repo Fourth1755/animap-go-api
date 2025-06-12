@@ -12,6 +12,7 @@ type Episode struct {
 	Name        string    `json:"name"`
 	NameThai    string    `json:"name_thai"`
 	NameEnglish string    `json:"name_english"`
+	NameJapan   string    `json:"name_japan"`
 	Image       string    `json:"image"`
 	AnimeID     uuid.UUID `json:"anime_id"`
 	Anime       Anime

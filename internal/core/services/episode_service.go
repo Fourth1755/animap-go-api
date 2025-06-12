@@ -140,6 +140,7 @@ func (s *episodeServiceImpl) GetEpisodesByAnimeId(anime_id uuid.UUID, filter str
 			Name:        episode.Name,
 			NameThai:    episode.NameThai,
 			NameEnglish: episode.NameEnglish,
+			NameJapan:   episode.NameJapan,
 			Characters:  episodeCharacterMap[episode.ID],
 		})
 	}
@@ -164,6 +165,7 @@ func (s *episodeServiceImpl) UpdateEpisode(request dtos.UpdateEpisodeRequest) er
 		Name:        request.Name,
 		NameThai:    request.NameThai,
 		NameEnglish: request.NameEnglish,
+		NameJapan:   request.NameJapan,
 	}
 
 	if err := s.episodeRepo.Update(&episodeUpdate); err != nil {

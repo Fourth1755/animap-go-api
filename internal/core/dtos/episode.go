@@ -24,6 +24,7 @@ type GetEpisodeResponseEpisode struct {
 	Name        string                               `json:"name"`
 	NameThai    string                               `json:"name_thai"`
 	NameEnglish string                               `json:"name_english"`
+	NameJapan   string                               `json:"name_japan"`
 	Characters  []GetEpisodeResponseEpisodeCharacter `json:"characters"`
 }
 
@@ -36,6 +37,7 @@ type UpdateEpisodeRequest struct {
 	Name        string    `json:"name"`
 	NameThai    string    `json:"name_thai"`
 	NameEnglish string    `json:"name_english"`
+	NameJapan   string    `json:"name_japan"`
 	Image       string    `json:"image"`
 }
 

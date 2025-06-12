@@ -30,7 +30,9 @@ func (r *GormEpisodeRepository) BulkSave(episodes []entities.Episode) error {
 
 func (r *GormEpisodeRepository) GetByAnimeId(anime_id uuid.UUID) ([]entities.Episode, error) {
 	var episode []entities.Episode
-	result := r.db.Where("anime_id = ?", anime_id).Find(&episode)
+	result := r.db.
+		Order("number asc").
+		Where("anime_id = ?", anime_id).Find(&episode)
 	if result.Error != nil {
 		return nil, result.Error
 	}

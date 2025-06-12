@@ -91,10 +91,10 @@ func InitRoutes(
 
 	router.GET("common/seasonal-year", commonHandler.GetSeasonalAndYear)
 
-	router.POST("episode", episodeHandler.CreateEpisode)
-	router.GET("episode/:anime_id", episodeHandler.GetEpisodesByAnimeId)
-	router.PUT("episode", episodeHandler.UpdateEpisode)
-	router.POST("episode/add-character", episodeHandler.AddCharactersToEpisode)
+	router.POST("episodes", episodeHandler.CreateEpisode)
+	router.GET("episodes/:anime_id", episodeHandler.GetEpisodesByAnimeId)
+	router.PUT("episodes", episodeHandler.UpdateEpisode)
+	router.POST("episodes/add-character", episodeHandler.AddCharactersToEpisode)
 
 	router.POST("characters", characterHandler.CreateCharacter)
 	router.GET("characters/:anime_id", characterHandler.GetCharacterByAnimeId)
