@@ -11,7 +11,7 @@ import (
 type ArtistService interface {
 	CreateArtist(Artist *entities.Artist) error
 	GetArtists() ([]entities.Artist, error)
-	GetArtistById(id uint) (*entities.Artist, error)
+	GetArtistById(id uuid.UUID) (*entities.Artist, error)
 }
 
 type ArtistServiceImpl struct {
@@ -45,7 +45,7 @@ func (s ArtistServiceImpl) GetArtists() ([]entities.Artist, error) {
 	return artist, nil
 }
 
-func (s ArtistServiceImpl) GetArtistById(id uint) (*entities.Artist, error) {
+func (s ArtistServiceImpl) GetArtistById(id uuid.UUID) (*entities.Artist, error) {
 	artist, err := s.repo.GetById(id)
 	if err != nil {
 		logs.Error(err)

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Anime struct {
@@ -28,6 +29,6 @@ type Anime struct {
 	AiredAt           time.Time          `json:"aired_at"`
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
-	DeletedAt         time.Time `gorm:"index"`
-	IsCreateEpisode   bool      `gorm:"default:false" json:"is_create_episode"`
+	DeletedAt         gorm.DeletedAt `gorm:"index"`
+	IsCreateEpisode   bool           `gorm:"default:false" json:"is_create_episode"`
 }

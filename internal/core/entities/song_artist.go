@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type SongArtist struct {
@@ -12,5 +13,5 @@ type SongArtist struct {
 	ArtistId  uuid.UUID `json:"artist_id"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt time.Time `gorm:"index"`
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }

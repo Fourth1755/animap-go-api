@@ -55,13 +55,13 @@ type CreateSongRequest struct {
 	Sequence    int                                   `json:"sequence"`
 	AnimeID     uuid.UUID                             `json:"anime_id"`
 	SongChannel []GetSongByAnimeIdResponseSongChannel `json:"song_channel"`
-	ArtistList  []uint                                `json:"artist_list"`
+	ArtistList  []uuid.UUID                           `json:"artist_list"`
 }
 
 type CreateSongChannelRequest struct {
-	Channel int    `json:"channel"`
-	Type    int    `json:"type"`
-	Link    string `json:"link"`
-	SongID  uint   `json:"song_id"`
-	IsMain  int    `json:"is_main"`
+	Channel int       `json:"channel"`
+	Type    int       `json:"type"`
+	Link    string    `json:"link"`
+	SongID  uuid.UUID `json:"song_id"`
+	IsMain  int       `json:"is_main"`
 }

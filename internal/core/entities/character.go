@@ -12,6 +12,7 @@ type Character struct {
 	Name            string    `json:"name"`
 	FirstName       string    `json:"first_name"`
 	LastName        string    `json:"last_name"`
+	NameThai        string    `json:"name_thai"`
 	FirstNameThai   string    `json:"first_name_thai"`
 	LastNameThai    string    `json:"last_name_thai"`
 	FirstNameJapan  string    `json:"first_name_japan"`

@@ -100,7 +100,13 @@ func (s songServiceImpl) CreateSong(songRequest *dtos.CreateSongRequest) error {
 	//save song artist
 	songArtist := []entities.SongArtist{}
 	for _, item := range artistList {
+		songArtistId, err := uuid.NewV7()
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
 		songArtist = append(songArtist, entities.SongArtist{
+			ID:       songArtistId,
 			SongId:   songId,
 			ArtistId: item.ID,
 		})

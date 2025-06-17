@@ -126,4 +126,31 @@ INSERT INTO artists(id, name, image, is_music_band, created_at, updated_at, memb
         now(),
         now(),
         null
+    ),
+    (
+        '01977eaa-4286-7e30-b0a4-6329cdb14812',
+        'Aoi Eir',
+        'https://yt3.googleusercontent.com/lDnIJgZOvf0Na4_CNnp-H95PjC5BflG2FYFr6jsX0c6DYILwhMhe5vaYAkTHvJ-h4fHTdbOM-Wc=s900-c-k-c0x00ffffff-no-rj',
+        TRUE,
+        now(),
+        now(),
+        null
+    ),
+    (
+        '01977eab-a5cb-7d40-b615-d50330ba5266',
+        'Haruka Tomatsu',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6w-2qcwDG-BPzjUh_j72srApp6e-K0x3jcQ&s',
+        TRUE,
+        now(),
+        now(),
+        null
+    ),
+    (
+        '01977eae-7ae9-78ce-b1a4-01ada086a7aa',
+        'Luna Haruna',
+        'https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTsl6Ml-lDWpacZ_-XFHc0JTozS-iSosRCanCVBwHqlqrclN0ukzgFHScI2o5Fm2UU_4QxzEm5YM0C4Brd0jjtTsg',
+        TRUE,
+        now(),
+        now(),
+        null
     );

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Studio struct {
@@ -14,7 +15,7 @@ type Studio struct {
 	Description string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	DeletedAt   time.Time `gorm:"index"`
-	Animes      []Anime   `gorm:"many2many:anime_studios;"`
-	MainColor   string    `json:"main_color"`
+	DeletedAt   gorm.DeletedAt `gorm:"index"`
+	Animes      []Anime        `gorm:"many2many:anime_studios;"`
+	MainColor   string         `json:"main_color"`
 }

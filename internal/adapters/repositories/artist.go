@@ -2,14 +2,15 @@ package repositories
 
 import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type ArtistRepository interface {
 	Save(*entities.Artist) error
 	GetAll() ([]entities.Artist, error)
-	GetById(uint) (*entities.Artist, error)
-	GetByIds([]uint) ([]entities.Artist, error)
+	GetById(uuid.UUID) (*entities.Artist, error)
+	GetByIds([]uuid.UUID) ([]entities.Artist, error)
 }
 
 type GormArtistRepository struct {
@@ -35,7 +36,7 @@ func (r GormArtistRepository) GetAll() ([]entities.Artist, error) {
 	return artist, nil
 }
 
-func (r GormArtistRepository) GetById(id uint) (*entities.Artist, error) {
+func (r GormArtistRepository) GetById(id uuid.UUID) (*entities.Artist, error) {
 	var artist *entities.Artist
 	if result := r.db.Preload("Song").First(&artist, id); result.Error != nil {
 		return nil, result.Error
@@ -43,7 +44,7 @@ func (r GormArtistRepository) GetById(id uint) (*entities.Artist, error) {
 	return artist, nil
 }
 
-func (r GormArtistRepository) GetByIds(ids []uint) ([]entities.Artist, error) {
+func (r GormArtistRepository) GetByIds(ids []uuid.UUID) ([]entities.Artist, error) {
 	var artist []entities.Artist
 	if result := r.db.Find(&artist, ids); result.Error != nil {
 		return nil, result.Error

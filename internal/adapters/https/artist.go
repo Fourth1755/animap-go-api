@@ -2,12 +2,12 @@ package adapters
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type HttpArtistHandler struct {
@@ -32,13 +32,8 @@ func (h *HttpArtistHandler) CreateArtist(c *gin.Context) {
 }
 
 func (h *HttpArtistHandler) GetArtistById(c *gin.Context) {
-	artistId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-
-	artist, err := h.service.GetArtistById(uint(artistId))
+	artistId := c.Param("id")
+	artist, err := h.service.GetArtistById(uuid.MustParse(artistId))
 	if err != nil {
 		handleError(c, err)
 		return

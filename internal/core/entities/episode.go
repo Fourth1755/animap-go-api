@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Episode struct {
@@ -20,5 +21,5 @@ type Episode struct {
 	AiredAt     time.Time   `json:"aired_at"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	DeletedAt   time.Time `gorm:"index"`
+	DeletedAt   gorm.DeletedAt `gorm:"index"`
 }

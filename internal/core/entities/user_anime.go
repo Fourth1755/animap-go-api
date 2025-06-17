@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type UserAnime struct {
@@ -19,5 +20,5 @@ type UserAnime struct {
 	SequenceMyTopAnime int       `gorm:"default:0" json:"sequence_my_top_anime"`
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
-	DeletedAt          time.Time `gorm:"index"`
+	DeletedAt          gorm.DeletedAt `gorm:"index"`
 }

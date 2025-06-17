@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type AnimeCategoryUniverse struct {
@@ -17,5 +18,5 @@ type AnimeCategoryUniverse struct {
 	SequenceTimeLine   int    `json:"sequence_time_line"`
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
-	DeletedAt          time.Time `gorm:"index"`
+	DeletedAt          gorm.DeletedAt `gorm:"index"`
 }
