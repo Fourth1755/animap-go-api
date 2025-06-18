@@ -64,11 +64,21 @@ func (s songServiceImpl) CreateSong(songRequest *dtos.CreateSongRequest) error {
 			logs.Error(err.Error())
 			return errs.NewUnexpectedError()
 		}
+
+		linkEmbed := ""
+		if item.Link != "" {
+			linkEmbed, err = convertYouTubeURLToEmbed(item.Link)
+			if err != nil {
+				logs.Error(err.Error())
+				return errs.NewUnexpectedError()
+			}
+		}
+
 		songChannel = append(songChannel, entities.SongChannel{
 			ID:      songChannelId,
 			Channel: item.Channel,
 			Type:    item.Type,
-			Link:    item.Link,
+			Link:    linkEmbed,
 			IsMain:  item.IsMain,
 		})
 	}

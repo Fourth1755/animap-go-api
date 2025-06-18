@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
+	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
@@ -10,7 +11,7 @@ import (
 
 type ArtistService interface {
 	CreateArtist(Artist *entities.Artist) error
-	GetArtists() ([]entities.Artist, error)
+	GetArtists() (*dtos.GetArtistsResponse, error)
 	GetArtistById(id uuid.UUID) (*entities.Artist, error)
 }
 
@@ -36,13 +37,15 @@ func (s ArtistServiceImpl) CreateArtist(artist *entities.Artist) error {
 	return nil
 }
 
-func (s ArtistServiceImpl) GetArtists() ([]entities.Artist, error) {
-	artist, err := s.repo.GetAll()
+func (s ArtistServiceImpl) GetArtists() (*dtos.GetArtistsResponse, error) {
+	artists, err := s.repo.GetAll()
 	if err != nil {
 		logs.Error(err)
 		return nil, errs.NewUnexpectedError()
 	}
-	return artist, nil
+	return &dtos.GetArtistsResponse{
+		Artists: artists,
+	}, nil
 }
 
 func (s ArtistServiceImpl) GetArtistById(id uuid.UUID) (*entities.Artist, error) {
