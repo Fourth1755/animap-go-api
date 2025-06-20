@@ -9,6 +9,7 @@ import (
 type SongRepository interface {
 	Save(*entities.Song) (uuid.UUID, error)
 	GetById(uuid.UUID) (*entities.Song, error)
+	GetByIds(ids []uuid.UUID) ([]entities.Song, error)
 	GetAll() ([]entities.Song, error)
 	Update(*entities.Song) error
 	Delete(uuid.UUID) error
@@ -37,6 +38,18 @@ func (r *GormSongRepository) GetById(id uuid.UUID) (*entities.Song, error) {
 		return nil, result.Error
 	}
 	return song, nil
+}
+
+func (r *GormSongRepository) GetByIds(ids []uuid.UUID) ([]entities.Song, error) {
+	var songs []entities.Song
+	if result := r.db.
+		Preload("Anime").
+		Preload("SongChannel").
+		Where("id in (?)", ids).
+		Find(&songs); result.Error != nil {
+		return nil, result.Error
+	}
+	return songs, nil
 }
 
 func (r *GormSongRepository) GetAll() ([]entities.Song, error) {

@@ -82,6 +82,7 @@ func InitRoutes(
 	router.DELETE("songs/:id", songHandler.DeleteSong)
 	router.GET("songs/anime/:id", songHandler.GetSongByAnimeId)
 	router.POST("songs/channel", songHandler.CreateSongChannel)
+	router.GET("songs/artist/:id", songHandler.GetSongsByArtistId)
 
 	router.POST("artists", artistHandler.CreateArtist)
 	router.GET("artists", artistHandler.GetArtistList)

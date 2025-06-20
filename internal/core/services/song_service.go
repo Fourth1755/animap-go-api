@@ -17,10 +17,11 @@ type SongService interface {
 	DeleteSong(uuid.UUID) error
 	GetSongByAnimeId(uuid.UUID) (*dtos.GetSongByAnimeIdResponse, error)
 	CreateSongChannel(request *dtos.CreateSongChannelRequest) error
+	GetSongsByArtistId(artistId uuid.UUID) (*dtos.GetSongsByArtistResponse, error)
 }
 
 type songServiceImpl struct {
-	repo            repositories.SongRepository
+	songRepo        repositories.SongRepository
 	animeRepo       repositories.AnimeRepository
 	artistRepo      repositories.ArtistRepository
 	songArtistRepo  repositories.SongArtistRepository
@@ -28,13 +29,13 @@ type songServiceImpl struct {
 }
 
 func NewSongService(
-	repo repositories.SongRepository,
+	songRepo repositories.SongRepository,
 	animeRepo repositories.AnimeRepository,
 	artistRepo repositories.ArtistRepository,
 	songArtistRepo repositories.SongArtistRepository,
 	songChannelRepo repositories.SongChannelRepository) SongService {
 	return &songServiceImpl{
-		repo:            repo,
+		songRepo:        songRepo,
 		animeRepo:       animeRepo,
 		artistRepo:      artistRepo,
 		songArtistRepo:  songArtistRepo,
@@ -101,7 +102,7 @@ func (s songServiceImpl) CreateSong(songRequest *dtos.CreateSongRequest) error {
 	}
 
 	//save song
-	songId, err = s.repo.Save(&song)
+	songId, err = s.songRepo.Save(&song)
 	if err != nil {
 		logs.Error(err)
 		return errs.NewUnexpectedError()
@@ -129,7 +130,7 @@ func (s songServiceImpl) CreateSong(songRequest *dtos.CreateSongRequest) error {
 }
 
 func (s songServiceImpl) GetSongById(id uuid.UUID) (*entities.Song, error) {
-	song, err := s.repo.GetById(id)
+	song, err := s.songRepo.GetById(id)
 	if err != nil {
 		logs.Error(err)
 		return nil, errs.NewNotFoundError("Song not found")
@@ -138,7 +139,7 @@ func (s songServiceImpl) GetSongById(id uuid.UUID) (*entities.Song, error) {
 }
 
 func (s songServiceImpl) GetAllSongs() ([]dtos.SongListResponse, error) {
-	songs, err := s.repo.GetAll()
+	songs, err := s.songRepo.GetAll()
 	if err != nil {
 		logs.Error(err)
 		return nil, errs.NewUnexpectedError()
@@ -162,12 +163,12 @@ func (s songServiceImpl) GetAllSongs() ([]dtos.SongListResponse, error) {
 }
 
 func (s songServiceImpl) UpdateSong(song *entities.Song) error {
-	_, err := s.repo.GetById(song.ID)
+	_, err := s.songRepo.GetById(song.ID)
 	if err != nil {
 		logs.Error(err)
 		return errs.NewNotFoundError("Song not found")
 	}
-	if err := s.repo.Update(song); err != nil {
+	if err := s.songRepo.Update(song); err != nil {
 		logs.Error(err)
 		return err
 	}
@@ -175,7 +176,7 @@ func (s songServiceImpl) UpdateSong(song *entities.Song) error {
 }
 
 func (s songServiceImpl) DeleteSong(id uuid.UUID) error {
-	err := s.repo.Delete(id)
+	err := s.songRepo.Delete(id)
 	if err != nil {
 		logs.Error(err)
 		return err
@@ -189,7 +190,7 @@ func (s songServiceImpl) GetSongByAnimeId(animeId uuid.UUID) (*dtos.GetSongByAni
 		logs.Error(err)
 		return nil, errs.NewNotFoundError("Anime not found")
 	}
-	songs, err := s.repo.GetByAnimeId(animeId)
+	songs, err := s.songRepo.GetByAnimeId(animeId)
 	if err != nil {
 		logs.Error(err)
 		return nil, err
@@ -271,4 +272,65 @@ func (s songServiceImpl) CreateSongChannel(request *dtos.CreateSongChannelReques
 		return errs.NewUnexpectedError()
 	}
 	return nil
+}
+
+func (s songServiceImpl) GetSongsByArtistId(artistId uuid.UUID) (*dtos.GetSongsByArtistResponse, error) {
+	artist, err := s.artistRepo.GetById(artistId)
+	if err != nil {
+		logs.Error(err)
+		return nil, errs.NewNotFoundError("Artist not found")
+	}
+
+	songArtist, err := s.songArtistRepo.GetByArtistId(artistId)
+	if err != nil {
+		logs.Error(err)
+		return nil, errs.NewUnexpectedError()
+	}
+
+	var songIds []uuid.UUID
+	for _, item := range songArtist {
+		songIds = append(songIds, item.SongId)
+	}
+
+	songs, err := s.songRepo.GetByIds(songIds)
+	if err != nil {
+		logs.Error(err)
+		return nil, errs.NewUnexpectedError()
+	}
+
+	var songsResponse []dtos.GetSongsByArtistResponseSong
+	for _, song := range songs {
+		var songChannels []dtos.GetSongsByArtistResponseSongChannel
+		for _, songChannel := range song.SongChannel {
+			songChannels = append(songChannels, dtos.GetSongsByArtistResponseSongChannel{
+				ID:      songChannel.ID,
+				Channel: songChannel.Channel,
+				Type:    songChannel.Type,
+				Link:    songChannel.Link,
+				IsMain:  songChannel.IsMain,
+			})
+		}
+		songsResponse = append(songsResponse, dtos.GetSongsByArtistResponseSong{
+			ID:             song.ID,
+			Name:           song.Name,
+			Image:          song.Image,
+			Description:    song.Description,
+			Year:           song.Year,
+			Type:           song.Type,
+			AnimeID:        song.AnimeID,
+			AnimeName:      song.Anime.Name,
+			AnimeWallpaper: song.Anime.Wallpaper,
+			SongChannel:    songChannels,
+		})
+	}
+	response := &dtos.GetSongsByArtistResponse{
+		Aritst: dtos.GetSongsByArtistResponseArtist{
+			ID:    artist.ID,
+			Name:  artist.Name,
+			Image: artist.Image,
+		},
+		Songs: songsResponse,
+	}
+
+	return response, nil
 }

@@ -97,3 +97,13 @@ func (h *HttpSongHandler) CreateSongChannel(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusCreated, gin.H{"message": "Create song chennel success"})
 }
+
+func (h *HttpSongHandler) GetSongsByArtistId(c *gin.Context) {
+	artistId := c.Param("id")
+	rersponse, err := h.service.GetSongsByArtistId(uuid.MustParse(artistId))
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, rersponse)
+}

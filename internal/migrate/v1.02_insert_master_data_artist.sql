@@ -153,4 +153,22 @@ INSERT INTO artists(id, name, image, is_music_band, created_at, updated_at, memb
         now(),
         now(),
         null
+    ),
+    (
+        '019788f8-7a98-74ba-8ef3-f9028236f046',
+        'Ryokuoushoku Shakai',
+        'https://lh3.googleusercontent.com/laBn2mlbywMkg2jHc0IbGeEpNjnGha1CC7nxlKpMGjsC3O8jjUAFInAtUR4XDTlWgKtNJNnqXF5vjs8=w2880-h1200-p-l90-rj',
+        TRUE,
+        now(),
+        now(),
+        null
+    ),
+    (
+        '019788fd-0046-79f8-9057-df873fdb8918',
+        'Uru',
+        'https://yt3.googleusercontent.com/EyNcyRM_LejUxjrDiobMCzYpHnsvDkT_BN64e292lN_6hD6s6BI1TpFpSsEUt46kBhkINUNgTH0=s900-c-k-c0x00ffffff-no-rj',
+        FALSE,
+        now(),
+        now(),
+        null
     );

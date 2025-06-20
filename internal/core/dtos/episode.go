@@ -14,7 +14,7 @@ type GetEpisodeResponseEpisodeCharacter struct {
 	ImageStyleX     uint      `json:"image_style_x"`
 	ImageStyleY     uint      `json:"image_style_y"`
 	Description     string    `json:"description"`
-	FirstAppearance bool      `json:"firstAppearance"`
+	FirstAppearance bool      `json:"first_appearance"`
 	Appearance      bool      `json:"appearance"`
 }
 
