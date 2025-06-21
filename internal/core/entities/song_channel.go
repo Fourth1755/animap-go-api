@@ -9,11 +9,11 @@ import (
 
 type SongChannel struct {
 	ID        uuid.UUID `gorm:"primarykey"`
-	Channel   int       `json:"channel"` // 1: youtube 2: spotify
-	Type      int       `json:"type"`    // 1: tv_size 2: full 3: official 4 unofficial
+	Channel   string    `json:"channel"` // YOUTUBE,SPOTIFY
+	Type      string    `json:"type"`    // TV_SIZE, FULL_SIZE_OFFICIAL, FULL_SIZE_UNOFFICIAL, FIRST_TAKE
 	Link      string    `json:"link"`
 	SongID    uuid.UUID `json:"song_id"`
-	IsMain    int       `json:"is_main"` // 1: main 2:not main is_main for show
+	IsMain    bool      `json:"is_main"` // true: main false:not main is_main for show
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`

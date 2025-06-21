@@ -42,8 +42,6 @@ func NewSongService(
 		songChannelRepo: songChannelRepo}
 }
 
-var songTypeMap = []string{"none", "opening", "ending", "soundtrack"}
-
 func (s songServiceImpl) CreateSong(songRequest *dtos.CreateSongRequest) error {
 	//validate anime id
 	if _, err := s.animeRepo.GetById(songRequest.AnimeID); err != nil {
@@ -152,7 +150,7 @@ func (s songServiceImpl) GetAllSongs() ([]dtos.SongListResponse, error) {
 			Image:       song.Image,
 			Description: song.Description,
 			Year:        song.Year,
-			Type:        songTypeMap[song.Type],
+			Type:        song.Type,
 			Sequence:    song.Sequence,
 			AnimeID:     song.AnimeID,
 			AnimeName:   song.Anime.Name,
@@ -198,7 +196,7 @@ func (s songServiceImpl) GetSongByAnimeId(animeId uuid.UUID) (*dtos.GetSongByAni
 	var openingSong []dtos.GetSongByAnimeIdResponseSong
 	var endingSong []dtos.GetSongByAnimeIdResponseSong
 	var soundtrack []dtos.GetSongByAnimeIdResponseSong
-	SongType := NewSongType()
+
 	for _, song := range songs {
 		var songChannelData []dtos.GetSongByAnimeIdResponseSongChannel
 		for _, channel := range song.SongChannel {
@@ -233,11 +231,11 @@ func (s songServiceImpl) GetSongByAnimeId(animeId uuid.UUID) (*dtos.GetSongByAni
 			SongChannel: songChannelData,
 			SongArtist:  songArtistList,
 		}
-		if song.Type == SongType.Opening {
+		if song.Type == songTypeOpening {
 			openingSong = append(openingSong, songData)
-		} else if song.Type == SongType.Ending {
+		} else if song.Type == songTypeEnding {
 			endingSong = append(endingSong, songData)
-		} else if song.Type == SongType.Soundtrack {
+		} else if song.Type == songTypeSoundtrack {
 			soundtrack = append(soundtrack, songData)
 		}
 	}
@@ -256,11 +254,20 @@ func (s songServiceImpl) CreateSongChannel(request *dtos.CreateSongChannelReques
 		return errs.NewUnexpectedError()
 	}
 
+	linkEmbed := ""
+	if request.Link != "" {
+		linkEmbed, err = convertYouTubeURLToEmbed(request.Link)
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+	}
+
 	songChannel := entities.SongChannel{
 		ID:      songChannelId,
 		Channel: request.Channel,
 		Type:    request.Type,
-		Link:    request.Link,
+		Link:    linkEmbed,
 		SongID:  request.SongID,
 		IsMain:  request.IsMain,
 	}

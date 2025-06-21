@@ -14,7 +14,7 @@ type Song struct {
 	Image       string        `json:"image"`
 	Description string        `json:"description"`
 	Year        string        `json:"year"`
-	Type        int           `json:"type"` // 1: opening, 2: ending, 3:soundtrack
+	Type        string        `json:"type"` //OPENING, ENDING, SOUNDSTRACK
 	Sequence    int           `json:"sequence"`
 	AnimeID     uuid.UUID     `json:"anime_id"`
 	Anime       Anime         `json:"anime"`

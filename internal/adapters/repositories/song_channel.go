@@ -7,6 +7,7 @@ import (
 
 type SongChannelRepository interface {
 	Save(songChannel *entities.SongChannel) error
+	Update(songChannel *entities.SongChannel) error
 }
 
 type GormSongChannelRepository struct {
@@ -19,6 +20,14 @@ func NewGormSongChannelRepository(db *gorm.DB) SongChannelRepository {
 
 func (r GormSongChannelRepository) Save(songChannel *entities.SongChannel) error {
 	result := r.db.Create(&songChannel)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r GormSongChannelRepository) Update(songChannel *entities.SongChannel) error {
+	result := r.db.Model(&songChannel).Updates(songChannel)
 	if result.Error != nil {
 		return result.Error
 	}
