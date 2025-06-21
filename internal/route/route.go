@@ -87,6 +87,7 @@ func InitRoutes(
 	router.POST("artists", artistHandler.CreateArtist)
 	router.GET("artists", artistHandler.GetArtistList)
 	router.GET("artists/:id", artistHandler.GetArtistById)
+	router.PUT("artists/:id", artistHandler.UpdateArtist)
 
 	router.GET("studios", studioHandler.GetAllStduio)
 

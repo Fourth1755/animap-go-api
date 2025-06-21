@@ -8,6 +8,7 @@ import (
 
 type ArtistRepository interface {
 	Save(*entities.Artist) error
+	Update(artist *entities.Artist) error
 	GetAll() ([]entities.Artist, error)
 	GetById(uuid.UUID) (*entities.Artist, error)
 	GetByIds([]uuid.UUID) ([]entities.Artist, error)
@@ -23,6 +24,14 @@ func NewGormArtistRepository(db *gorm.DB) ArtistRepository {
 
 func (r GormArtistRepository) Save(artist *entities.Artist) error {
 	if result := r.db.Create(&artist); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r GormArtistRepository) Update(artist *entities.Artist) error {
+	result := r.db.Model(&artist).Updates(artist)
+	if result.Error != nil {
 		return result.Error
 	}
 	return nil

@@ -7,10 +7,12 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type ArtistService interface {
 	CreateArtist(Artist *entities.Artist) error
+	UpdateArtist(artist *entities.Artist) error
 	GetArtists() (*dtos.GetArtistsResponse, error)
 	GetArtistById(id uuid.UUID) (*entities.Artist, error)
 }
@@ -32,6 +34,23 @@ func (s ArtistServiceImpl) CreateArtist(artist *entities.Artist) error {
 	artist.ID = artistId
 	if err := s.repo.Save(artist); err != nil {
 		logs.Error(err)
+		return errs.NewUnexpectedError()
+	}
+	return nil
+}
+
+func (s ArtistServiceImpl) UpdateArtist(artist *entities.Artist) error {
+	_, err := s.repo.GetById(artist.ID)
+	if err != nil {
+		logs.Error(err.Error())
+		if err == gorm.ErrRecordNotFound {
+			return errs.NewNotFoundError("Artist not found")
+		}
+		return errs.NewUnexpectedError()
+	}
+
+	if err := s.repo.Update(artist); err != nil {
+		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}
 	return nil

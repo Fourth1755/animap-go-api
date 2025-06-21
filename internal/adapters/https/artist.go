@@ -31,6 +31,22 @@ func (h *HttpArtistHandler) CreateArtist(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, gin.H{"message": "Create artist success"})
 }
 
+func (h *HttpArtistHandler) UpdateArtist(c *gin.Context) {
+	artist := c.Param("id")
+	artistUpdate := new(entities.Artist)
+	if err := c.BindJSON(artistUpdate); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	artistUpdate.ID = uuid.MustParse(artist)
+	err := h.service.UpdateArtist(artistUpdate)
+	if err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Update Artist success"})
+}
+
 func (h *HttpArtistHandler) GetArtistById(c *gin.Context) {
 	artistId := c.Param("id")
 	artist, err := h.service.GetArtistById(uuid.MustParse(artistId))
