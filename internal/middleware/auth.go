@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
@@ -24,6 +23,6 @@ func AuthRequired(c *gin.Context) {
 		return
 	}
 	claim := token.Claims.(jwt.MapClaims)
-	fmt.Println(claim["role"])
+	c.Set("userId", claim["uuid"])
 	c.Next()
 }

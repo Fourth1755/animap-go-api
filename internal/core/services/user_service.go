@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -17,7 +19,7 @@ import (
 type UserService interface {
 	CreateUser(user *entities.User) error
 	Login(user *entities.User) (*dtos.LoginResponse, error)
-	GetUserInfo(request *dtos.GetUserInfoRequest) (*dtos.GetUserInfoResponse, error)
+	GetUserInfo(ctx context.Context) (*dtos.GetUserInfoResponse, error)
 	UpdateUserInfo(request *dtos.UpdateUserInfoRequest) error
 }
 
@@ -88,8 +90,14 @@ func (s *UserServiceImpl) Login(user *entities.User) (*dtos.LoginResponse, error
 	return &loginResponse, nil
 }
 
-func (s *UserServiceImpl) GetUserInfo(request *dtos.GetUserInfoRequest) (*dtos.GetUserInfoResponse, error) {
-	user, err := s.repo.GetById(request.UUID)
+func (s *UserServiceImpl) GetUserInfo(ctx context.Context) (*dtos.GetUserInfoResponse, error) {
+	userId, ok := ctx.Value("userId").(string)
+	if !ok {
+		return nil, errs.NewUnexpectedError()
+	}
+	fmt.Println(userId)
+	userIdUuid := uuid.MustParse(userId)
+	user, err := s.repo.GetById(userIdUuid)
 	if err != nil {
 		return nil, err
 	}

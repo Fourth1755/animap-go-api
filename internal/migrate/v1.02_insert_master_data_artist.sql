@@ -171,4 +171,13 @@ INSERT INTO artists(id, name, image, is_music_band, created_at, updated_at, memb
         now(),
         now(),
         null
+    ),
+    (
+        '019797ba-aefe-7952-9942-11ef91fcb070',
+        'EGOIST',
+        'https://yt3.googleusercontent.com/Kz7d5T-TXVcAQ8G_YAfZ7u4eDsHfpK6__VEjA59frkaaj5jM5vuN20PBvjji7uNSBKMCmxa7WA=s900-c-k-c0x00ffffff-no-rj',
+        TRUE,
+        now(),
+        now(),
+        null
     );

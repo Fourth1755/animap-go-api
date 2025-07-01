@@ -1,11 +1,8 @@
 package route
 
 import (
-	"encoding/gob"
-
 	adapters "github.com/Fourth1755/animap-go-api/internal/adapters/https"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
+	"github.com/Fourth1755/animap-go-api/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -34,19 +31,19 @@ func InitRoutes(
 	// }))
 	router.POST("register", userHandler.CreateUser)
 	router.POST("login", userHandler.Login)
-	router.GET("user/user-info", userHandler.GetUserInfo)
-	router.PATCH("user/user-info", userHandler.UpdateUserInfo)
 
-	// router.Use("animes", jwtware.New(jwtware.Config{
-	// 	SigningKey: []byte(os.GETenv("JWT_SECRET")),
-	// }))
-	//router.Use("animes", middleware.AuthRequired)
+	authorized := router.Group("/")
+	authorized.Use(middleware.AuthRequired)
+	{
+		authorized.GET("user/user-info", userHandler.GetUserInfo)
+		authorized.PATCH("user/user-info", userHandler.UpdateUserInfo)
+	}
 
-	//auth0
-	gob.Register(map[string]interface{}{})
+	// //auth0
+	// gob.Register(map[string]interface{}{})
 
-	store := cookie.NewStore([]byte("secret"))
-	router.Use(sessions.Sessions("auth-session", store))
+	// store := cookie.NewStore([]byte("secret"))
+	// router.Use(sessions.Sessions("auth-session", store))
 
 	// router.GET("/login", authHandler.Login())
 	router.POST("animes", animeHandler.CreateAnime)

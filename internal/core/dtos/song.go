@@ -83,7 +83,7 @@ type GetSongsByArtistResponseSong struct {
 	Type           string                                `json:"type"` //OPENING, ENDING, SOUNDSTRACK
 	AnimeID        uuid.UUID                             `json:"anime_id"`
 	AnimeName      string                                `json:"anime_name"`
-	AnimeWallpaper string                                `json:"anime_wallpaer"`
+	AnimeWallpaper string                                `json:"anime_wallpaper"`
 	SongChannel    []GetSongsByArtistResponseSongChannel `json:"song_channel"`
 }
 

@@ -53,12 +53,7 @@ func (h *HttpUserHandler) Login(c *gin.Context) {
 }
 
 func (h *HttpUserHandler) GetUserInfo(c *gin.Context) {
-	var request dtos.GetUserInfoRequest
-	if err := c.BindJSON(&request); err != nil {
-		handleError(c, errs.NewBadRequestError(err.Error()))
-		return
-	}
-	response, err := h.service.GetUserInfo(&request)
+	response, err := h.service.GetUserInfo(c)
 	if err != nil {
 		handleError(c, err)
 		return
