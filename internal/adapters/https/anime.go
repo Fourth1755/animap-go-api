@@ -43,9 +43,10 @@ func (h *HttpAnimeHandler) GetAnimeById(c *gin.Context) {
 }
 
 func (h *HttpAnimeHandler) GetAnimeList(c *gin.Context) {
-	animeQuery := dtos.AnimeQueryDTO{
-		Seasonal: c.Query("seasonal"),
-		Year:     c.Query("year"),
+	animeQuery := dtos.AnimeQueryDTO{}
+	if err := c.ShouldBindQuery(&animeQuery); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
 	}
 
 	animes, err := h.service.GetAnimes(animeQuery)

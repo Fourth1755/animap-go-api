@@ -63,12 +63,30 @@ func (r *GormAnimeRepository) GetByIds(ids []uuid.UUID) ([]entities.Anime, error
 
 func (r *GormAnimeRepository) GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime, error) {
 	var animes []entities.Anime
-	var result *gorm.DB
-	if query.Seasonal == "" && query.Year == "" {
-		result = r.db.Find(&animes)
-	} else {
-		result = r.db.Where("seasonal = ?", query.Seasonal).Where("year = ?", query.Year).Find(&animes)
+	db := r.db
+
+	if query.Seasonal != "" {
+		db = db.Where("seasonal = ?", query.Seasonal)
 	}
+
+	if query.Year != "" {
+		db = db.Where("year = ?", query.Year)
+	}
+
+	if query.Name != "" {
+		db = db.Where("name LIKE ?", "%"+query.Name+"%")
+	}
+
+	if query.SortBy != "" {
+		orderBy := "asc"
+		if query.OrderBy != "" {
+			orderBy = query.OrderBy
+		}
+		db = db.Order(query.SortBy + " " + orderBy)
+	}
+
+	result := db.Find(&animes)
+
 	if result.Error != nil {
 		return nil, result.Error
 	}
