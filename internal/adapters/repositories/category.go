@@ -13,15 +13,16 @@ type CategoryRepository interface {
 }
 
 type GormCategoryRepository struct {
-	db *gorm.DB
+	dbPrimary *gorm.DB
+	dbReplica *gorm.DB
 }
 
-func NewGormCategoryRepository(db *gorm.DB) CategoryRepository {
-	return &GormCategoryRepository{db: db}
+func NewGormCategoryRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) CategoryRepository {
+	return &GormCategoryRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
 func (r *GormCategoryRepository) Save(category *entities.Category) error {
-	if result := r.db.Create(&category); result.Error != nil {
+	if result := r.dbPrimary.Create(&category); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -29,7 +30,7 @@ func (r *GormCategoryRepository) Save(category *entities.Category) error {
 
 func (r *GormCategoryRepository) GetAll() ([]entities.Category, error) {
 	var categorise []entities.Category
-	if result := r.db.Find(&categorise); result.Error != nil {
+	if result := r.dbReplica.Find(&categorise); result.Error != nil {
 		return nil, result.Error
 	}
 	return categorise, nil
@@ -37,7 +38,7 @@ func (r *GormCategoryRepository) GetAll() ([]entities.Category, error) {
 
 func (r *GormCategoryRepository) GetById(id uuid.UUID) (*entities.Category, error) {
 	category := new(entities.Category)
-	if result := r.db.First(&category, id); result.Error != nil {
+	if result := r.dbReplica.First(&category, id); result.Error != nil {
 		return nil, result.Error
 	}
 	return category, nil

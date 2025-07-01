@@ -14,15 +14,16 @@ type UserRepository interface {
 }
 
 type GormUserRepository struct {
-	db *gorm.DB
+	dbPrimary *gorm.DB
+	dbReplica *gorm.DB
 }
 
-func NewGormUserRepository(db *gorm.DB) UserRepository {
-	return &GormUserRepository{db: db}
+func NewGormUserRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) UserRepository {
+	return &GormUserRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
 func (r *GormUserRepository) Save(user *entities.User) error {
-	result := r.db.Create(user)
+	result := r.dbPrimary.Create(user)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -31,7 +32,7 @@ func (r *GormUserRepository) Save(user *entities.User) error {
 
 func (r *GormUserRepository) GetUserByEmail(email string) (*entities.User, error) {
 	selectUser := new(entities.User)
-	result := r.db.Where("email = ?", email).First(selectUser)
+	result := r.dbReplica.Where("email = ?", email).First(selectUser)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -40,7 +41,7 @@ func (r *GormUserRepository) GetUserByEmail(email string) (*entities.User, error
 
 func (r *GormUserRepository) GetById(id uuid.UUID) (*entities.User, error) {
 	user := new(entities.User)
-	result := r.db.First(&user, id)
+	result := r.dbReplica.First(&user, id)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -48,7 +49,7 @@ func (r *GormUserRepository) GetById(id uuid.UUID) (*entities.User, error) {
 }
 
 func (r *GormUserRepository) UpdateUser(user *entities.User) error {
-	result := r.db.Model(&user).Updates(user)
+	result := r.dbPrimary.Model(&user).Updates(user)
 	if result.Error != nil {
 		return result.Error
 	}

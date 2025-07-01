@@ -11,15 +11,16 @@ type SongChannelRepository interface {
 }
 
 type GormSongChannelRepository struct {
-	db *gorm.DB
+	dbPrimary *gorm.DB
+	dbReplica *gorm.DB
 }
 
-func NewGormSongChannelRepository(db *gorm.DB) SongChannelRepository {
-	return &GormSongChannelRepository{db: db}
+func NewGormSongChannelRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) SongChannelRepository {
+	return &GormSongChannelRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
 func (r GormSongChannelRepository) Save(songChannel *entities.SongChannel) error {
-	result := r.db.Create(&songChannel)
+	result := r.dbPrimary.Create(&songChannel)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -27,7 +28,7 @@ func (r GormSongChannelRepository) Save(songChannel *entities.SongChannel) error
 }
 
 func (r GormSongChannelRepository) Update(songChannel *entities.SongChannel) error {
-	result := r.db.Model(&songChannel).Updates(songChannel)
+	result := r.dbPrimary.Model(&songChannel).Updates(songChannel)
 	if result.Error != nil {
 		return result.Error
 	}

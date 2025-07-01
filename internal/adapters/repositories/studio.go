@@ -13,16 +13,17 @@ type StudioRepository interface {
 }
 
 type GormStudioRepository struct {
-	db *gorm.DB
+	dbPrimary *gorm.DB
+	dbReplica *gorm.DB
 }
 
-func NewGormStudioRepository(db *gorm.DB) StudioRepository {
-	return &GormStudioRepository{db: db}
+func NewGormStudioRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) StudioRepository {
+	return &GormStudioRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
 func (r GormStudioRepository) GetAll() ([]entities.Studio, error) {
 	var studio []entities.Studio
-	if result := r.db.Find(&studio); result.Error != nil {
+	if result := r.dbReplica.Find(&studio); result.Error != nil {
 		return nil, result.Error
 	}
 	return studio, nil
@@ -30,7 +31,7 @@ func (r GormStudioRepository) GetAll() ([]entities.Studio, error) {
 
 func (r GormStudioRepository) GetByIds(ids []uuid.UUID) ([]entities.Studio, error) {
 	var studio []entities.Studio
-	if result := r.db.Where("id in (?)", ids).
+	if result := r.dbReplica.Where("id in (?)", ids).
 		Find(&studio); result.Error != nil {
 		return nil, result.Error
 	}
@@ -39,7 +40,7 @@ func (r GormStudioRepository) GetByIds(ids []uuid.UUID) ([]entities.Studio, erro
 
 func (r GormStudioRepository) GetById(id uuid.UUID) (*entities.Studio, error) {
 	studio := new(entities.Studio)
-	if result := r.db.First(&studio, id); result.Error != nil {
+	if result := r.dbReplica.First(&studio, id); result.Error != nil {
 		return nil, result.Error
 	}
 	return studio, nil

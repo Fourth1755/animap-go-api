@@ -13,15 +13,16 @@ type AnimeCategoryRepository interface {
 }
 
 type GormAnimeCategoryRepository struct {
-	db *gorm.DB
+	dbPrimary *gorm.DB
+	dbReplica *gorm.DB
 }
 
-func NewGormAnimeCategoryRepository(db *gorm.DB) AnimeCategoryRepository {
-	return &GormAnimeCategoryRepository{db: db}
+func NewGormAnimeCategoryRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) AnimeCategoryRepository {
+	return &GormAnimeCategoryRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
 func (r GormAnimeCategoryRepository) Save(animeCategory []entities.AnimeCategory) error {
-	if result := r.db.Create(&animeCategory); result.Error != nil {
+	if result := r.dbPrimary.Create(&animeCategory); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -29,7 +30,7 @@ func (r GormAnimeCategoryRepository) Save(animeCategory []entities.AnimeCategory
 
 func (r GormAnimeCategoryRepository) GetByCategoryId(category_id uuid.UUID) ([]entities.AnimeCategory, error) {
 	var categoryAnime []entities.AnimeCategory
-	result := r.db.Preload("Anime").Where("category_id = ?", category_id).Find(&categoryAnime)
+	result := r.dbReplica.Preload("Anime").Where("category_id = ?", category_id).Find(&categoryAnime)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -38,7 +39,7 @@ func (r GormAnimeCategoryRepository) GetByCategoryId(category_id uuid.UUID) ([]e
 
 func (r GormAnimeCategoryRepository) GetByAnimeIdAndCategoryIds(anime_id uuid.UUID, category_ids []uuid.UUID) ([]entities.AnimeCategory, error) {
 	var categoryAnime []entities.AnimeCategory
-	result := r.db.Where("anime_id = ?", anime_id).Where("category_id in (?)", category_ids).Find(&categoryAnime)
+	result := r.dbReplica.Where("anime_id = ?", anime_id).Where("category_id in (?)", category_ids).Find(&categoryAnime)
 	if result.Error != nil {
 		return nil, result.Error
 	}

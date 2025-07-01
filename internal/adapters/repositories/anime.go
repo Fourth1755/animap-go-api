@@ -20,15 +20,16 @@ type AnimeRepository interface {
 }
 
 type GormAnimeRepository struct {
-	db *gorm.DB
+	dbPrimary *gorm.DB
+	dbReplica *gorm.DB
 }
 
-func NewGormAnimeRepository(db *gorm.DB) AnimeRepository {
-	return &GormAnimeRepository{db: db}
+func NewGormAnimeRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) AnimeRepository {
+	return &GormAnimeRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
 func (r *GormAnimeRepository) Save(anime entities.Anime) (*entities.Anime, error) {
-	if result := r.db.Create(&anime); result.Error != nil {
+	if result := r.dbPrimary.Create(&anime); result.Error != nil {
 		return nil, result.Error
 	}
 	return &anime, nil
@@ -36,7 +37,7 @@ func (r *GormAnimeRepository) Save(anime entities.Anime) (*entities.Anime, error
 
 func (r *GormAnimeRepository) GetById(id uuid.UUID) (*entities.Anime, error) {
 	var anime entities.Anime
-	if result := r.db.
+	if result := r.dbReplica.
 		Preload("Songs").
 		Preload("Categories").
 		Preload("Studios").
@@ -49,7 +50,7 @@ func (r *GormAnimeRepository) GetById(id uuid.UUID) (*entities.Anime, error) {
 
 func (r *GormAnimeRepository) GetByIds(ids []uuid.UUID) ([]entities.Anime, error) {
 	var animes []entities.Anime
-	if result := r.db.
+	if result := r.dbReplica.
 		Preload("Songs").
 		Preload("Categories").
 		Preload("Studios").
@@ -63,7 +64,7 @@ func (r *GormAnimeRepository) GetByIds(ids []uuid.UUID) ([]entities.Anime, error
 
 func (r *GormAnimeRepository) GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime, error) {
 	var animes []entities.Anime
-	db := r.db.Model(&entities.Anime{})
+	db := r.dbReplica.Model(&entities.Anime{})
 
 	if query.Seasonal != "" {
 		db = db.Where("seasonal = ?", query.Seasonal)
@@ -103,7 +104,7 @@ func (r *GormAnimeRepository) GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime
 }
 
 func (r *GormAnimeRepository) Update(anime *entities.Anime) error {
-	result := r.db.Model(&anime).Updates(anime)
+	result := r.dbPrimary.Model(&anime).Updates(anime)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -112,7 +113,7 @@ func (r *GormAnimeRepository) Update(anime *entities.Anime) error {
 
 func (r *GormAnimeRepository) UpdateIsCreateEpisode(animeId uuid.UUID) error {
 	var animes []entities.Anime
-	result := r.db.Raw("UPDATE animes SET is_create_episode = ? WHERE id = ? ", true, animeId).Scan(&animes)
+	result := r.dbPrimary.Raw("UPDATE animes SET is_create_episode = ? WHERE id = ? ", true, animeId).Scan(&animes)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -121,7 +122,7 @@ func (r *GormAnimeRepository) UpdateIsCreateEpisode(animeId uuid.UUID) error {
 
 func (r *GormAnimeRepository) Delete(id uuid.UUID) error {
 	var anime entities.Anime
-	result := r.db.Delete(&anime, id)
+	result := r.dbPrimary.Delete(&anime, id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -130,7 +131,7 @@ func (r *GormAnimeRepository) Delete(id uuid.UUID) error {
 
 func (r *GormAnimeRepository) GetByUserId(id uuid.UUID) ([]entities.UserAnime, error) {
 	var animes []entities.UserAnime
-	result := r.db.Preload("Anime").Where("user_id = ?", id).Find(&animes)
+	result := r.dbReplica.Preload("Anime").Where("user_id = ?", id).Find(&animes)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -139,7 +140,7 @@ func (r *GormAnimeRepository) GetByUserId(id uuid.UUID) ([]entities.UserAnime, e
 
 func (r *GormAnimeRepository) GetBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) ([]entities.Anime, error) {
 	var animes []entities.Anime
-	result := r.db.Where("seasonal = ?", request.Seasonal).Where("year = ?", request.Year).Find(&animes)
+	result := r.dbReplica.Where("seasonal = ?", request.Seasonal).Where("year = ?", request.Year).Find(&animes)
 	if result.Error != nil {
 		return nil, result.Error
 	}

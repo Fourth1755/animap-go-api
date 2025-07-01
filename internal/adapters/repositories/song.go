@@ -17,15 +17,16 @@ type SongRepository interface {
 }
 
 type GormSongRepository struct {
-	db *gorm.DB
+	dbPrimary *gorm.DB
+	dbReplica *gorm.DB
 }
 
-func NewGormSongRepository(db *gorm.DB) SongRepository {
-	return &GormSongRepository{db: db}
+func NewGormSongRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) SongRepository {
+	return &GormSongRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
 func (r *GormSongRepository) Save(song *entities.Song) (uuid.UUID, error) {
-	result := r.db.Create(&song)
+	result := r.dbPrimary.Create(&song)
 	if result.Error != nil {
 		return uuid.Nil, result.Error
 	}
@@ -34,7 +35,7 @@ func (r *GormSongRepository) Save(song *entities.Song) (uuid.UUID, error) {
 
 func (r *GormSongRepository) GetById(id uuid.UUID) (*entities.Song, error) {
 	song := new(entities.Song)
-	if result := r.db.Preload("Artist").Preload("SongChannel").First(&song, id); result.Error != nil {
+	if result := r.dbReplica.Preload("Artist").Preload("SongChannel").First(&song, id); result.Error != nil {
 		return nil, result.Error
 	}
 	return song, nil
@@ -42,7 +43,7 @@ func (r *GormSongRepository) GetById(id uuid.UUID) (*entities.Song, error) {
 
 func (r *GormSongRepository) GetByIds(ids []uuid.UUID) ([]entities.Song, error) {
 	var songs []entities.Song
-	if result := r.db.
+	if result := r.dbReplica.
 		Preload("Anime").
 		Preload("SongChannel").
 		Where("id in (?)", ids).
@@ -54,14 +55,14 @@ func (r *GormSongRepository) GetByIds(ids []uuid.UUID) ([]entities.Song, error) 
 
 func (r *GormSongRepository) GetAll() ([]entities.Song, error) {
 	var song []entities.Song
-	if result := r.db.Preload("Anime").Find(&song); result.Error != nil {
+	if result := r.dbReplica.Preload("Anime").Find(&song); result.Error != nil {
 		return nil, result.Error
 	}
 	return song, nil
 }
 
 func (r *GormSongRepository) Update(song *entities.Song) error {
-	result := r.db.Model(&song).Updates(song)
+	result := r.dbPrimary.Model(&song).Updates(song)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -70,7 +71,7 @@ func (r *GormSongRepository) Update(song *entities.Song) error {
 
 func (r *GormSongRepository) Delete(id uuid.UUID) error {
 	song := new(entities.Song)
-	result := r.db.Delete(&song, id)
+	result := r.dbPrimary.Delete(&song, id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -79,7 +80,7 @@ func (r *GormSongRepository) Delete(id uuid.UUID) error {
 
 func (r *GormSongRepository) GetByAnimeId(id uuid.UUID) ([]entities.Song, error) {
 	var songs []entities.Song
-	result := r.db.Preload("Artist").Preload("SongChannel").Where("anime_id = ?", id).Find(&songs)
+	result := r.dbReplica.Preload("Artist").Preload("SongChannel").Where("anime_id = ?", id).Find(&songs)
 	if result.Error != nil {
 		return nil, result.Error
 	}

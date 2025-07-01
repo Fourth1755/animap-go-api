@@ -15,22 +15,23 @@ type ArtistRepository interface {
 }
 
 type GormArtistRepository struct {
-	db *gorm.DB
+	dbPrimary *gorm.DB
+	dbReplica *gorm.DB
 }
 
-func NewGormArtistRepository(db *gorm.DB) ArtistRepository {
-	return &GormArtistRepository{db: db}
+func NewGormArtistRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) ArtistRepository {
+	return &GormArtistRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
 func (r GormArtistRepository) Save(artist *entities.Artist) error {
-	if result := r.db.Create(&artist); result.Error != nil {
+	if result := r.dbPrimary.Create(&artist); result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
 func (r GormArtistRepository) Update(artist *entities.Artist) error {
-	result := r.db.Model(&artist).Updates(artist)
+	result := r.dbPrimary.Model(&artist).Updates(artist)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -39,7 +40,7 @@ func (r GormArtistRepository) Update(artist *entities.Artist) error {
 
 func (r GormArtistRepository) GetAll() ([]entities.Artist, error) {
 	var artist []entities.Artist
-	if result := r.db.Find(&artist); result.Error != nil {
+	if result := r.dbReplica.Find(&artist); result.Error != nil {
 		return nil, result.Error
 	}
 	return artist, nil
@@ -47,7 +48,7 @@ func (r GormArtistRepository) GetAll() ([]entities.Artist, error) {
 
 func (r GormArtistRepository) GetById(id uuid.UUID) (*entities.Artist, error) {
 	var artist *entities.Artist
-	if result := r.db.Preload("Song").First(&artist, id); result.Error != nil {
+	if result := r.dbReplica.Preload("Song").First(&artist, id); result.Error != nil {
 		return nil, result.Error
 	}
 	return artist, nil
@@ -55,7 +56,7 @@ func (r GormArtistRepository) GetById(id uuid.UUID) (*entities.Artist, error) {
 
 func (r GormArtistRepository) GetByIds(ids []uuid.UUID) ([]entities.Artist, error) {
 	var artist []entities.Artist
-	if result := r.db.Find(&artist, ids); result.Error != nil {
+	if result := r.dbReplica.Find(&artist, ids); result.Error != nil {
 		return nil, result.Error
 	}
 	return artist, nil

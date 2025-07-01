@@ -2,11 +2,18 @@ app:
   port: 8080
 
 db:
-  host: "localhost"
-  port: 5432
-  username: "animeMapUserAdmin"
-  password: "12131415"
-  databaseName: "ms-anime"
+  primary:
+    host: "localhost"
+    port: 5432
+    username: "animeMapUserAdmin"
+    password: "12131415"
+    databaseName: "ms-anime"
+  replica:
+    host: "localhost"
+    port: 5432
+    username: "animeMapUserAdmin"
+    password: "12131415"
+    databaseName: "ms-anime"
 
 service:
   aws:

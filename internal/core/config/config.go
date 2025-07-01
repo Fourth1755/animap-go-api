@@ -1,9 +1,14 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"fmt"
+
+	"github.com/spf13/viper"
+)
 
 type ConfigService interface {
 	GetDatabase() *Database
+	GetDatabaseReplica() *Database
 	GetCommon() *Common
 	GetAWS() *AWS
 }
@@ -36,9 +41,29 @@ type Database struct {
 	DatabaseName string
 }
 
+type DatabaseReplica struct {
+	Host         string
+	Port         int
+	UserName     string
+	Password     string
+	DatabaseName string
+}
+
+func initConfig() {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("../")
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(err)
+	}
+}
+
 func NewConfigService() ConfigService {
+	initConfig()
 	service := viper.Sub("service")
-	database := viper.Sub("database")
+	database := viper.Sub("db")
 	return &configService{
 		service:  service,
 		database: database,
@@ -46,12 +71,26 @@ func NewConfigService() ConfigService {
 }
 
 func (s *configService) GetDatabase() *Database {
+	fmt.Println(s.service)
+	db := s.database.Sub("primary")
+	fmt.Println(db)
 	return &Database{
-		Host:         s.database.GetString("db.host"),
-		Port:         s.database.GetInt("db.port"),
-		UserName:     s.database.GetString("db.username"),
-		Password:     s.database.GetString("db.password"),
-		DatabaseName: s.database.GetString("db.databaseName"),
+		Host:         db.GetString("host"),
+		Port:         db.GetInt("port"),
+		UserName:     db.GetString("username"),
+		Password:     db.GetString("password"),
+		DatabaseName: db.GetString("databaseName"),
+	}
+}
+
+func (s *configService) GetDatabaseReplica() *Database {
+	db := s.database.Sub("replica")
+	return &Database{
+		Host:         db.GetString("host"),
+		Port:         db.GetInt("port"),
+		UserName:     db.GetString("username"),
+		Password:     db.GetString("password"),
+		DatabaseName: db.GetString("databaseName"),
 	}
 }
 

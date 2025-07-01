@@ -12,15 +12,16 @@ type EpisodeCharacterRepository interface {
 }
 
 type GormEpisodeCharacterRepository struct {
-	db *gorm.DB
+	dbPrimary *gorm.DB
+	dbReplica *gorm.DB
 }
 
-func NewGormEpisodeCharacterRepository(db *gorm.DB) EpisodeCharacterRepository {
-	return &GormEpisodeCharacterRepository{db: db}
+func NewGormEpisodeCharacterRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) EpisodeCharacterRepository {
+	return &GormEpisodeCharacterRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
 func (r *GormEpisodeCharacterRepository) BulkSave(episodeCharacter []entities.EpisodeCharacter) error {
-	if result := r.db.Create(&episodeCharacter); result.Error != nil {
+	if result := r.dbPrimary.Create(&episodeCharacter); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -28,7 +29,7 @@ func (r *GormEpisodeCharacterRepository) BulkSave(episodeCharacter []entities.Ep
 
 func (r *GormEpisodeCharacterRepository) GetByEpisodeIds(episode_ids []uuid.UUID) ([]entities.EpisodeCharacter, error) {
 	var episodeCharacters []entities.EpisodeCharacter
-	if result := r.db.
+	if result := r.dbReplica.
 		Preload("Character").
 		Where("episode_id in (?)", episode_ids).Find(&episodeCharacters); result.Error != nil {
 		return nil, result.Error

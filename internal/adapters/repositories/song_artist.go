@@ -12,15 +12,16 @@ type SongArtistRepository interface {
 }
 
 type GormSongArtistRepository struct {
-	db *gorm.DB
+	dbPrimary *gorm.DB
+	dbReplica *gorm.DB
 }
 
-func NewGormSongArtistRepository(db *gorm.DB) SongArtistRepository {
-	return &GormSongArtistRepository{db: db}
+func NewGormSongArtistRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) SongArtistRepository {
+	return &GormSongArtistRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
 func (r *GormSongArtistRepository) Save(songArtist []entities.SongArtist) error {
-	if result := r.db.Create(&songArtist); result.Error != nil {
+	if result := r.dbPrimary.Create(&songArtist); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -28,7 +29,7 @@ func (r *GormSongArtistRepository) Save(songArtist []entities.SongArtist) error 
 
 func (r *GormSongArtistRepository) GetByArtistId(id uuid.UUID) ([]entities.SongArtist, error) {
 	var songArtists []entities.SongArtist
-	result := r.db.
+	result := r.dbReplica.
 		Preload("Song").Where("artist_id = ?", id).Find(&songArtists)
 	if result.Error != nil {
 		return nil, result.Error

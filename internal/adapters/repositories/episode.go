@@ -14,15 +14,16 @@ type EpisodeRepository interface {
 }
 
 type GormEpisodeRepository struct {
-	db *gorm.DB
+	dbPrimary *gorm.DB
+	dbReplica *gorm.DB
 }
 
-func NewGormEpisodeRepository(db *gorm.DB) EpisodeRepository {
-	return &GormEpisodeRepository{db: db}
+func NewGormEpisodeRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) EpisodeRepository {
+	return &GormEpisodeRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
 func (r *GormEpisodeRepository) BulkSave(episodes []entities.Episode) error {
-	if result := r.db.Create(&episodes); result.Error != nil {
+	if result := r.dbPrimary.Create(&episodes); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -30,7 +31,7 @@ func (r *GormEpisodeRepository) BulkSave(episodes []entities.Episode) error {
 
 func (r *GormEpisodeRepository) GetByAnimeId(anime_id uuid.UUID) ([]entities.Episode, error) {
 	var episode []entities.Episode
-	result := r.db.
+	result := r.dbReplica.
 		Order("number asc").
 		Where("anime_id = ?", anime_id).Find(&episode)
 	if result.Error != nil {
@@ -40,7 +41,7 @@ func (r *GormEpisodeRepository) GetByAnimeId(anime_id uuid.UUID) ([]entities.Epi
 }
 
 func (r *GormEpisodeRepository) Update(episode *entities.Episode) error {
-	result := r.db.Model(&episode).Updates(episode)
+	result := r.dbPrimary.Model(&episode).Updates(episode)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -49,7 +50,7 @@ func (r *GormEpisodeRepository) Update(episode *entities.Episode) error {
 
 func (r *GormEpisodeRepository) GetById(id uuid.UUID) (*entities.Episode, error) {
 	var episode entities.Episode
-	if result := r.db.
+	if result := r.dbReplica.
 		First(&episode, id); result.Error != nil {
 		return nil, result.Error
 	}

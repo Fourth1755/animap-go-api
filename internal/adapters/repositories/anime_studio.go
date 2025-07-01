@@ -12,15 +12,16 @@ type AnimeStudioRepository interface {
 }
 
 type GormAnimeStudioRepository struct {
-	db *gorm.DB
+	dbPrimary *gorm.DB
+	dbReplica *gorm.DB
 }
 
-func NewGormAnimeStudioRepository(db *gorm.DB) AnimeStudioRepository {
-	return &GormAnimeStudioRepository{db: db}
+func NewGormAnimeStudioRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) AnimeStudioRepository {
+	return &GormAnimeStudioRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
 func (r GormAnimeStudioRepository) Save(animeStudio []entities.AnimeStudio) error {
-	if result := r.db.Create(&animeStudio); result.Error != nil {
+	if result := r.dbPrimary.Create(&animeStudio); result.Error != nil {
 		return result.Error
 	}
 	return nil
@@ -28,7 +29,7 @@ func (r GormAnimeStudioRepository) Save(animeStudio []entities.AnimeStudio) erro
 
 func (r GormAnimeStudioRepository) GetByStudioId(studioId uuid.UUID) ([]entities.AnimeStudio, error) {
 	var animeStudio []entities.AnimeStudio
-	result := r.db.Preload("Anime").Where("studio_id = ?", studioId).Find(&animeStudio)
+	result := r.dbReplica.Preload("Anime").Where("studio_id = ?", studioId).Find(&animeStudio)
 	if result.Error != nil {
 		return nil, result.Error
 	}

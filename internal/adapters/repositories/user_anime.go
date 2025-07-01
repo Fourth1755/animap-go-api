@@ -15,15 +15,16 @@ type UserAnimeRepository interface {
 }
 
 type GormUserAnimeRepository struct {
-	db *gorm.DB
+	dbPrimary *gorm.DB
+	dbReplica *gorm.DB
 }
 
-func NewGormUserAnimeRepository(db *gorm.DB) UserAnimeRepository {
-	return &GormUserAnimeRepository{db: db}
+func NewGormUserAnimeRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) UserAnimeRepository {
+	return &GormUserAnimeRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
 func (r *GormUserAnimeRepository) Save(userAnime *entities.UserAnime) error {
-	if err := r.db.Create(&userAnime); err != nil {
+	if err := r.dbPrimary.Create(&userAnime); err != nil {
 		return err.Error
 	}
 	return nil
@@ -31,7 +32,7 @@ func (r *GormUserAnimeRepository) Save(userAnime *entities.UserAnime) error {
 
 func (r *GormUserAnimeRepository) GetByUserId(id uuid.UUID) ([]entities.UserAnime, error) {
 	var animes []entities.UserAnime
-	result := r.db.Preload("Anime").
+	result := r.dbReplica.Preload("Anime").
 		Where("user_id = ?", id).
 		Order("watched_year_at DESC").
 		Find(&animes)
@@ -44,7 +45,7 @@ func (r *GormUserAnimeRepository) GetByUserId(id uuid.UUID) ([]entities.UserAnim
 func (r *GormUserAnimeRepository) GetByUserIdAndAnimeId(id uuid.UUID, animeIds []uuid.UUID) ([]entities.UserAnime, error) {
 	var animes []entities.UserAnime
 
-	result := r.db.Preload("Anime").Where("user_id = ?", id).Where("anime_id in (?)", animeIds).Find(&animes)
+	result := r.dbReplica.Preload("Anime").Where("user_id = ?", id).Where("anime_id in (?)", animeIds).Find(&animes)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -53,7 +54,7 @@ func (r *GormUserAnimeRepository) GetByUserIdAndAnimeId(id uuid.UUID, animeIds [
 
 func (r *GormUserAnimeRepository) GetMyTopAnimeByUserId(id uuid.UUID) ([]entities.UserAnime, error) {
 	var animes []entities.UserAnime
-	result := r.db.Limit(10).Preload("Anime").
+	result := r.dbReplica.Limit(10).Preload("Anime").
 		Where("user_id = ?", id).
 		Where("sequence_my_top_anime <> 0").
 		Order("sequence_my_top_anime ASC").
@@ -65,7 +66,7 @@ func (r *GormUserAnimeRepository) GetMyTopAnimeByUserId(id uuid.UUID) ([]entitie
 }
 
 func (r *GormUserAnimeRepository) UpdateMyTopAnime(userAnime *entities.UserAnime) error {
-	result := r.db.Model(&userAnime).Updates(userAnime)
+	result := r.dbPrimary.Model(&userAnime).Updates(userAnime)
 	if result.Error != nil {
 		return result.Error
 	}
