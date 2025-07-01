@@ -5,6 +5,7 @@ import "github.com/spf13/viper"
 type ConfigService interface {
 	GetDatabase() *Database
 	GetCommon() *Common
+	GetAWS() *AWS
 }
 
 type configService struct {
@@ -18,6 +19,13 @@ type AnimeSeasonalYear struct {
 
 type Common struct {
 	AnimeSeasonalYear AnimeSeasonalYear
+}
+
+type AWS struct {
+	Region    string
+	AccessKey string
+	SecretKey string
+	S3Bucket  string
 }
 
 type Database struct {
@@ -44,6 +52,16 @@ func (s *configService) GetDatabase() *Database {
 		UserName:     s.database.GetString("db.username"),
 		Password:     s.database.GetString("db.password"),
 		DatabaseName: s.database.GetString("db.databaseName"),
+	}
+}
+
+func (s *configService) GetAWS() *AWS {
+	aws := s.service.Sub("aws")
+	return &AWS{
+		Region:    aws.GetString("region"),
+		AccessKey: aws.GetString("accessKey"),
+		SecretKey: aws.GetString("secretKey"),
+		S3Bucket:  aws.GetString("s3Bucket"),
 	}
 }
 

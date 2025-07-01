@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Fourth1755/animap-go-api/internal/adapters/aws"
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
@@ -41,6 +42,7 @@ type animeServiceImpl struct {
 	categoryUniverseRepo        repositories.CategoryUniverseRepository
 	studioRepo                  repositories.StudioRepository
 	episodeRepo                 repositories.EpisodeRepository
+	s3Service                   aws.S3Service
 }
 
 func NewAnimeService(
@@ -54,6 +56,7 @@ func NewAnimeService(
 	categoryUniverseRepo repositories.CategoryUniverseRepository,
 	studioRepo repositories.StudioRepository,
 	episodeRepo repositories.EpisodeRepository,
+	s3Service aws.S3Service,
 ) AnimeService {
 	return &animeServiceImpl{
 		repo:                        repo,
@@ -66,6 +69,7 @@ func NewAnimeService(
 		categoryUniverseRepo:        categoryUniverseRepo,
 		studioRepo:                  studioRepo,
 		episodeRepo:                 episodeRepo,
+		s3Service:                   s3Service,
 	}
 }
 

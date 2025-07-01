@@ -9,6 +9,11 @@ db:
   databaseName: "ms-anime"
 
 service:
+  aws:
+    region: "ap-southeast-1"
+    accessKey: ""
+    secretKey: ""
+    s3Bucket: ""
   common:
     animeSeasonalYear:
       firstYear: 1990 
