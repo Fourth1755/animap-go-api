@@ -63,7 +63,7 @@ func (r *GormAnimeRepository) GetByIds(ids []uuid.UUID) ([]entities.Anime, error
 
 func (r *GormAnimeRepository) GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime, error) {
 	var animes []entities.Anime
-	db := r.db
+	db := r.db.Model(&entities.Anime{})
 
 	if query.Seasonal != "" {
 		db = db.Where("seasonal = ?", query.Seasonal)
@@ -74,7 +74,15 @@ func (r *GormAnimeRepository) GetAll(query dtos.AnimeQueryDTO) ([]entities.Anime
 	}
 
 	if query.Name != "" {
-		db = db.Where("name LIKE ?", "%"+query.Name+"%")
+		db = db.Where("LOWER(name) LIKE LOWER(?) OR LOWER(name_thai) LIKE LOWER(?) OR LOWER(name_english) LIKE LOWER(?) ", "%"+query.Name+"%", "%"+query.Name+"%", "%"+query.Name+"%")
+	}
+
+	if query.StudioID != "" {
+		db = db.Joins("JOIN anime_studios ON anime_studios.anime_id = animes.id").Where("anime_studios.studio_id = ?", query.StudioID)
+	}
+
+	if query.CategoryID != "" {
+		db = db.Joins("JOIN anime_categories ON anime_categories.anime_id = animes.id").Where("anime_categories.category_id = ?", query.CategoryID)
 	}
 
 	if query.SortBy != "" {

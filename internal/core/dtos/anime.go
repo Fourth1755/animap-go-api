@@ -48,11 +48,13 @@ type GetAnimeByIdResponse struct {
 }
 
 type AnimeQueryDTO struct {
-	Seasonal string `form:"seasonal"`
-	Year     string `form:"year"`
-	Name     string `form:"name"`
-	SortBy   string `form:"sort_by"`
-	OrderBy  string `form:"order_by"`
+	Seasonal   string `form:"seasonal"`
+	Year       string `form:"year"`
+	Name       string `form:"name"`
+	SortBy     string `form:"sort_by"`
+	OrderBy    string `form:"order_by"`
+	StudioID   string `form:"studio_id"`
+	CategoryID string `form:"category_id"`
 }
 
 type EditCategoryToAnimeRequest struct {
