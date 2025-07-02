@@ -11,7 +11,7 @@ import (
 
 func InitDatabase(cfgService config.ConfigService) (*gorm.DB, *gorm.DB) {
 	dbConfig := cfgService.GetDatabase()
-	//dbConfigRepica := cfgService.GetDatabaseReplica()
+	dbConfigRepica := cfgService.GetDatabaseReplica()
 
 	// Primary
 	dsnPrimary := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
@@ -26,16 +26,16 @@ func InitDatabase(cfgService config.ConfigService) (*gorm.DB, *gorm.DB) {
 	}
 
 	// Replica
-	// dsnReplica := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-	// 	dbConfigRepica.Host,
-	// 	dbConfigRepica.Port,
-	// 	dbConfigRepica.UserName,
-	// 	dbConfigRepica.Password,
-	// 	dbConfigRepica.DatabaseName)
-	// dbReplica, err := gorm.Open(postgres.Open(dsnReplica), &gorm.Config{})
-	// if err != nil {
-	// 	panic("failed to connect replica database")
-	// }
+	dsnReplica := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		dbConfigRepica.Host,
+		dbConfigRepica.Port,
+		dbConfigRepica.UserName,
+		dbConfigRepica.Password,
+		dbConfigRepica.DatabaseName)
+	dbReplica, err := gorm.Open(postgres.Open(dsnReplica), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect replica database")
+	}
 
 	dbPrimary.AutoMigrate(
 		&entities.Anime{},
@@ -57,5 +57,5 @@ func InitDatabase(cfgService config.ConfigService) (*gorm.DB, *gorm.DB) {
 		&entities.EpisodeCharacter{},
 	)
 
-	return dbPrimary, nil
+	return dbPrimary, dbReplica
 }

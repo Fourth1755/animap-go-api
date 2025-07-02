@@ -1,8 +1,12 @@
 package route
 
 import (
+	"net/http"
+	"time"
+
 	adapters "github.com/Fourth1755/animap-go-api/internal/adapters/https"
 	"github.com/Fourth1755/animap-go-api/internal/middleware"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,15 +24,14 @@ func InitRoutes(
 	characterHandler *adapters.HttpCharacterHandler) *gin.Engine {
 
 	router := gin.Default()
-	router.Use(CORSMiddleware())
-	// router.Use(cors.New(cors.Config{
-	// 	AllowOrigins:     []string{"http://localhost:8090", "http://localhost:3000"},
-	// 	AllowMethods:     []string{"PUT", "PATCH", "GET", "DELETE", "POST"},
-	// 	AllowHeaders:     []string{"Origin"},
-	// 	ExposeHeaders:    []string{"Content-Length"},
-	// 	AllowCredentials: true,
-	// 	MaxAge:           12 * time.Hour,
-	// }))
+	//router.Use(CORSMiddleware())
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 	router.POST("register", userHandler.CreateUser)
 	router.POST("login", userHandler.Login)
 
@@ -103,13 +106,18 @@ func InitRoutes(
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
+		origin := c.Request.Header.Get("Origin")
+		if origin == "http://localhost:3000" { // <-- dev origin
+			c.Header("Access-Control-Allow-Origin", origin) // ต้องตรง origin
+			c.Header("Access-Control-Allow-Credentials", "true")
+			c.Header("Access-Control-Allow-Headers",
+				"Content-Type, Authorization, X-Requested-With")
+			c.Header("Access-Control-Allow-Methods",
+				"GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		}
 
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
+		if c.Request.Method == http.MethodOptions {
+			c.AbortWithStatus(http.StatusNoContent) // header ถูกเซ็ตแล้ว
 			return
 		}
 

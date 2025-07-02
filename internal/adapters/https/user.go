@@ -44,7 +44,16 @@ func (h *HttpUserHandler) Login(c *gin.Context) {
 		handleError(c, errs.NewUnauthorizedError(err.Error()))
 		return
 	}
-	c.SetCookie("jwt", response.Token, 3600*24, "/", "localhost", false, true)
+	c.SetCookie("jwt", response.Token, 3600*24, "/", "", false, true)
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "jwt",
+		Value:    response.Token,
+		Path:     "/",
+		MaxAge:   3600,
+		HttpOnly: true,
+		Secure:   false, // dev = false, prod = true
+		SameSite: http.SameSiteLaxMode,
+	})
 	c.IndentedJSON(http.StatusOK, gin.H{
 		"message": "Login success.",
 		"token":   response.Token,

@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/spf13/viper"
 )
 
@@ -71,9 +69,7 @@ func NewConfigService() ConfigService {
 }
 
 func (s *configService) GetDatabase() *Database {
-	fmt.Println(s.service)
 	db := s.database.Sub("primary")
-	fmt.Println(db)
 	return &Database{
 		Host:         db.GetString("host"),
 		Port:         db.GetInt("port"),
