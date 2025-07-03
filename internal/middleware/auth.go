@@ -14,6 +14,7 @@ func AuthRequired(c *gin.Context) {
 		c.String(http.StatusNotFound, "Cookie not found")
 		return
 	}
+
 	jwtSecretKey := os.Getenv("JWT_SECRET")
 	token, err := jwt.ParseWithClaims(cookie, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
 		return []byte(jwtSecretKey), nil

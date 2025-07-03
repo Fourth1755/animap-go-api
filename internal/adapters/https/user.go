@@ -70,6 +70,16 @@ func (h *HttpUserHandler) GetUserInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func (h *HttpUserHandler) GetUserByUUID(c *gin.Context) {
+	uuid := c.Param("uuid")
+	response, err := h.service.GetUserByUUID(uuid)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, response)
+}
+
 func (h *HttpUserHandler) UpdateUserInfo(c *gin.Context) {
 	var request dtos.UpdateUserInfoRequest
 	if err := c.BindJSON(&request); err != nil {

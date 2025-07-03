@@ -21,6 +21,7 @@ type UserService interface {
 	Login(user *entities.User) (*dtos.LoginResponse, error)
 	GetUserInfo(ctx context.Context) (*dtos.GetUserInfoResponse, error)
 	UpdateUserInfo(request *dtos.UpdateUserInfoRequest) error
+	GetUserByUUID(uuid string) (*dtos.GetUserInfoResponse, error)
 }
 
 type UserServiceImpl struct {
@@ -130,4 +131,19 @@ func (s *UserServiceImpl) UpdateUserInfo(request *dtos.UpdateUserInfoRequest) er
 	}
 
 	return nil
+}
+
+func (s *UserServiceImpl) GetUserByUUID(uuidStr string) (*dtos.GetUserInfoResponse, error) {
+	uuidParsed := uuid.MustParse(uuidStr)
+	user, err := s.repo.GetById(uuidParsed)
+	if err != nil {
+		return nil, err
+	}
+	return &dtos.GetUserInfoResponse{
+		ID:           user.ID,
+		Name:         user.Name,
+		Email:        user.Email,
+		ProfileImage: user.ProfileImage,
+		Description:  user.Description,
+	}, nil
 }

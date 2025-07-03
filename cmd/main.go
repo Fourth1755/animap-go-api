@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	aws_adapter "github.com/Fourth1755/animap-go-api/internal/adapters/aws"
+	"github.com/Fourth1755/animap-go-api/internal/adapters/aws"
 	adapters "github.com/Fourth1755/animap-go-api/internal/adapters/https"
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/config"
@@ -21,11 +21,11 @@ func main() {
 	dbPrimary, dbReplica := database.InitDatabase(configService)
 
 	// init aws
-	awsAdapter, err := aws_adapter.NewAwsAdapter(configService.GetAWS())
+	awsAdapter, err := aws.NewAwsAdapter(configService.GetAWS())
 	if err != nil {
 		log.Fatalf("Could not create aws adapter: %v", err)
 	}
-	s3Service := aws_adapter.NewS3Service(awsAdapter)
+	s3Service := aws.NewS3Service(awsAdapter)
 
 	//create repository
 	animeRepo := repositories.NewGormAnimeRepository(dbPrimary, dbReplica)

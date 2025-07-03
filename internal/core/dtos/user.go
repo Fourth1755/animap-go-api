@@ -14,7 +14,7 @@ type GetUserInfoRequest struct {
 type GetUserInfoResponse struct {
 	ID           uuid.UUID `json:"uuid"`
 	Name         string    `json:"name"`
-	Email        string    `json:"emdil"`
+	Email        string    `json:"email"`
 	ProfileImage string    `json:"profile_image"`
 	Description  string    `json:"description"`
 }
@@ -22,7 +22,7 @@ type GetUserInfoResponse struct {
 type UpdateUserInfoRequest struct {
 	ID           uuid.UUID `json:"uuid"`
 	Name         string    `json:"name"`
-	Email        string    `json:"emdil"`
+	Email        string    `json:"email"`
 	ProfileImage string    `json:"profile_image"`
 	Description  string    `json:"description"`
 }
