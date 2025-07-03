@@ -86,7 +86,7 @@ func (h *HttpUserHandler) UpdateUserInfo(c *gin.Context) {
 		handleError(c, errs.NewBadRequestError(err.Error()))
 		return
 	}
-	if err := h.service.UpdateUserInfo(&request); err != nil {
+	if err := h.service.UpdateUserInfo(c, &request); err != nil {
 		handleError(c, err)
 		return
 	}

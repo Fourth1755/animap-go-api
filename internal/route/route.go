@@ -42,7 +42,7 @@ func InitRoutes(
 		authorized.PATCH("user/user-info", userHandler.UpdateUserInfo)
 	}
 
-	router.GET("user/:uuid", userHandler.GetUserByUUID)
+	router.GET("user/user-info/:uuid", userHandler.GetUserByUUID)
 
 	// //auth0
 	// gob.Register(map[string]interface{}{})

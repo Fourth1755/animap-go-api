@@ -20,7 +20,7 @@ type UserService interface {
 	CreateUser(user *entities.User) error
 	Login(user *entities.User) (*dtos.LoginResponse, error)
 	GetUserInfo(ctx context.Context) (*dtos.GetUserInfoResponse, error)
-	UpdateUserInfo(request *dtos.UpdateUserInfoRequest) error
+	UpdateUserInfo(ctx context.Context, request *dtos.UpdateUserInfoRequest) error
 	GetUserByUUID(uuid string) (*dtos.GetUserInfoResponse, error)
 }
 
@@ -111,14 +111,21 @@ func (s *UserServiceImpl) GetUserInfo(ctx context.Context) (*dtos.GetUserInfoRes
 	}, nil
 }
 
-func (s *UserServiceImpl) UpdateUserInfo(request *dtos.UpdateUserInfoRequest) error {
-	_, err := s.repo.GetById(request.ID)
+func (s *UserServiceImpl) UpdateUserInfo(ctx context.Context, request *dtos.UpdateUserInfoRequest) error {
+	userId, ok := ctx.Value("userId").(string)
+	if !ok {
+		return errs.NewUnexpectedError()
+	}
+	fmt.Println(userId)
+	userIdUuid := uuid.MustParse(userId)
+	_, err := s.repo.GetById(userIdUuid)
 	if err != nil {
 		logs.Error(err)
 		return errs.NewNotFoundError("User not found")
 	}
 
 	user := entities.User{
+		ID:           userIdUuid,
 		Name:         request.Name,
 		Email:        request.Email,
 		ProfileImage: request.ProfileImage,
