@@ -49,7 +49,7 @@ func (h *HttpUserHandler) Login(c *gin.Context) {
 		Name:     "jwt",
 		Value:    response.Token,
 		Path:     "/",
-		MaxAge:   3600,
+		MaxAge:   3600 * 24,
 		HttpOnly: true,
 		Secure:   false, // dev = false, prod = true
 		SameSite: http.SameSiteLaxMode,

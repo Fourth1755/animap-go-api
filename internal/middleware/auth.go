@@ -11,7 +11,7 @@ import (
 func AuthRequired(c *gin.Context) {
 	cookie, err := c.Cookie("jwt")
 	if err != nil {
-		c.String(http.StatusNotFound, "Cookie not found")
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"message": "Login required"})
 		return
 	}
 
@@ -20,7 +20,7 @@ func AuthRequired(c *gin.Context) {
 		return []byte(jwtSecretKey), nil
 	})
 	if err != nil || !token.Valid {
-		c.JSON(http.StatusUnauthorized, "")
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"message": "Invalid Token"})
 		return
 	}
 	claim := token.Claims.(jwt.MapClaims)

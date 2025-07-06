@@ -19,13 +19,13 @@ func NewHttpMyAnimeHandler(service services.MyAnimeService) *HttpMyAnimeHandler 
 }
 
 func (h *HttpMyAnimeHandler) AddAnimeToList(c *gin.Context) {
-	MyAnimeRequest := new(dtos.AddAnimeToListRequest)
-	if err := c.BindJSON(MyAnimeRequest); err != nil {
+	myAnimeRequest := new(dtos.AddAnimeToListRequest)
+	if err := c.BindJSON(myAnimeRequest); err != nil {
 		handleError(c, errs.NewBadRequestError(err.Error()))
 		return
 	}
 
-	if err := h.service.AddAnimeToList(MyAnimeRequest); err != nil {
+	if err := h.service.AddAnimeToList(c, myAnimeRequest); err != nil {
 		handleError(c, err)
 		return
 	}

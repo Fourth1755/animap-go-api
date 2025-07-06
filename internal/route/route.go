@@ -63,7 +63,10 @@ func InitRoutes(
 	router.POST("animes/seasonal-year", animeHandler.GetAnimeBySeasonalAndYear)
 	router.GET("animes/studio/:studio_id", animeHandler.GetAnimeByStudio)
 
-	router.POST("my-anime", myAnimeHandler.AddAnimeToList)
+	{
+		authorized.POST("my-anime", myAnimeHandler.AddAnimeToList)
+	}
+	//router.POST("my-anime", myAnimeHandler.AddAnimeToList)
 	router.GET("my-anime/:uuid", myAnimeHandler.GetAnimeByUserId)
 	router.GET("my-anime/anime-year-list/:uuid", myAnimeHandler.GetMyAnimeYearByUserId)
 	router.GET("my-anime/top-anime/:uuid", myAnimeHandler.GetMyTopAnimeByUserId)

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
@@ -10,7 +12,7 @@ import (
 )
 
 type MyAnimeService interface {
-	AddAnimeToList(userAnime *dtos.AddAnimeToListRequest) error
+	AddAnimeToList(c context.Context, userAnime *dtos.AddAnimeToListRequest) error
 	GetAnimeByUserId(uuid uuid.UUID) ([]dtos.GetAnimeByUserIdResponse, error)
 	GetMyAnimeYearByUserId(uuid uuid.UUID) (*dtos.GetMyAnimeYearByUserIdResponse, error)
 	GetMyTopAnime(uuid uuid.UUID) ([]dtos.GetMyTopAnimeResponse, error)
@@ -27,7 +29,13 @@ func NewMyAnimeService(repo repositories.UserAnimeRepository, animeRepo reposito
 	return &myAnimeServiceImpl{repo: repo, animeRepo: animeRepo, userRepo: userRepo}
 }
 
-func (s *myAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListRequest) error {
+func (s *myAnimeServiceImpl) AddAnimeToList(ctx context.Context, request *dtos.AddAnimeToListRequest) error {
+	userId, ok := ctx.Value("userId").(string)
+	if !ok {
+		return errs.NewUnexpectedError()
+	}
+	userIdUuid := uuid.MustParse(userId)
+
 	if _, err := s.animeRepo.GetById(request.AnimeID); err != nil {
 		logs.Error(err.Error())
 		return errs.NewNotFoundError("Anime not found")
@@ -41,14 +49,14 @@ func (s *myAnimeServiceImpl) AddAnimeToList(request *dtos.AddAnimeToListRequest)
 
 	userAnime := entities.UserAnime{
 		ID:            userAnimeId,
-		UserID:        request.UserUUID,
+		UserID:        userIdUuid,
 		AnimeID:       request.AnimeID,
 		Score:         request.Score,
 		Status:        request.Status,
 		WatchedYearAt: request.WatchedYear,
 	}
 
-	myTopAnime, err := s.repo.GetMyTopAnimeByUserId(request.UserUUID)
+	myTopAnime, err := s.repo.GetMyTopAnimeByUserId(userIdUuid)
 	if err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
