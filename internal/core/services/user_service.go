@@ -116,7 +116,7 @@ func (s *UserServiceImpl) UpdateUserInfo(ctx context.Context, request *dtos.Upda
 	if !ok {
 		return errs.NewUnexpectedError()
 	}
-	fmt.Println(userId)
+
 	userIdUuid := uuid.MustParse(userId)
 	_, err := s.repo.GetById(userIdUuid)
 	if err != nil {

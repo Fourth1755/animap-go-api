@@ -92,3 +92,16 @@ func (h *HttpUserHandler) UpdateUserInfo(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Update user info success."})
 }
+
+func (h *HttpUserHandler) Logout(c *gin.Context) {
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   false, // dev = false, prod = true
+		SameSite: http.SameSiteLaxMode,
+	})
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Logout success."})
+}

@@ -38,8 +38,11 @@ func InitRoutes(
 	authorized := router.Group("/")
 	authorized.Use(middleware.AuthRequired)
 	{
+		authorized.POST("logout", userHandler.Logout)
+
 		authorized.GET("user/user-info", userHandler.GetUserInfo)
 		authorized.PATCH("user/user-info", userHandler.UpdateUserInfo)
+
 	}
 
 	router.GET("user/user-info/:uuid", userHandler.GetUserByUUID)
