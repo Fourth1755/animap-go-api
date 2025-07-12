@@ -72,29 +72,20 @@ func main() {
 	characterService := services.NewCharacterService(characterRepo, animeCharacterRepo, animeRepo)
 
 	//create handler
-	animeHandler := adapters.NewHttpAnimeHandler(animeService)
-	userHandler := adapters.NewHttpUserHandler(userService)
-	myAnimeHandler := adapters.NewHttpMyAnimeHandler(myAnimeService)
-	categoryHandler := adapters.NewHttpCategoryHandler(categoryService)
-	songHandler := adapters.NewHttpSongHandler(songService)
-	artistHandler := adapters.NewHttpArtistHandler(artistService)
-	studioHandler := adapters.NewHttpStduioHandler(studioService)
-	commonHandler := adapters.NewHttpCommonHandler(commonService)
-	categoryUniverseHandler := adapters.NewHttpCategoryUniverseHandler(categoryUniverseService)
-	episodeHandler := adapters.NewHttpEpisodeHandler(episodeService)
-	characterHandler := adapters.NewHttpCharacterHandler(characterService)
 
-	rtr := route.InitRoutes(animeHandler,
-		userHandler,
-		myAnimeHandler,
-		categoryHandler,
-		songHandler,
-		artistHandler,
-		studioHandler,
-		commonHandler,
-		categoryUniverseHandler,
-		episodeHandler,
-		characterHandler)
+	rtr := route.InitRoutes(route.HttpHandler{
+		AnimeHandler:            adapters.NewHttpAnimeHandler(animeService),
+		UserHandler:             adapters.NewHttpUserHandler(userService),
+		MyAnimeHandler:          adapters.NewHttpMyAnimeHandler(myAnimeService),
+		CategoryHandler:         adapters.NewHttpCategoryHandler(categoryService),
+		SongHandler:             adapters.NewHttpSongHandler(songService),
+		ArtistHandler:           adapters.NewHttpArtistHandler(artistService),
+		StudioHandler:           adapters.NewHttpStduioHandler(studioService),
+		CommonHandler:           adapters.NewHttpCommonHandler(commonService),
+		CategoryUniverseHandler: adapters.NewHttpCategoryUniverseHandler(categoryUniverseService),
+		EpisodeHandler:          adapters.NewHttpEpisodeHandler(episodeService),
+		CharacterHandler:        adapters.NewHttpCharacterHandler(characterService),
+	})
 
 	log.Print("Server listening on http://localhost:8080/")
 	if err := http.ListenAndServe("0.0.0.0:8080", rtr); err != nil {
