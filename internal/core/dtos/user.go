@@ -26,3 +26,8 @@ type UpdateUserInfoRequest struct {
 	ProfileImage string    `json:"profile_image"`
 	Description  string    `json:"description"`
 }
+
+type PresignUrlRequest struct {
+	FileName string `json:"file_name"`
+	FileType string `json:"file_type"`
+}

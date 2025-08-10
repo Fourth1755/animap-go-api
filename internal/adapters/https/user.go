@@ -77,7 +77,26 @@ func (h *HttpUserHandler) GetUserByUUID(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response)
+	c.IndentedJSON(http.StatusOK, response)
+}
+
+func (h *HttpUserHandler) GetPresignedURLAvatar(c *gin.Context) {
+	var req dtos.PresignUrlRequest
+	if err := c.BindJSON(&req); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+	presignedURL, err := h.service.GetPresignedURLAvatar(c, &req)
+	if err != nil {
+		appError, ok := err.(errs.AppError)
+		if ok {
+			c.IndentedJSON(appError.Code, gin.H{"message": appError.Message})
+			return
+		}
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"url": presignedURL})
 }
 
 func (h *HttpUserHandler) UpdateUserInfo(c *gin.Context) {

@@ -6,7 +6,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/Fourth1755/animap-go-api/internal/adapters/aws"
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
+	"github.com/Fourth1755/animap-go-api/internal/core/config"
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
@@ -22,19 +24,43 @@ type UserService interface {
 	GetUserInfo(ctx context.Context) (*dtos.GetUserInfoResponse, error)
 	UpdateUserInfo(ctx context.Context, request *dtos.UpdateUserInfoRequest) error
 	GetUserByUUID(uuid string) (*dtos.GetUserInfoResponse, error)
+	GetPresignedURLAvatar(ctx context.Context, req *dtos.PresignUrlRequest) (string, error)
 }
 
 type UserServiceImpl struct {
-	repo repositories.UserRepository
+	repo          repositories.UserRepository
+	s3Service     aws.S3Service
+	configService config.ConfigService
 }
 
-func NewUserService(repo repositories.UserRepository) UserService {
-	return &UserServiceImpl{repo: repo}
+func NewUserService(
+	repo repositories.UserRepository,
+	s3Service aws.S3Service,
+	configService config.ConfigService) UserService {
+	return &UserServiceImpl{
+		repo:          repo,
+		s3Service:     s3Service,
+		configService: configService}
 }
 
 const (
 	TokenDuration = 24 * 3
 )
+
+func (s *UserServiceImpl) GetPresignedURLAvatar(ctx context.Context, req *dtos.PresignUrlRequest) (string, error) {
+	userId, ok := ctx.Value("userId").(string)
+	if !ok {
+		return "", errs.NewUnexpectedError()
+	}
+	fmt.Println("userId " + userId)
+	key := fmt.Sprintf("user/user-avatar/%s/%s", userId, req.FileName)
+	presignedURL, err := s.s3Service.GetPresignedURL(s.configService.GetAWS().S3Bucket, key)
+	if err != nil {
+		logs.Error(err)
+		return "", errs.NewUnexpectedError()
+	}
+	return presignedURL, nil
+}
 
 func (s *UserServiceImpl) CreateUser(user *entities.User) error {
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)

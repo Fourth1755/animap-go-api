@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"mime/multipart"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -11,6 +12,7 @@ import (
 
 type S3Service interface {
 	UploadFile(file *multipart.FileHeader, bucket string, key string) (string, error)
+	GetPresignedURL(bucket string, key string) (string, error)
 }
 
 type s3Service struct {
@@ -19,6 +21,18 @@ type s3Service struct {
 
 func NewS3Service(adapter *AwsAdapter) S3Service {
 	return &s3Service{S3: s3.New(adapter.Session)}
+}
+
+func (s *s3Service) GetPresignedURL(bucket string, key string) (string, error) {
+	req, _ := s.S3.PutObjectRequest(&s3.PutObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+	url, err := req.Presign(15 * time.Minute)
+	if err != nil {
+		return "", err
+	}
+	return url, nil
 }
 
 func (s *s3Service) UploadFile(file *multipart.FileHeader, bucket string, key string) (string, error) {

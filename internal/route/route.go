@@ -46,6 +46,7 @@ func InitRoutes(https HttpHandler) *gin.Engine {
 
 		authorized.GET("user/user-info", https.UserHandler.GetUserInfo)
 		authorized.PATCH("user/user-info", https.UserHandler.UpdateUserInfo)
+		authorized.POST("user/user-info/presign-url-avatar", https.UserHandler.GetPresignedURLAvatar)
 
 	}
 
