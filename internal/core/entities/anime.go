@@ -31,4 +31,5 @@ type Anime struct {
 	UpdatedAt         time.Time
 	DeletedAt         gorm.DeletedAt `gorm:"index"`
 	IsCreateEpisode   bool           `gorm:"default:false" json:"is_create_episode"`
+	MyAnimeListID     uint64         `json:"my_anime_list_id"`
 }

@@ -32,6 +32,8 @@ type GetAnimeByIdResponse struct {
 	ID               uuid.UUID               `json:"id"`
 	Name             string                  `json:"name"`
 	NameEnglish      string                  `json:"name_english"`
+	NameJapan        string                  `json:"name_japan"`
+	NameThai         string                  `json:"name_thai"`
 	Episodes         int                     `json:"episodes"`
 	Seasonal         string                  `json:"seasonal"`
 	Year             string                  `json:"year"`
@@ -41,10 +43,13 @@ type GetAnimeByIdResponse struct {
 	Type             int                     `json:"type"`
 	Categories       []AnimeDetailCategories `json:"categories"`
 	Wallpaper        string                  `json:"wallpaper"`
-	Trailer          string                  `json:"trailer"`
 	TrailerEmbed     string                  `json:"trailer_embed"`
 	Studios          []AnimeDetailStduios    `json:"studios"`
 	CategoryUniverse []AnimeDataUniverse     `json:"categoryUniverse"`
+	MyAnimeListScore float64                 `json:"my_anime_list_score"`
+	Source           string                  `json:"source"`
+	Rating           string                  `json:"rating"`
+	MediaType        string                  `json:"media_type"`
 }
 
 type AnimeQueryDTO struct {
@@ -68,20 +73,21 @@ type EditCategoryUniverseToAnimeRequest struct {
 }
 
 type CreateAnimeRequest struct {
-	Name        string    `json:"name"`
-	NameEnglish string    `json:"name_english"`
-	NameThai    string    `json:"name_thai"`
-	Episodes    int       `json:"episodes"`
-	Seasonal    string    `json:"seasonal"`
-	Image       string    `json:"image"`
-	Studio      []string  `json:"studio"`
-	Description string    `json:"description"`
-	Duration    string    `json:"duration"`
-	Year        string    `json:"year"`
-	Type        int       `json:"type"`
-	Wallpaper   string    `json:"wallpaper"`
-	Trailer     string    `json:"trailer"`
-	AiredAt     time.Time `json:"aired_at"`
+	Name          string    `json:"name"`
+	NameEnglish   string    `json:"name_english"`
+	NameThai      string    `json:"name_thai"`
+	Episodes      int       `json:"episodes"`
+	Seasonal      string    `json:"seasonal"`
+	Image         string    `json:"image"`
+	Studio        []string  `json:"studio"`
+	Description   string    `json:"description"`
+	Duration      string    `json:"duration"`
+	Year          string    `json:"year"`
+	Type          int       `json:"type"`
+	Wallpaper     string    `json:"wallpaper"`
+	Trailer       string    `json:"trailer"`
+	AiredAt       time.Time `json:"aired_at"`
+	MyAnimeListID uint64    `json:"my_anime_list_id"`
 }
 
 type GetAnimeBySeasonAndYearRequest struct {

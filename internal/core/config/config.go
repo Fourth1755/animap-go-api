@@ -9,11 +9,13 @@ type ConfigService interface {
 	GetDatabaseReplica() *Database
 	GetCommon() *Common
 	GetAWS() *AWS
+	GetMyAnimeListClient() *MyAnimeListClient
 }
 
 type configService struct {
 	service  *viper.Viper
 	database *viper.Viper
+	client   *viper.Viper
 }
 
 type AnimeSeasonalYear struct {
@@ -47,6 +49,11 @@ type DatabaseReplica struct {
 	DatabaseName string
 }
 
+type MyAnimeListClient struct {
+	EndPoint string
+	CLientID string
+}
+
 func initConfig() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -62,9 +69,11 @@ func NewConfigService() ConfigService {
 	initConfig()
 	service := viper.Sub("service")
 	database := viper.Sub("db")
+	client := viper.Sub("client")
 	return &configService{
 		service:  service,
 		database: database,
+		client:   client,
 	}
 }
 
@@ -107,5 +116,12 @@ func (s *configService) GetCommon() *Common {
 		AnimeSeasonalYear: AnimeSeasonalYear{
 			FirstYear: animeSeasonalYear.GetInt("firstYear"),
 		},
+	}
+}
+
+func (s *configService) GetMyAnimeListClient() *MyAnimeListClient {
+	return &MyAnimeListClient{
+		EndPoint: s.client.GetString("myAnimeListEndpoint"),
+		CLientID: s.client.GetString("myAnimeListClientId"),
 	}
 }

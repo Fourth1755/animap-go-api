@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Fourth1755/animap-go-api/internal/adapters/aws"
+	"github.com/Fourth1755/animap-go-api/internal/adapters/external_api"
 	adapters "github.com/Fourth1755/animap-go-api/internal/adapters/https"
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/config"
@@ -26,6 +27,9 @@ func main() {
 		log.Fatalf("Could not create aws adapter: %v", err)
 	}
 	s3Service := aws.NewS3Service(awsAdapter)
+
+	// init external api
+	myAnimeListService := external_api.NewAnimeListService(configService)
 
 	//create repository
 	animeRepo := repositories.NewGormAnimeRepository(dbPrimary, dbReplica)
@@ -65,6 +69,7 @@ func main() {
 		studioRepo,
 		episodeRepo,
 		s3Service,
+		myAnimeListService,
 	)
 	commonService := services.NewCommonService(configService)
 	categoryUniverseService := services.NewCategoryUniverseService(categoryUniverseRepo)

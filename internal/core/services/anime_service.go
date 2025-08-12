@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"net/url"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/Fourth1755/animap-go-api/internal/adapters/aws"
+	"github.com/Fourth1755/animap-go-api/internal/adapters/external_api"
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
@@ -43,6 +45,7 @@ type animeServiceImpl struct {
 	studioRepo                  repositories.StudioRepository
 	episodeRepo                 repositories.EpisodeRepository
 	s3Service                   aws.S3Service
+	myAnimeListService          external_api.MyAnimeListService
 }
 
 func NewAnimeService(
@@ -57,6 +60,7 @@ func NewAnimeService(
 	studioRepo repositories.StudioRepository,
 	episodeRepo repositories.EpisodeRepository,
 	s3Service aws.S3Service,
+	myAnimeListService external_api.MyAnimeListService,
 ) AnimeService {
 	return &animeServiceImpl{
 		repo:                        repo,
@@ -70,6 +74,7 @@ func NewAnimeService(
 		studioRepo:                  studioRepo,
 		episodeRepo:                 episodeRepo,
 		s3Service:                   s3Service,
+		myAnimeListService:          myAnimeListService,
 	}
 }
 
@@ -94,21 +99,22 @@ func (s *animeServiceImpl) CreateAnime(request dtos.CreateAnimeRequest) error {
 		}
 	}
 	anime := entities.Anime{
-		ID:           animeId,
-		Name:         request.Name,
-		NameEnglish:  request.NameEnglish,
-		NameThai:     request.NameThai,
-		Episodes:     request.Episodes,
-		Image:        request.Image,
-		Description:  request.Description,
-		Seasonal:     request.Seasonal,
-		Year:         request.Year,
-		Type:         request.Type,
-		Duration:     request.Duration,
-		Wallpaper:    request.Wallpaper,
-		Trailer:      request.Trailer,
-		TrailerEmbed: trailerEmbed,
-		AiredAt:      request.AiredAt,
+		ID:            animeId,
+		Name:          request.Name,
+		NameEnglish:   request.NameEnglish,
+		NameThai:      request.NameThai,
+		Episodes:      request.Episodes,
+		Image:         request.Image,
+		Description:   request.Description,
+		Seasonal:      request.Seasonal,
+		Year:          request.Year,
+		Type:          request.Type,
+		Duration:      request.Duration,
+		Wallpaper:     request.Wallpaper,
+		Trailer:       request.Trailer,
+		TrailerEmbed:  trailerEmbed,
+		AiredAt:       request.AiredAt,
+		MyAnimeListID: request.MyAnimeListID,
 	}
 
 	animeCreate, err := s.repo.Save(anime)
@@ -199,23 +205,31 @@ func (s *animeServiceImpl) GetAnimeById(id uuid.UUID) (*dtos.GetAnimeByIdRespons
 		})
 	}
 
+	myAnimeListData, err := s.myAnimeListService.GetAnimeDetail(uint(anime.MyAnimeListID))
+	if err != nil {
+		logs.Error(err.Error())
+		return nil, errs.NewUnexpectedError()
+	}
+
 	animeResponse := dtos.GetAnimeByIdResponse{
 		ID:               anime.ID,
-		Name:             anime.Name,
-		NameEnglish:      anime.NameEnglish,
-		Episodes:         anime.Episodes,
-		Seasonal:         anime.Seasonal,
-		Year:             anime.Year,
-		Image:            anime.Image,
-		Description:      anime.Description,
+		Name:             myAnimeListData.Title,
+		NameEnglish:      myAnimeListData.AlternativeTitles.En,
+		NameJapan:        myAnimeListData.AlternativeTitles.Ja,
+		NameThai:         anime.NameThai,
+		Episodes:         int(myAnimeListData.NumEpisodes),
+		Seasonal:         myAnimeListData.StartSeason.Season,
+		Year:             strconv.Itoa(myAnimeListData.StartSeason.Year),
+		Image:            myAnimeListData.MainPicture.Large,
+		Description:      myAnimeListData.Synopsis,
 		Type:             anime.Type,
 		Duration:         anime.Duration,
 		Categories:       categories,
 		Wallpaper:        anime.Wallpaper,
-		Trailer:          anime.Trailer,
 		TrailerEmbed:     anime.TrailerEmbed,
 		Studios:          studios,
 		CategoryUniverse: categoryUniverse,
+		MyAnimeListScore: myAnimeListData.Mean,
 	}
 	return &animeResponse, nil
 }
