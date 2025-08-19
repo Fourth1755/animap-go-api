@@ -18,6 +18,7 @@ type Anime struct {
 	Seasonal          string     `json:"seasonal"`
 	Year              string     `json:"year"`
 	Type              int        `json:"type"` //1: TV 2: movie
+	MediaType         string     `json:"media_type"`
 	Duration          string     `json:"duration"`
 	Categories        []Category `gorm:"many2many:anime_categories;"`
 	Songs             []Song
@@ -32,4 +33,6 @@ type Anime struct {
 	DeletedAt         gorm.DeletedAt `gorm:"index"`
 	IsCreateEpisode   bool           `gorm:"default:false" json:"is_create_episode"`
 	MyAnimeListID     uint64         `json:"my_anime_list_id"`
+	IsSubAnime        bool           `json:"is_sub_anime"`
+	Rating            string         `json:"rating"`
 }

@@ -12,7 +12,7 @@ import (
 )
 
 type MyAnimeListService interface {
-	GetAnimeDetail(myAnimeListId uint) (*GetAnimeDetailResponse, error)
+	GetAnimeDetail(myAnimeListId int) (*GetAnimeDetailResponse, error)
 }
 
 type myAnimeListService struct {
@@ -20,6 +20,7 @@ type myAnimeListService struct {
 }
 
 func NewAnimeListService(configService config.ConfigService) MyAnimeListService {
+
 	return &myAnimeListService{configService: configService}
 }
 
@@ -49,7 +50,7 @@ type GetAnimeDetailResponse struct {
 	Title                  string            `json:"title"`
 	MainPicture            MainPicture       `json:"main_picture"`
 	AlternativeTitles      AlternativeTitles `json:"alternative_titles"`
-	StartDate              string            `json:"istart_dated"`
+	StartDate              string            `json:"start_date"`
 	EndDate                string            `json:"end_date"`
 	Synopsis               string            `json:"synopsis"`
 	Mean                   float64           `json:"mean"`
@@ -57,7 +58,7 @@ type GetAnimeDetailResponse struct {
 	Popularity             uint              `json:"popularity"`
 	NumListUsers           uint              `json:"num_list_users"`
 	NumScoringUsers        uint              `json:"num_scoring_users"`
-	MediaYype              string            `json:"media_type"`
+	MediaType              string            `json:"media_type"`
 	Status                 string            `json:"finished_airing"`
 	NumEpisodes            uint              `json:"num_episodes"`
 	StartSeason            StartSeason       `json:"start_season"`
@@ -71,14 +72,14 @@ const (
 	animeColumn string = "?fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,my_list_status,num_episodes,start_season,broadcast,source,average_episode_duration,rating,pictures,background,related_anime,related_manga,recommendations,studios,statistics"
 )
 
-func (m myAnimeListService) GetAnimeDetail(myAnimeListId uint) (*GetAnimeDetailResponse, error) {
+func (m myAnimeListService) GetAnimeDetail(myAnimeListId int) (*GetAnimeDetailResponse, error) {
 	// 2. สร้าง HTTP client พร้อม timeout
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
 
 	// 3. สร้าง request และใส่ header
-	animeId := strconv.Itoa(int(myAnimeListId))
+	animeId := strconv.Itoa(myAnimeListId)
 	resource := fmt.Sprintf(m.configService.GetMyAnimeListClient().EndPoint + "/" + animeId + animeColumn)
 	req, err := http.NewRequest(http.MethodGet, resource, nil)
 	if err != nil {

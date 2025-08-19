@@ -71,6 +71,9 @@ func InitRoutes(https HttpHandler) *gin.Engine {
 	router.POST("animes/seasonal-year", https.AnimeHandler.GetAnimeBySeasonalAndYear)
 	router.GET("animes/studio/:studio_id", https.AnimeHandler.GetAnimeByStudio)
 
+	// migrate anime
+	router.POST("migrate/animes", https.AnimeHandler.MigrateAnime)
+
 	{
 		authorized.POST("my-anime", https.MyAnimeHandler.AddAnimeToList)
 	}

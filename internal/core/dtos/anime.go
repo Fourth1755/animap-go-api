@@ -183,3 +183,8 @@ type GetAnimeByStudioResponse struct {
 	MainColor string                              `json:"main_color"`
 	AnimeList []GetAnimeByStudioResponseAnimeList `json:"anime_list"`
 }
+
+type MigrateAnimeRequest struct {
+	StartAnimeId int `json:"start_anime_id"`
+	EndAnimeId   int `json:"end_anime_id"`
+}

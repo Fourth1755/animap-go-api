@@ -164,3 +164,17 @@ func (h *HttpAnimeHandler) GetAnimeByStudio(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, animes)
 }
+
+func (h *HttpAnimeHandler) MigrateAnime(c *gin.Context) {
+	request := new(dtos.MigrateAnimeRequest)
+	if err := c.BindJSON(request); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	err := h.service.MigrateAnime(*request)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Migrate anime success."})
+}
