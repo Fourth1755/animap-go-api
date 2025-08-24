@@ -10,6 +10,7 @@ type CategoryRepository interface {
 	Save(category *entities.Category) error
 	GetAll() ([]entities.Category, error)
 	GetById(id uuid.UUID) (*entities.Category, error)
+	GetByMyAnimeListId(id int) (*entities.Category, error)
 }
 
 type GormCategoryRepository struct {
@@ -39,6 +40,14 @@ func (r *GormCategoryRepository) GetAll() ([]entities.Category, error) {
 func (r *GormCategoryRepository) GetById(id uuid.UUID) (*entities.Category, error) {
 	category := new(entities.Category)
 	if result := r.dbReplica.First(&category, id); result.Error != nil {
+		return nil, result.Error
+	}
+	return category, nil
+}
+
+func (r *GormCategoryRepository) GetByMyAnimeListId(id int) (*entities.Category, error) {
+	category := new(entities.Category)
+	if result := r.dbReplica.Where("my_anime_list_id = ?", id).First(&category); result.Error != nil {
 		return nil, result.Error
 	}
 	return category, nil

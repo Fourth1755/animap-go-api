@@ -50,6 +50,7 @@ type GetAnimeByIdResponse struct {
 	Source           string                  `json:"source"`
 	Rating           string                  `json:"rating"`
 	MediaType        string                  `json:"media_type"`
+	IsSubAnime       bool                    `json:"is_sub_anime"`
 }
 
 type AnimeQueryDTO struct {

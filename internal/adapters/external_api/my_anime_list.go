@@ -45,6 +45,11 @@ type Broadcast struct {
 	StartTime    string `json:"start_time"`
 }
 
+type Studio struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 type GetAnimeDetailResponse struct {
 	ID                     uint              `json:"id"`
 	Title                  string            `json:"title"`
@@ -66,6 +71,7 @@ type GetAnimeDetailResponse struct {
 	Source                 string            `json:"source"`
 	AverageEpisodeDuration uint              `json:"average_episode_duration"`
 	Rating                 string            `json:"rating"`
+	Studios                []Studio          `json:"studios"`
 }
 
 const (

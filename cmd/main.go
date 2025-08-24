@@ -71,6 +71,15 @@ func main() {
 		s3Service,
 		myAnimeListService,
 	)
+	animeMigrateService := services.NewAnimeMigrateService(
+		animeRepo,
+		animeCategoryRepo,
+		animeStudioRepo,
+		categoryRepo,
+		studioRepo,
+		episodeRepo,
+		myAnimeListService,
+	)
 	commonService := services.NewCommonService(configService)
 	categoryUniverseService := services.NewCategoryUniverseService(categoryUniverseRepo)
 	episodeService := services.NewEpisodeService(episodeRepo, animeRepo, episodeCharacterRepo)
@@ -90,6 +99,7 @@ func main() {
 		CategoryUniverseHandler: adapters.NewHttpCategoryUniverseHandler(categoryUniverseService),
 		EpisodeHandler:          adapters.NewHttpEpisodeHandler(episodeService),
 		CharacterHandler:        adapters.NewHttpCharacterHandler(characterService),
+		AnimeMigrateHandler:     adapters.NewHttpAnimeMigrateHandler(animeMigrateService),
 	})
 
 	log.Print("Server listening on http://localhost:8080/")

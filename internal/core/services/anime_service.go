@@ -6,7 +6,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/Fourth1755/animap-go-api/internal/adapters/aws"
 	"github.com/Fourth1755/animap-go-api/internal/adapters/external_api"
@@ -32,7 +31,6 @@ type AnimeService interface {
 	AddCategoryUniverseToAnime(request dtos.EditCategoryUniverseToAnimeRequest) error
 	GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) (*dtos.GetAnimeBySeasonAndYearResponse, error)
 	GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeByStudioResponse, error)
-	MigrateAnime(req dtos.MigrateAnimeRequest) error
 }
 
 type animeServiceImpl struct {
@@ -212,27 +210,53 @@ func (s *animeServiceImpl) GetAnimeById(id uuid.UUID) (*dtos.GetAnimeByIdRespons
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
 	}
-
-	animeResponse := dtos.GetAnimeByIdResponse{
-		ID:               anime.ID,
-		Name:             myAnimeListData.Title,
-		NameEnglish:      myAnimeListData.AlternativeTitles.En,
-		NameJapan:        myAnimeListData.AlternativeTitles.Ja,
-		NameThai:         anime.NameThai,
-		Episodes:         int(myAnimeListData.NumEpisodes),
-		Seasonal:         myAnimeListData.StartSeason.Season,
-		Year:             strconv.Itoa(myAnimeListData.StartSeason.Year),
-		Image:            myAnimeListData.MainPicture.Large,
-		Description:      myAnimeListData.Synopsis,
-		Type:             anime.Type,
-		Duration:         anime.Duration,
-		Categories:       categories,
-		Wallpaper:        anime.Wallpaper,
-		TrailerEmbed:     anime.TrailerEmbed,
-		Studios:          studios,
-		CategoryUniverse: categoryUniverse,
-		MyAnimeListScore: myAnimeListData.Mean,
+	animeResponse := dtos.GetAnimeByIdResponse{}
+	if !anime.IsSubAnime {
+		animeResponse = dtos.GetAnimeByIdResponse{
+			ID:               anime.ID,
+			Name:             myAnimeListData.Title,
+			NameEnglish:      myAnimeListData.AlternativeTitles.En,
+			NameJapan:        myAnimeListData.AlternativeTitles.Ja,
+			NameThai:         anime.NameThai,
+			Episodes:         int(myAnimeListData.NumEpisodes),
+			Seasonal:         myAnimeListData.StartSeason.Season,
+			Year:             strconv.Itoa(myAnimeListData.StartSeason.Year),
+			Image:            myAnimeListData.MainPicture.Large,
+			Description:      myAnimeListData.Synopsis,
+			Type:             anime.Type,
+			Duration:         anime.Duration,
+			Categories:       categories,
+			Wallpaper:        anime.Wallpaper,
+			TrailerEmbed:     anime.TrailerEmbed,
+			Studios:          studios,
+			CategoryUniverse: categoryUniverse,
+			MyAnimeListScore: myAnimeListData.Mean,
+			IsSubAnime:       anime.IsSubAnime,
+		}
+	} else {
+		animeResponse = dtos.GetAnimeByIdResponse{
+			ID:               anime.ID,
+			Name:             anime.Name,
+			NameEnglish:      anime.NameEnglish,
+			NameJapan:        "",
+			NameThai:         anime.NameThai,
+			Episodes:         anime.Episodes,
+			Seasonal:         anime.Seasonal,
+			Year:             anime.Year,
+			Image:            anime.Image,
+			Description:      anime.Description,
+			Type:             anime.Type,
+			Duration:         anime.Duration,
+			Categories:       categories,
+			Wallpaper:        anime.Wallpaper,
+			TrailerEmbed:     anime.TrailerEmbed,
+			Studios:          studios,
+			CategoryUniverse: categoryUniverse,
+			MyAnimeListScore: 0,
+			IsSubAnime:       anime.IsSubAnime,
+		}
 	}
+
 	return &animeResponse, nil
 }
 
@@ -570,74 +594,4 @@ func (s *animeServiceImpl) GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeB
 		MainColor: studio.MainColor,
 		AnimeList: animesReponse,
 	}, nil
-}
-
-// ConvertDateStringToTime แปลง string "YYYY-MM-DD" -> time.Time
-func ConvertDateStringToTime(dateStr string) (time.Time, error) {
-	// layout ต้องเป็น "2006-01-02" ถ้าข้อมูลเป็น "2025-07-06"
-	layout := "2006-01-02"
-	return time.Parse(layout, dateStr)
-}
-
-func (s *animeServiceImpl) insertAnimeFromMyAnimeList(i int, animeMal *external_api.GetAnimeDetailResponse) error {
-	animeId, err := uuid.NewV7()
-	if err != nil {
-		logs.Error(err.Error())
-		return errs.NewUnexpectedError()
-	}
-	nameEnglish := ""
-	if animeMal.AlternativeTitles.En != "" {
-		nameEnglish = animeMal.AlternativeTitles.En
-	}
-	fmt.Println(animeMal.StartDate)
-	airedAt, err := ConvertDateStringToTime(animeMal.StartDate)
-	if err != nil {
-		logs.Error("can cont convert data to string tine " + err.Error())
-		return errs.NewUnexpectedError()
-	}
-
-	anime := entities.Anime{
-		ID:            animeId,
-		Name:          animeMal.Title,
-		NameEnglish:   nameEnglish,
-		NameThai:      "",
-		Episodes:      int(animeMal.NumEpisodes),
-		Seasonal:      animeMal.StartSeason.Season,
-		Year:          strconv.Itoa(animeMal.StartSeason.Year),
-		Rating:        animeMal.Rating,
-		MediaType:     animeMal.MediaType,
-		AiredAt:       airedAt,
-		MyAnimeListID: uint64(i),
-	}
-
-	_, err = s.repo.Save(anime)
-	if err != nil {
-		logs.Error(err.Error())
-		return errs.NewUnexpectedError()
-	}
-	fmt.Println(strconv.Itoa(i) + "Id that are created")
-	return nil
-}
-
-func (s *animeServiceImpl) MigrateAnime(req dtos.MigrateAnimeRequest) error {
-	fmt.Println("Strat migrate")
-	fmt.Printf("start at %d", req.StartAnimeId)
-	fmt.Printf("end at %d", req.EndAnimeId)
-	for i := req.StartAnimeId; i <= req.EndAnimeId; i++ {
-		animeMal, err := s.myAnimeListService.GetAnimeDetail(i)
-		fmt.Println(animeMal)
-		fmt.Println(err)
-		if err != nil {
-			logs.Error(err.Error())
-		} else if animeMal != nil {
-			if animeMal.MediaType != "music" && animeMal.MediaType != "cm" && animeMal.MediaType != "ona" {
-				err = s.insertAnimeFromMyAnimeList(i, animeMal)
-				if err != nil {
-					logs.Error(err.Error())
-				}
-			}
-		}
-	}
-	fmt.Println("End migrate")
-	return nil
 }

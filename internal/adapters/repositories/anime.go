@@ -17,6 +17,8 @@ type AnimeRepository interface {
 	GetByUserId(user_id uuid.UUID) ([]entities.UserAnime, error)
 	GetBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) ([]entities.Anime, error)
 	UpdateIsCreateEpisode(animeId uuid.UUID) error
+	UpdadteImage(image string, myAnimeListId int) error
+	GetByMyAnimeListId(id int) (*entities.Anime, error)
 }
 
 type GormAnimeRepository struct {
@@ -146,4 +148,22 @@ func (r *GormAnimeRepository) GetBySeasonalAndYear(request dtos.GetAnimeBySeason
 	}
 
 	return animes, nil
+}
+
+func (r *GormAnimeRepository) UpdadteImage(image string, myAnimeListId int) error {
+	var animes []entities.Anime
+	result := r.dbPrimary.Raw("UPDATE animes SET image = ? WHERE my_anime_list_id = ? ", image, myAnimeListId).Scan(&animes)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *GormAnimeRepository) GetByMyAnimeListId(id int) (*entities.Anime, error) {
+	var anime entities.Anime
+	if result := r.dbReplica.Where("my_anime_list_id = ?", id).
+		First(&anime); result.Error != nil {
+		return nil, result.Error
+	}
+	return &anime, nil
 }

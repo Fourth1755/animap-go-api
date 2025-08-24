@@ -10,6 +10,8 @@ type StudioRepository interface {
 	GetAll() ([]entities.Studio, error)
 	GetByIds(ids []uuid.UUID) ([]entities.Studio, error)
 	GetById(id uuid.UUID) (*entities.Studio, error)
+	GetByMyAnimeListId(id int) (*entities.Studio, error)
+	Save(studio entities.Studio) (*entities.Studio, error)
 }
 
 type GormStudioRepository struct {
@@ -44,4 +46,19 @@ func (r GormStudioRepository) GetById(id uuid.UUID) (*entities.Studio, error) {
 		return nil, result.Error
 	}
 	return studio, nil
+}
+
+func (r GormStudioRepository) GetByMyAnimeListId(id int) (*entities.Studio, error) {
+	studio := new(entities.Studio)
+	if result := r.dbReplica.Where("my_anime_list_id = ?", id).First(&studio); result.Error != nil {
+		return nil, result.Error
+	}
+	return studio, nil
+}
+
+func (r GormStudioRepository) Save(studio entities.Studio) (*entities.Studio, error) {
+	if result := r.dbPrimary.Create(&studio); result.Error != nil {
+		return nil, result.Error
+	}
+	return &studio, nil
 }
