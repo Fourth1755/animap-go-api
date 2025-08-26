@@ -9,7 +9,7 @@ import (
 )
 
 type CategoryService interface {
-	CreateCategory(category *entities.Category) error
+	CreateCategory(category entities.Category) error
 	Getcategorise() ([]entities.Category, error)
 	GetCategoryById(id uuid.UUID) (*entities.Category, error)
 }
@@ -22,14 +22,14 @@ func NewCategoryService(repo repositories.CategoryRepository) CategoryService {
 	return &CategoryServiceImpl{repo: repo}
 }
 
-func (s *CategoryServiceImpl) CreateCategory(category *entities.Category) error {
+func (s *CategoryServiceImpl) CreateCategory(category entities.Category) error {
 	categoryId, err := uuid.NewV7()
 	if err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}
 	category.ID = categoryId
-	if err := s.repo.Save(category); err != nil {
+	if _, err := s.repo.Save(category); err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}

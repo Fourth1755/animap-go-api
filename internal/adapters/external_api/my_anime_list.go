@@ -50,6 +50,10 @@ type Studio struct {
 	Name string `json:"name"`
 }
 
+type Genre struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
 type GetAnimeDetailResponse struct {
 	ID                     uint              `json:"id"`
 	Title                  string            `json:"title"`
@@ -72,6 +76,7 @@ type GetAnimeDetailResponse struct {
 	AverageEpisodeDuration uint              `json:"average_episode_duration"`
 	Rating                 string            `json:"rating"`
 	Studios                []Studio          `json:"studios"`
+	Genres                 []Genre           `json:"genres"`
 }
 
 const (

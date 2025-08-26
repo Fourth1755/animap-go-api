@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"time"
+
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/google/uuid"
@@ -19,6 +21,7 @@ type AnimeRepository interface {
 	UpdateIsCreateEpisode(animeId uuid.UUID) error
 	UpdadteImage(image string, myAnimeListId int) error
 	GetByMyAnimeListId(id int) (*entities.Anime, error)
+	UpdadteAiredAt(airedAt time.Time, myAnimeListId int) error
 }
 
 type GormAnimeRepository struct {
@@ -159,6 +162,14 @@ func (r *GormAnimeRepository) UpdadteImage(image string, myAnimeListId int) erro
 	return nil
 }
 
+func (r *GormAnimeRepository) UpdadteAiredAt(airedAt time.Time, myAnimeListId int) error {
+	var animes []entities.Anime
+	result := r.dbPrimary.Raw("UPDATE animes SET aired_at = ? WHERE my_anime_list_id = ? ", airedAt, myAnimeListId).Scan(&animes)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
 func (r *GormAnimeRepository) GetByMyAnimeListId(id int) (*entities.Anime, error) {
 	var anime entities.Anime
 	if result := r.dbReplica.Where("my_anime_list_id = ?", id).

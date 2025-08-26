@@ -7,7 +7,7 @@ import (
 )
 
 type CategoryRepository interface {
-	Save(category *entities.Category) error
+	Save(category entities.Category) (*entities.Category, error)
 	GetAll() ([]entities.Category, error)
 	GetById(id uuid.UUID) (*entities.Category, error)
 	GetByMyAnimeListId(id int) (*entities.Category, error)
@@ -22,11 +22,11 @@ func NewGormCategoryRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) CategoryR
 	return &GormCategoryRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
 }
 
-func (r *GormCategoryRepository) Save(category *entities.Category) error {
+func (r *GormCategoryRepository) Save(category entities.Category) (*entities.Category, error) {
 	if result := r.dbPrimary.Create(&category); result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
-	return nil
+	return &category, nil
 }
 
 func (r *GormCategoryRepository) GetAll() ([]entities.Category, error) {

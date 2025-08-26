@@ -45,7 +45,7 @@ type GetAnimeByIdResponse struct {
 	Wallpaper        string                  `json:"wallpaper"`
 	TrailerEmbed     string                  `json:"trailer_embed"`
 	Studios          []AnimeDetailStduios    `json:"studios"`
-	CategoryUniverse []AnimeDataUniverse     `json:"categoryUniverse"`
+	CategoryUniverse []AnimeDataUniverse     `json:"category_universe"`
 	MyAnimeListScore float64                 `json:"my_anime_list_score"`
 	Source           string                  `json:"source"`
 	Rating           string                  `json:"rating"`

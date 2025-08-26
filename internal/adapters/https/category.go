@@ -19,7 +19,7 @@ func NewHttpCategoryHandler(service services.CategoryService) *HttpCategoryHandl
 }
 
 func (h *HttpCategoryHandler) CreateCategory(c *gin.Context) {
-	category := new(entities.Category)
+	var category entities.Category
 	if err := c.BindJSON(&category); err != nil {
 		handleError(c, errs.NewBadRequestError(err.Error()))
 		return

@@ -105,6 +105,21 @@ func (s *animeMigrateServiceImpl) updateImageAnime(i int, animeMal *external_api
 	return nil
 }
 
+func (s *animeMigrateServiceImpl) updadteAiredAt(i int, animeMal *external_api.GetAnimeDetailResponse) error {
+	airedAt, err := ConvertDateStringToTime(animeMal.StartDate)
+	if err != nil {
+		logs.Error("can cont convert data to string tine " + err.Error())
+		return errs.NewUnexpectedError()
+	}
+
+	err = s.repo.UpdadteAiredAt(airedAt, i)
+	if err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+	return nil
+}
+
 func (s *animeMigrateServiceImpl) updateStudioAnime(i int, animeMal *external_api.GetAnimeDetailResponse) error {
 	animeStudios := []entities.AnimeStudio{}
 	for _, item := range animeMal.Studios {
@@ -158,6 +173,59 @@ func (s *animeMigrateServiceImpl) updateStudioAnime(i int, animeMal *external_ap
 	return nil
 }
 
+func (s *animeMigrateServiceImpl) updateCategoryAnime(i int, animeMal *external_api.GetAnimeDetailResponse) error {
+	animeCategory := []entities.AnimeCategory{}
+	for _, item := range animeMal.Genres {
+		animeCategoryId, err := uuid.NewV7()
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+		var categoryId uuid.UUID
+		category, err := s.categoryRepo.GetByMyAnimeListId(item.ID)
+		if err != nil {
+			logs.Error(err.Error())
+			if err == gorm.ErrRecordNotFound {
+				categoryNewId, err := uuid.NewV7()
+				if err != nil {
+					logs.Error(err.Error())
+					return errs.NewUnexpectedError()
+				}
+				categoryNew := entities.Category{
+					ID:            categoryNewId,
+					Name:          item.Name,
+					MyAnimeListID: item.ID,
+				}
+				result, err := s.categoryRepo.Save(categoryNew)
+				if err != nil {
+					logs.Error(err.Error())
+					return errs.NewUnexpectedError()
+				}
+				categoryId = result.ID
+			} else {
+				return errs.NewUnexpectedError()
+			}
+		} else {
+			categoryId = category.ID
+		}
+		anime, err := s.repo.GetByMyAnimeListId(i)
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+		animeCategory = append(animeCategory, entities.AnimeCategory{
+			ID:         animeCategoryId,
+			CategoryID: categoryId,
+			AnimeID:    anime.ID,
+		})
+	}
+
+	if err := s.animeCategoryRepo.Save(animeCategory); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *animeMigrateServiceImpl) MigrateAnime(req dtos.MigrateAnimeRequest) error {
 	fmt.Println("Strat migrate")
 	fmt.Printf("start at %d", req.StartAnimeId)
@@ -178,7 +246,17 @@ func (s *animeMigrateServiceImpl) MigrateAnime(req dtos.MigrateAnimeRequest) err
 				// if err != nil {
 				// 	logs.Error(err.Error())
 				// }
-				err = s.updateStudioAnime(i, animeMal)
+				// err = s.updateStudioAnime(i, animeMal)
+				// if err != nil {
+				// 	logs.Error(err.Error())
+				// }
+
+				// err = s.updateCategoryAnime(i, animeMal)
+				// if err != nil {
+				// 	logs.Error(err.Error())
+				// }
+
+				err = s.updadteAiredAt(i, animeMal)
 				if err != nil {
 					logs.Error(err.Error())
 				}
