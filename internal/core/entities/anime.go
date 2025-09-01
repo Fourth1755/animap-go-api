@@ -35,4 +35,5 @@ type Anime struct {
 	MyAnimeListID     uint64         `json:"my_anime_list_id"`
 	IsSubAnime        bool           `json:"is_sub_anime"`
 	Rating            string         `json:"rating"`
+	IsShow            bool           `gorm:"default:true" json:"is_show"`
 }

@@ -85,6 +85,7 @@ func (s *animeMigrateServiceImpl) insertAnimeFromMyAnimeList(i int, animeMal *ex
 		MediaType:     animeMal.MediaType,
 		AiredAt:       airedAt,
 		MyAnimeListID: uint64(i),
+		Image:         animeMal.MainPicture.Medium,
 	}
 
 	_, err = s.repo.Save(anime)
@@ -93,30 +94,6 @@ func (s *animeMigrateServiceImpl) insertAnimeFromMyAnimeList(i int, animeMal *ex
 		return errs.NewUnexpectedError()
 	}
 	fmt.Println(strconv.Itoa(i) + "Id that are created")
-	return nil
-}
-
-func (s *animeMigrateServiceImpl) updateImageAnime(i int, animeMal *external_api.GetAnimeDetailResponse) error {
-	err := s.repo.UpdadteImage(animeMal.MainPicture.Medium, i)
-	if err != nil {
-		logs.Error(err.Error())
-		return errs.NewUnexpectedError()
-	}
-	return nil
-}
-
-func (s *animeMigrateServiceImpl) updadteAiredAt(i int, animeMal *external_api.GetAnimeDetailResponse) error {
-	airedAt, err := ConvertDateStringToTime(animeMal.StartDate)
-	if err != nil {
-		logs.Error("can cont convert data to string tine " + err.Error())
-		return errs.NewUnexpectedError()
-	}
-
-	err = s.repo.UpdadteAiredAt(airedAt, i)
-	if err != nil {
-		logs.Error(err.Error())
-		return errs.NewUnexpectedError()
-	}
 	return nil
 }
 
@@ -213,11 +190,23 @@ func (s *animeMigrateServiceImpl) updateCategoryAnime(i int, animeMal *external_
 			logs.Error(err.Error())
 			return errs.NewUnexpectedError()
 		}
-		animeCategory = append(animeCategory, entities.AnimeCategory{
-			ID:         animeCategoryId,
-			CategoryID: categoryId,
-			AnimeID:    anime.ID,
-		})
+		var categoryList []uuid.UUID
+		categoryList = append(categoryList, categoryId)
+		animeCategoryDup, err := s.animeCategoryRepo.GetByAnimeIdAndCategoryIds(anime.ID, categoryList)
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+		if len(animeCategoryDup) != 0 {
+			errMessage := "Category in anime is duplicate."
+			fmt.Println(errMessage)
+		} else {
+			animeCategory = append(animeCategory, entities.AnimeCategory{
+				ID:         animeCategoryId,
+				CategoryID: categoryId,
+				AnimeID:    anime.ID,
+			})
+		}
 	}
 
 	if err := s.animeCategoryRepo.Save(animeCategory); err != nil {
@@ -228,8 +217,7 @@ func (s *animeMigrateServiceImpl) updateCategoryAnime(i int, animeMal *external_
 
 func (s *animeMigrateServiceImpl) MigrateAnime(req dtos.MigrateAnimeRequest) error {
 	fmt.Println("Strat migrate")
-	fmt.Printf("start at %d", req.StartAnimeId)
-	fmt.Printf("end at %d", req.EndAnimeId)
+	count := 0
 	for i := req.StartAnimeId; i <= req.EndAnimeId; i++ {
 		animeMal, err := s.myAnimeListService.GetAnimeDetail(i)
 		fmt.Println(animeMal)
@@ -237,32 +225,63 @@ func (s *animeMigrateServiceImpl) MigrateAnime(req dtos.MigrateAnimeRequest) err
 		if err != nil {
 			logs.Error(err.Error())
 		} else if animeMal != nil {
-			if animeMal.MediaType != "music" && animeMal.MediaType != "cm" && animeMal.MediaType != "ona" && animeMal.MediaType != "pv" {
-				// err = s.insertAnimeFromMyAnimeList(i, animeMal)
-				// if err != nil {
-				// 	logs.Error(err.Error())
-				// } && animeMal.MediaType != "ona"
-				// err = s.updateImageAnime(i, animeMal)
-				// if err != nil {
-				// 	logs.Error(err.Error())
-				// }
-				// err = s.updateStudioAnime(i, animeMal)
-				// if err != nil {
-				// 	logs.Error(err.Error())
-				// }
+			animeData, err := s.repo.GetByMyAnimeListId(i)
+			if err != nil {
+				logs.Error(err.Error())
+			}
+			if animeData != nil {
+				fmt.Println("data has been in database")
+			}
 
-				// err = s.updateCategoryAnime(i, animeMal)
-				// if err != nil {
-				// 	logs.Error(err.Error())
-				// }
-
-				err = s.updadteAiredAt(i, animeMal)
+			if animeData == nil && animeMal.MediaType != "music" && animeMal.MediaType != "cm" && animeMal.MediaType != "ona" && animeMal.MediaType != "pv" {
+				fmt.Println("Insert anime")
+				err = s.insertAnimeFromMyAnimeList(i, animeMal)
 				if err != nil {
 					logs.Error(err.Error())
 				}
+
+				err = s.updateStudioAnime(i, animeMal)
+				if err != nil {
+					logs.Error(err.Error())
+				}
+
+				err = s.updateCategoryAnime(i, animeMal)
+				if err != nil {
+					logs.Error(err.Error())
+				}
+				count++
 			}
 		}
 	}
+	fmt.Println("count")
+	fmt.Println(count)
+	fmt.Println("End migrate")
+	return nil
+}
+
+func (s *animeMigrateServiceImpl) MigrateAnimeOld(req dtos.MigrateAnimeRequest) error {
+	fmt.Println("Strat migrate")
+	count := 0
+	for i := req.StartAnimeId; i <= req.EndAnimeId; i++ {
+		animeData, err := s.repo.GetByMyAnimeListId(i)
+		if err != nil {
+			logs.Error(err.Error())
+		}
+		if animeData != nil {
+			fmt.Println("data has been in database")
+			animeMal, err := s.myAnimeListService.GetAnimeDetail(i)
+			count++
+			if err != nil {
+				logs.Error(err.Error())
+			}
+			err = s.updateCategoryAnime(i, animeMal)
+			if err != nil {
+				logs.Error(err.Error())
+			}
+			fmt.Println("update success")
+		}
+	}
+	fmt.Println(count)
 	fmt.Println("End migrate")
 	return nil
 }

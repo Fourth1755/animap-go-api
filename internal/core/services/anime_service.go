@@ -269,14 +269,16 @@ func (s *animeServiceImpl) GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeList
 
 	var animesDto []dtos.AnimeListResponse
 	for _, anime := range animes {
-		animesDto = append(animesDto, dtos.AnimeListResponse{
-			ID:       anime.ID,
-			Name:     anime.Name,
-			Episodes: anime.Episodes,
-			Seasonal: anime.Seasonal,
-			Year:     anime.Year,
-			Image:    anime.Image,
-		})
+		if anime.IsShow {
+			animesDto = append(animesDto, dtos.AnimeListResponse{
+				ID:       anime.ID,
+				Name:     anime.Name,
+				Episodes: anime.Episodes,
+				Seasonal: anime.Seasonal,
+				Year:     anime.Year,
+				Image:    anime.Image,
+			})
+		}
 	}
 	return animesDto, nil
 }
@@ -343,12 +345,12 @@ func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uuid.UUID) (*dtos.Ge
 	var animesReponse []dtos.GetAnimeByCategoryIdResponseAnimeList
 	for _, anime := range animeCategories {
 		animesReponse = append(animesReponse, dtos.GetAnimeByCategoryIdResponseAnimeList{
-			ID:       anime.Anime.ID,
-			Name:     anime.Anime.Name,
-			Episodes: anime.Anime.Episodes,
-			Seasonal: anime.Anime.Seasonal,
-			Year:     anime.Anime.Year,
-			Image:    anime.Anime.Image,
+			ID:       anime.ID,
+			Name:     anime.Name,
+			Episodes: anime.Episodes,
+			Seasonal: anime.Seasonal,
+			Year:     anime.Year,
+			Image:    anime.Image,
 		})
 	}
 	return &dtos.GetAnimeByCategoryIdResponse{
@@ -509,21 +511,23 @@ func (s *animeServiceImpl) GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeas
 	}
 	var animesReponse []dtos.GetAnimeBySeasonAndYearResponseAnime
 	for _, anime := range animeList {
-		animesReponse = append(animesReponse, dtos.GetAnimeBySeasonAndYearResponseAnime{
-			ID:           anime.ID,
-			Name:         anime.Name,
-			NameEnglish:  anime.NameEnglish,
-			Episodes:     anime.Episodes,
-			Seasonal:     anime.Seasonal,
-			Year:         anime.Year,
-			Image:        anime.Image,
-			Description:  anime.Description,
-			Type:         anime.Type,
-			Duration:     anime.Duration,
-			Wallpaper:    anime.Wallpaper,
-			Trailer:      anime.Trailer,
-			TrailerEmbed: anime.TrailerEmbed,
-		})
+		if anime.IsShow {
+			animesReponse = append(animesReponse, dtos.GetAnimeBySeasonAndYearResponseAnime{
+				ID:           anime.ID,
+				Name:         anime.Name,
+				NameEnglish:  anime.NameEnglish,
+				Episodes:     anime.Episodes,
+				Seasonal:     anime.Seasonal,
+				Year:         anime.Year,
+				Image:        anime.Image,
+				Description:  anime.Description,
+				Type:         anime.Type,
+				Duration:     anime.Duration,
+				Wallpaper:    anime.Wallpaper,
+				Trailer:      anime.Trailer,
+				TrailerEmbed: anime.TrailerEmbed,
+			})
+		}
 	}
 	return &dtos.GetAnimeBySeasonAndYearResponse{
 		Year:      request.Year,
