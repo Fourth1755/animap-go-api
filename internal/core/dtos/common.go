@@ -8,3 +8,11 @@ type GetSeasonalAndYearResponseData struct {
 type GetSeasonalAndYearResponse struct {
 	Data []GetSeasonalAndYearResponseData `json:"data"`
 }
+
+type PaginatedResponse struct {
+	Data       interface{} `json:"data"`
+	Page       int         `json:"page"`
+	Limit      int         `json:"limit"`
+	TotalPages int         `json:"total_pages"`
+	TotalItems int64       `json:"total_items"`
+}

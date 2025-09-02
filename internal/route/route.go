@@ -24,6 +24,7 @@ type HttpHandler struct {
 	EpisodeHandler          *adapters.HttpEpisodeHandler
 	CharacterHandler        *adapters.HttpCharacterHandler
 	AnimeMigrateHandler     *adapters.HttpAnimeMigrateHandler
+	CommentHandler          *adapters.HttpCommentHandler
 }
 
 func InitRoutes(https HttpHandler) *gin.Engine {
@@ -71,6 +72,9 @@ func InitRoutes(https HttpHandler) *gin.Engine {
 	router.GET("animes/category-universe/:category_id", https.AnimeHandler.GetAnimeByCategoryUniverse)
 	router.POST("animes/seasonal-year", https.AnimeHandler.GetAnimeBySeasonalAndYear)
 	router.GET("animes/studio/:studio_id", https.AnimeHandler.GetAnimeByStudio)
+
+	// Comments
+	router.GET("animes/:id/comments", https.CommentHandler.GetComments)
 
 	// migrate anime
 	router.POST("migrate/animes", https.AnimeMigrateHandler.MigrateAnime)
