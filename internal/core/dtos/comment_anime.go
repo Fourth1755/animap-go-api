@@ -21,6 +21,6 @@ type CommentAnimeResponse struct {
 }
 
 type CommentAnimePaginatedResponse struct {
-	Data       []CommentAnimeResponse
-	Pagination PaginatedResponse `json:"pagination"`
+	Data       []CommentAnimeResponse `json:"data"`
+	Pagination PaginatedResponse      `json:"pagination"`
 }

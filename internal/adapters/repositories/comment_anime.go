@@ -55,15 +55,15 @@ func (r *GormCommentAnimeRepository) GetByAnimeID(animeID uuid.UUID, commentType
 
 	// Query for the paginated data
 	dataQuery := r.dbReplica.Model(&entities.CommentAnime{}).
-		Select("comments.id, comments.message, comments.type, comments.created_at, users.id as author_id, users.name as author_name, users.profile_image as author_image").
-		Joins("join users on users.id = comments.author_id").
-		Where("comments.anime_id = ?", animeID)
+		Select("comment_animes.id, comment_animes.message, comment_animes.type, comment_animes.created_at, users.id as author_id, users.name as author_name, users.profile_image as author_image").
+		Joins("join users on users.id = comment_animes.author_id").
+		Where("comment_animes.anime_id = ?", animeID)
 
 	if commentType != "" {
-		dataQuery = dataQuery.Where("comments.type = ?", commentType)
+		dataQuery = dataQuery.Where("comment_animes.type = ?", commentType)
 	}
 
-	result := dataQuery.Order("comments.created_at desc").
+	result := dataQuery.Order("comment_animes.created_at desc").
 		Offset(offset).
 		Limit(limit).
 		Scan(&queryResults)
