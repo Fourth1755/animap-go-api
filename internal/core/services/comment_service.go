@@ -2,9 +2,11 @@ package services
 
 import (
 	"math"
+	"time"
 
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
+	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
 	"github.com/google/uuid"
@@ -12,14 +14,36 @@ import (
 
 type CommentService interface {
 	GetComments(animeID uuid.UUID, commentType string, page int, limit int) (*dtos.CommentAnimePaginatedResponse, error)
+	CreateComment(animeID uuid.UUID, authorID uuid.UUID, req dtos.CreateCommentAnimeRequest) error
 }
 
 type commentServiceImpl struct {
-	repo repositories.CommentAnimeRepository
+	repo     repositories.CommentAnimeRepository
+	userRepo repositories.UserRepository
 }
 
-func NewCommentService(repo repositories.CommentAnimeRepository) CommentService {
-	return &commentServiceImpl{repo: repo}
+func NewCommentService(repo repositories.CommentAnimeRepository, userRepo repositories.UserRepository) CommentService {
+	return &commentServiceImpl{repo: repo, userRepo: userRepo}
+}
+
+func (s *commentServiceImpl) CreateComment(animeID uuid.UUID, authorID uuid.UUID, req dtos.CreateCommentAnimeRequest) error {
+	newComment := &entities.CommentAnime{
+		ID:        uuid.New(),
+		Message:   req.Message,
+		Type:      "comment",
+		AnimeID:   animeID,
+		AuthorID:  authorID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	_, err := s.repo.Create(newComment)
+	if err != nil {
+		logs.Error(err)
+		return errs.NewUnexpectedError()
+	}
+
+	return nil
 }
 
 func (s *commentServiceImpl) GetComments(animeID uuid.UUID, commentType string, page int, limit int) (*dtos.CommentAnimePaginatedResponse, error) {

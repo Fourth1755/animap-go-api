@@ -6,6 +6,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type CreateCommentAnimeRequest struct {
+	Message string    `json:"message" binding:"required"`
+	AnimeID uuid.UUID `json:"anime_id" binding:"required"`
+}
+
 type CommentAnimeAuthorResponse struct {
 	ID    uuid.UUID `json:"id"`
 	Name  string    `json:"name"`

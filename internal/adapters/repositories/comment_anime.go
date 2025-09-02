@@ -28,14 +28,24 @@ type PaginatedCommentQueryResult struct {
 
 type CommentAnimeRepository interface {
 	GetByAnimeID(animeID uuid.UUID, commentType string, page int, limit int) (*PaginatedCommentQueryResult, error)
+	Create(comment *entities.CommentAnime) (*entities.CommentAnime, error)
 }
 
 type GormCommentAnimeRepository struct {
+	dbPrimary *gorm.DB
 	dbReplica *gorm.DB
 }
 
-func NewGormCommentAnimeRepository(dbReplica *gorm.DB) CommentAnimeRepository {
-	return &GormCommentAnimeRepository{dbReplica: dbReplica}
+func NewGormCommentAnimeRepository(dbPrimary *gorm.DB, dbReplica *gorm.DB) CommentAnimeRepository {
+	return &GormCommentAnimeRepository{dbPrimary: dbPrimary, dbReplica: dbReplica}
+}
+
+func (r *GormCommentAnimeRepository) Create(comment *entities.CommentAnime) (*entities.CommentAnime, error) {
+	result := r.dbPrimary.Create(comment)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return comment, nil
 }
 
 func (r *GormCommentAnimeRepository) GetByAnimeID(animeID uuid.UUID, commentType string, page int, limit int) (*PaginatedCommentQueryResult, error) {

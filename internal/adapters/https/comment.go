@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/services"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,34 @@ type HttpCommentHandler struct {
 
 func NewHttpCommentHandler(service services.CommentService) *HttpCommentHandler {
 	return &HttpCommentHandler{service: service}
+}
+
+func (h *HttpCommentHandler) CreateComment(c *gin.Context) {
+	userIDStr, exists := c.Get("userId")
+	if !exists {
+		handleError(c, errs.NewUnauthorizedError("User not found in context"))
+		return
+	}
+
+	userID, err := uuid.Parse(userIDStr.(string))
+	if err != nil {
+		handleError(c, errs.NewBadRequestError("Invalid user ID format in token"))
+		return
+	}
+
+	var req dtos.CreateCommentAnimeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+
+	err = h.service.CreateComment(req.AnimeID, userID, req)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, "Create comment success")
 }
 
 func (h *HttpCommentHandler) GetComments(c *gin.Context) {
