@@ -74,7 +74,7 @@ func InitRoutes(https HttpHandler) *gin.Engine {
 	router.GET("animes/studio/:studio_id", https.AnimeHandler.GetAnimeByStudio)
 
 	// Comments
-	router.GET("animes/:id/comments", https.CommentHandler.GetComments)
+	router.GET("comments/anime/:id", https.CommentHandler.GetComments)
 	authorized.POST("comments/anime", https.CommentHandler.CreateComment)
 
 	// migrate anime

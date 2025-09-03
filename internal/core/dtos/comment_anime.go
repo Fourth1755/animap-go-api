@@ -1,8 +1,6 @@
 package dtos
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 )
 
@@ -12,17 +10,16 @@ type CreateCommentAnimeRequest struct {
 }
 
 type CommentAnimeAuthorResponse struct {
-	ID    uuid.UUID `json:"id"`
-	Name  string    `json:"name"`
-	Image *string   `json:"image"`
 }
 
 type CommentAnimeResponse struct {
-	ID        uuid.UUID                  `json:"id"`
-	Content   string                     `json:"content"`
-	Type      string                     `json:"type"`
-	CreatedAt time.Time                  `json:"created_at"`
-	Author    CommentAnimeAuthorResponse `json:"author"`
+	ID          uuid.UUID `json:"id"`
+	Message     string    `json:"message"`
+	Type        string    `json:"type"`
+	CreatedAt   string    `json:"created_at"`
+	AuthorID    uuid.UUID `json:"author_id"`
+	AuthorName  string    `json:"author_name"`
+	AuthorImage *string   `json:"author_image"`
 }
 
 type CommentAnimePaginatedResponse struct {

@@ -1,12 +1,14 @@
 package services
 
 import (
+	"context"
 	"math"
 	"time"
 
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
+	"github.com/Fourth1755/animap-go-api/internal/core/utils"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
 	"github.com/google/uuid"
@@ -14,7 +16,7 @@ import (
 
 type CommentService interface {
 	GetComments(animeID uuid.UUID, commentType string, page int, limit int) (*dtos.CommentAnimePaginatedResponse, error)
-	CreateComment(animeID uuid.UUID, authorID uuid.UUID, req dtos.CreateCommentAnimeRequest) error
+	CreateComment(ctx context.Context, req dtos.CreateCommentAnimeRequest) error
 }
 
 type commentServiceImpl struct {
@@ -26,13 +28,19 @@ func NewCommentService(repo repositories.CommentAnimeRepository, userRepo reposi
 	return &commentServiceImpl{repo: repo, userRepo: userRepo}
 }
 
-func (s *commentServiceImpl) CreateComment(animeID uuid.UUID, authorID uuid.UUID, req dtos.CreateCommentAnimeRequest) error {
+func (s *commentServiceImpl) CreateComment(ctx context.Context, req dtos.CreateCommentAnimeRequest) error {
+	userId, ok := ctx.Value("userId").(string)
+	if !ok {
+		return errs.NewUnexpectedError()
+	}
+	userIdUuid := uuid.MustParse(userId)
+
 	newComment := &entities.CommentAnime{
 		ID:        uuid.New(),
 		Message:   req.Message,
 		Type:      "comment",
-		AnimeID:   animeID,
-		AuthorID:  authorID,
+		AnimeID:   req.AnimeID,
+		AuthorID:  userIdUuid,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -58,15 +66,13 @@ func (s *commentServiceImpl) GetComments(animeID uuid.UUID, commentType string, 
 	responseComments := make([]dtos.CommentAnimeResponse, len(queryResult.Results))
 	for i, qr := range queryResult.Results {
 		responseComments[i] = dtos.CommentAnimeResponse{
-			ID:        qr.ID,
-			Content:   qr.Message, // Corrected field mapping
-			Type:      qr.Type,
-			CreatedAt: qr.CreatedAt,
-			Author: dtos.CommentAnimeAuthorResponse{
-				ID:    qr.AuthorID,
-				Name:  qr.AuthorName,
-				Image: qr.AuthorImage,
-			},
+			ID:          qr.ID,
+			Message:     qr.Message, // Corrected field mapping
+			Type:        qr.Type,
+			CreatedAt:   utils.TimeAgo(qr.CreatedAt),
+			AuthorID:    qr.AuthorID,
+			AuthorName:  qr.AuthorName,
+			AuthorImage: qr.AuthorImage,
 		}
 	}
 
