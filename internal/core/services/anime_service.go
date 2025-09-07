@@ -31,6 +31,8 @@ type AnimeService interface {
 	AddCategoryUniverseToAnime(request dtos.EditCategoryUniverseToAnimeRequest) error
 	GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) (*dtos.GetAnimeBySeasonAndYearResponse, error)
 	GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeByStudioResponse, error)
+	AddAnimePictures(request dtos.AddAnimePicturesRequest) error
+	GetAnimePictures(animeID uuid.UUID) (*dtos.AnimePictureResponse, error)
 }
 
 type animeServiceImpl struct {
@@ -38,6 +40,7 @@ type animeServiceImpl struct {
 	userRepo                    repositories.UserRepository
 	animeCategoryRepo           repositories.AnimeCategoryRepository
 	animeStudioRepo             repositories.AnimeStudioRepository
+	animePictureRepo            repositories.AnimePictureRepository
 	songRepo                    repositories.SongRepository
 	categoryRepo                repositories.CategoryRepository
 	animeCategorryUnivserseRepo repositories.AnimeCategoryUniverseRepository
@@ -53,6 +56,7 @@ func NewAnimeService(
 	userRepo repositories.UserRepository,
 	animeCategoryRepo repositories.AnimeCategoryRepository,
 	animeStudioRepo repositories.AnimeStudioRepository,
+	animePictureRepo repositories.AnimePictureRepository,
 	songRepo repositories.SongRepository,
 	categoryRepo repositories.CategoryRepository,
 	animeCategorryUnivserseRepo repositories.AnimeCategoryUniverseRepository,
@@ -67,6 +71,7 @@ func NewAnimeService(
 		userRepo:                    userRepo,
 		animeCategoryRepo:           animeCategoryRepo,
 		animeStudioRepo:             animeStudioRepo,
+		animePictureRepo:            animePictureRepo,
 		songRepo:                    songRepo,
 		categoryRepo:                categoryRepo,
 		animeCategorryUnivserseRepo: animeCategorryUnivserseRepo,
@@ -614,5 +619,57 @@ func (s *animeServiceImpl) GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeB
 		Wallpaper: studio.Image,
 		MainColor: studio.MainColor,
 		AnimeList: animesReponse,
+	}, nil
+}
+func (s *animeServiceImpl) AddAnimePictures(request dtos.AddAnimePicturesRequest) error {
+	// Check if anime exists
+	if _, err := s.repo.GetById(request.AnimeID); err != nil {
+		logs.Error(err.Error())
+		if err == gorm.ErrRecordNotFound {
+			return errs.NewNotFoundError("Anime not found")
+		}
+		return errs.NewUnexpectedError()
+	}
+
+	var pictures []entities.AnimePicture
+	for _, picURL := range request.Pictures {
+		picID, err := uuid.NewV7()
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+		pictures = append(pictures, entities.AnimePicture{
+			ID:         picID,
+			AnimeID:    request.AnimeID,
+			PictureURL: picURL,
+		})
+	}
+
+	if err := s.animePictureRepo.Save(pictures); err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+
+	return nil
+}
+
+func (s *animeServiceImpl) GetAnimePictures(animeID uuid.UUID) (*dtos.AnimePictureResponse, error) {
+	pictures, err := s.animePictureRepo.GetByAnimeID(animeID)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil, errs.NewUnexpectedError()
+	}
+
+	var response []dtos.AnimePictureDataResponse
+	for _, pic := range pictures {
+		response = append(response, dtos.AnimePictureDataResponse{
+			ID:         pic.ID,
+			Type:       "PICTURE",
+			PictureURL: pic.PictureURL,
+		})
+	}
+
+	return &dtos.AnimePictureResponse{
+		Data: response,
 	}, nil
 }

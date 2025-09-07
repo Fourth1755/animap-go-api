@@ -190,3 +190,17 @@ type MigrateAnimeRequest struct {
 	StartAnimeId int `json:"start_anime_id"`
 	EndAnimeId   int `json:"end_anime_id"`
 }
+
+type AddAnimePicturesRequest struct {
+	AnimeID  uuid.UUID `json:"anime_id"`
+	Pictures []string  `json:"pictures"`
+}
+
+type AnimePictureDataResponse struct {
+	ID         uuid.UUID `json:"id"`
+	Type       string    `json:"type"`
+	PictureURL string    `json:"picture_url"`
+}
+type AnimePictureResponse struct {
+	Data []AnimePictureDataResponse `json:"data"`
+}

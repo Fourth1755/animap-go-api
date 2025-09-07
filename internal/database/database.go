@@ -56,6 +56,7 @@ func InitDatabase(cfgService config.ConfigService) (*gorm.DB, *gorm.DB) {
 		&entities.AnimeCharacter{},
 		&entities.EpisodeCharacter{},
 		&entities.CommentAnime{},
+		&entities.AnimePicture{},
 	)
 
 	return dbPrimary, dbReplica

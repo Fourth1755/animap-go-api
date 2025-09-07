@@ -72,6 +72,8 @@ func InitRoutes(https HttpHandler) *gin.Engine {
 	router.GET("animes/category-universe/:category_id", https.AnimeHandler.GetAnimeByCategoryUniverse)
 	router.POST("animes/seasonal-year", https.AnimeHandler.GetAnimeBySeasonalAndYear)
 	router.GET("animes/studio/:studio_id", https.AnimeHandler.GetAnimeByStudio)
+	router.POST("animes/pictures", https.AnimeHandler.AddAnimePictures)
+	router.GET("animes/media/:id", https.AnimeHandler.GetAnimePictures)
 
 	// Comments
 	router.GET("comments/anime/:id", https.CommentHandler.GetComments)

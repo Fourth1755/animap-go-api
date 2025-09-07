@@ -50,6 +50,7 @@ func main() {
 	animeCharacterRepo := repositories.NewGormAnimeCharacterRepository(dbPrimary, dbReplica)
 	episodeCharacterRepo := repositories.NewGormEpisodeCharacterRepository(dbPrimary, dbReplica)
 	commentRepo := repositories.NewGormCommentAnimeRepository(dbPrimary, dbReplica)
+	animePictureRepo := repositories.NewGormAnimePictureRepository(dbPrimary, dbReplica)
 
 	//create service
 	userService := services.NewUserService(userRepo, s3Service, configService)
@@ -63,6 +64,7 @@ func main() {
 		userRepo,
 		animeCategoryRepo,
 		animeStudioRepo,
+		animePictureRepo,
 		songRepo,
 		categoryRepo,
 		animeCategorryUnivserseRepo,

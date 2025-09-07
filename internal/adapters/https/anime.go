@@ -164,3 +164,28 @@ func (h *HttpAnimeHandler) GetAnimeByStudio(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, animes)
 }
+
+func (h *HttpAnimeHandler) AddAnimePictures(c *gin.Context) {
+	var req dtos.AddAnimePicturesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+
+	if err := h.service.AddAnimePictures(req); err != nil {
+		handleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Pictures added successfully"})
+}
+
+func (h *HttpAnimeHandler) GetAnimePictures(c *gin.Context) {
+	animeId := c.Param("id")
+	pictures, err := h.service.GetAnimePictures(uuid.MustParse(animeId))
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, pictures)
+}
