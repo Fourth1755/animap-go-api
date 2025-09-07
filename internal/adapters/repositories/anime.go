@@ -145,7 +145,7 @@ func (r *GormAnimeRepository) GetByUserId(id uuid.UUID) ([]entities.UserAnime, e
 
 func (r *GormAnimeRepository) GetBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) ([]entities.Anime, error) {
 	var animes []entities.Anime
-	result := r.dbReplica.Where("seasonal = ?", request.Seasonal).Where("year = ?", request.Year).Find(&animes)
+	result := r.dbReplica.Preload("Studios").Where("seasonal = ?", request.Seasonal).Where("year = ?", request.Year).Find(&animes)
 	if result.Error != nil {
 		return nil, result.Error
 	}

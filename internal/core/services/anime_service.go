@@ -344,6 +344,13 @@ func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uuid.UUID) (*dtos.Ge
 	}
 	var animesReponse []dtos.GetAnimeByCategoryIdResponseAnimeList
 	for _, anime := range animeCategories {
+		var studios []dtos.AnimeDetailStduios
+		for _, studio := range anime.Studios {
+			studios = append(studios, dtos.AnimeDetailStduios{
+				ID:   studio.ID,
+				Name: studio.Name,
+			})
+		}
 		animesReponse = append(animesReponse, dtos.GetAnimeByCategoryIdResponseAnimeList{
 			ID:       anime.ID,
 			Name:     anime.Name,
@@ -351,6 +358,7 @@ func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uuid.UUID) (*dtos.Ge
 			Seasonal: anime.Seasonal,
 			Year:     anime.Year,
 			Image:    anime.Image,
+			Studios:  studios,
 		})
 	}
 	return &dtos.GetAnimeByCategoryIdResponse{
@@ -512,6 +520,14 @@ func (s *animeServiceImpl) GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeas
 	var animesReponse []dtos.GetAnimeBySeasonAndYearResponseAnime
 	for _, anime := range animeList {
 		if anime.IsShow {
+			var studios []dtos.AnimeDetailStduios
+			for _, studio := range anime.Studios {
+				studios = append(studios, dtos.AnimeDetailStduios{
+					ID:   studio.ID,
+					Name: studio.Name,
+				})
+			}
+
 			animesReponse = append(animesReponse, dtos.GetAnimeBySeasonAndYearResponseAnime{
 				ID:           anime.ID,
 				Name:         anime.Name,
@@ -526,6 +542,7 @@ func (s *animeServiceImpl) GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeas
 				Wallpaper:    anime.Wallpaper,
 				Trailer:      anime.Trailer,
 				TrailerEmbed: anime.TrailerEmbed,
+				Studios:      studios,
 			})
 		}
 	}
