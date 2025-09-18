@@ -32,7 +32,8 @@ type AnimeService interface {
 	GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) (*dtos.GetAnimeBySeasonAndYearResponse, error)
 	GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeByStudioResponse, error)
 	AddAnimePictures(request dtos.AddAnimePicturesRequest) error
-	GetAnimePictures(animeID uuid.UUID) (*dtos.AnimePictureResponse, error)
+	GetAnimePictures(animeID uuid.UUID) (*dtos.AnimeMediaResponse, error)
+	CreateAnimeTrailers(request dtos.CreateAnimeTrailersRequest) error
 }
 
 type animeServiceImpl struct {
@@ -41,6 +42,7 @@ type animeServiceImpl struct {
 	animeCategoryRepo           repositories.AnimeCategoryRepository
 	animeStudioRepo             repositories.AnimeStudioRepository
 	animePictureRepo            repositories.AnimePictureRepository
+	animeTrailerRepo            repositories.AnimeTrailerRepository
 	songRepo                    repositories.SongRepository
 	categoryRepo                repositories.CategoryRepository
 	animeCategorryUnivserseRepo repositories.AnimeCategoryUniverseRepository
@@ -57,6 +59,7 @@ func NewAnimeService(
 	animeCategoryRepo repositories.AnimeCategoryRepository,
 	animeStudioRepo repositories.AnimeStudioRepository,
 	animePictureRepo repositories.AnimePictureRepository,
+	animeTrailerRepo repositories.AnimeTrailerRepository,
 	songRepo repositories.SongRepository,
 	categoryRepo repositories.CategoryRepository,
 	animeCategorryUnivserseRepo repositories.AnimeCategoryUniverseRepository,
@@ -72,6 +75,7 @@ func NewAnimeService(
 		animeCategoryRepo:           animeCategoryRepo,
 		animeStudioRepo:             animeStudioRepo,
 		animePictureRepo:            animePictureRepo,
+		animeTrailerRepo:            animeTrailerRepo,
 		songRepo:                    songRepo,
 		categoryRepo:                categoryRepo,
 		animeCategorryUnivserseRepo: animeCategorryUnivserseRepo,
@@ -653,23 +657,72 @@ func (s *animeServiceImpl) AddAnimePictures(request dtos.AddAnimePicturesRequest
 	return nil
 }
 
-func (s *animeServiceImpl) GetAnimePictures(animeID uuid.UUID) (*dtos.AnimePictureResponse, error) {
-	pictures, err := s.animePictureRepo.GetByAnimeID(animeID)
+func (s *animeServiceImpl) GetAnimePictures(animeID uuid.UUID) (*dtos.AnimeMediaResponse, error) {
+	trailer, err := s.animeTrailerRepo.GetByAnimeId(animeID)
+	if err != nil {
+		logs.Error(err.Error())
+		return nil, errs.NewUnexpectedError()
+	}
+	var response []dtos.AnimeMediaDataResponse
+	for _, t := range trailer {
+		url := fmt.Sprintf("https://img.youtube.com/vi/%s/maxresdefault.jpg", t.VideoID)
+		embedURL := fmt.Sprintf("https://www.youtube.com/embed/%s", t.VideoID)
+		response = append(response, dtos.AnimeMediaDataResponse{
+			ID:       t.ID,
+			Type:     "VIDEO",
+			URL:      url,
+			EmbedURL: embedURL,
+		})
+	}
+	pictures, err := s.animePictureRepo.GetByAnimeId(animeID)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
 	}
 
-	var response []dtos.AnimePictureDataResponse
 	for _, pic := range pictures {
-		response = append(response, dtos.AnimePictureDataResponse{
-			ID:         pic.ID,
-			Type:       "PICTURE",
-			PictureURL: pic.PictureURL,
+		response = append(response, dtos.AnimeMediaDataResponse{
+			ID:       pic.ID,
+			Type:     "PICTURE",
+			URL:      pic.PictureURL,
+			EmbedURL: "",
 		})
 	}
 
-	return &dtos.AnimePictureResponse{
+	return &dtos.AnimeMediaResponse{
 		Data: response,
 	}, nil
+}
+
+func (s *animeServiceImpl) CreateAnimeTrailers(request dtos.CreateAnimeTrailersRequest) error {
+	// Check if anime exists
+	if _, err := s.repo.GetById(request.AnimeID); err != nil {
+		logs.Error(err.Error())
+		if err == gorm.ErrRecordNotFound {
+			return errs.NewNotFoundError("Anime not found")
+		}
+		return errs.NewUnexpectedError()
+	}
+
+	var trailers []entities.AnimeTrailer
+	for _, trailerReq := range request.Trailers {
+		trailerID, err := uuid.NewV7()
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+		trailers = append(trailers, entities.AnimeTrailer{
+			ID:      trailerID,
+			AnimeID: request.AnimeID,
+			Name:    trailerReq.Name,
+			VideoID: trailerReq.VideoID,
+		})
+	}
+
+	if err := s.animeTrailerRepo.CreateAnimeTrailers(trailers); err != nil {
+		logs.Error(err.Error())
+		return errs.NewUnexpectedError()
+	}
+
+	return nil
 }

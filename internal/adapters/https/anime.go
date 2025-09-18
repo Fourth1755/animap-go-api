@@ -189,3 +189,18 @@ func (h *HttpAnimeHandler) GetAnimePictures(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, pictures)
 }
+
+func (h *HttpAnimeHandler) CreateAnimeTrailers(c *gin.Context) {
+	var req dtos.CreateAnimeTrailersRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+
+	if err := h.service.CreateAnimeTrailers(req); err != nil {
+		handleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "Anime trailers created successfully"})
+}

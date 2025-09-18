@@ -196,11 +196,22 @@ type AddAnimePicturesRequest struct {
 	Pictures []string  `json:"pictures"`
 }
 
-type AnimePictureDataResponse struct {
-	ID         uuid.UUID `json:"id"`
-	Type       string    `json:"type"`
-	PictureURL string    `json:"picture_url"`
+type AnimeMediaDataResponse struct {
+	ID       uuid.UUID `json:"id"`
+	Type     string    `json:"type"`
+	URL      string    `json:"url"`
+	EmbedURL string    `json:"embed_url"`
 }
-type AnimePictureResponse struct {
-	Data []AnimePictureDataResponse `json:"data"`
+type AnimeMediaResponse struct {
+	Data []AnimeMediaDataResponse `json:"data"`
+}
+
+type AnimeTrailerRequest struct {
+	Name    string `json:"name"`
+	VideoID string `json:"video_id"`
+}
+
+type CreateAnimeTrailersRequest struct {
+	AnimeID  uuid.UUID             `json:"anime_id"`
+	Trailers []AnimeTrailerRequest `json:"trailers"`
 }

@@ -8,7 +8,7 @@ import (
 
 type AnimePictureRepository interface {
 	Save(pictures []entities.AnimePicture) error
-	GetByAnimeID(animeID uuid.UUID) ([]entities.AnimePicture, error)
+	GetByAnimeId(animeID uuid.UUID) ([]entities.AnimePicture, error)
 }
 
 type GormAnimePictureRepository struct {
@@ -27,7 +27,7 @@ func (r *GormAnimePictureRepository) Save(pictures []entities.AnimePicture) erro
 	return nil
 }
 
-func (r *GormAnimePictureRepository) GetByAnimeID(animeID uuid.UUID) ([]entities.AnimePicture, error) {
+func (r *GormAnimePictureRepository) GetByAnimeId(animeID uuid.UUID) ([]entities.AnimePicture, error) {
 	var pictures []entities.AnimePicture
 	if err := r.dbReplica.Where("anime_id = ?", animeID).Find(&pictures).Error; err != nil {
 		return nil, err
