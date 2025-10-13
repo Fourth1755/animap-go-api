@@ -25,6 +25,7 @@ type HttpHandler struct {
 	CharacterHandler        *adapters.HttpCharacterHandler
 	AnimeMigrateHandler     *adapters.HttpAnimeMigrateHandler
 	CommentHandler          *adapters.HttpCommentHandler
+	TierTemplateHandler     *adapters.TierTemplateHandler
 }
 
 func InitRoutes(https HttpHandler) *gin.Engine {
@@ -115,6 +116,10 @@ func InitRoutes(https HttpHandler) *gin.Engine {
 	router.PUT("artists/:id", https.ArtistHandler.UpdateArtist)
 
 	router.GET("studios", https.StudioHandler.GetAllStduio)
+
+	router.GET("tier-template", https.TierTemplateHandler.GetAll)
+	router.POST("tier-template", https.TierTemplateHandler.Create)
+	router.GET("tier-template/:id", https.TierTemplateHandler.GetById)
 
 	router.GET("common/seasonal-year", https.CommonHandler.GetSeasonalAndYear)
 

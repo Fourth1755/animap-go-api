@@ -13,6 +13,7 @@ type TierTemplate struct {
 	Type        string
 	PlayedCount uint
 	TierList    map[string]interface{} `gorm:"serializer:json"`
+	TotalItem   uint
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
