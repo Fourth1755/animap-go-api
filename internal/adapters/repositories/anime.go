@@ -60,7 +60,7 @@ func (r *GormAnimeRepository) GetByIds(ids []uuid.UUID) ([]entities.Anime, error
 		Preload("Categories").
 		Preload("Studios").
 		Preload("CategoryUniverses").
-		Order("aired_at asc").
+		Order("aired_at desc").
 		Where("id in (?)", ids).Find(&animes); result.Error != nil {
 		return nil, result.Error
 	}

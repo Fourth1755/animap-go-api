@@ -477,32 +477,38 @@ func (s *animeServiceImpl) AddCategoryToAnime(request dtos.EditCategoryToAnimeRe
 
 // need to enhance
 func (s *animeServiceImpl) AddCategoryUniverseToAnime(request dtos.EditCategoryUniverseToAnimeRequest) error {
-	animeCategory := []entities.AnimeCategoryUniverse{}
-	// check dup
-	animeCategoryDup, err := s.animeCategorryUnivserseRepo.GetByAnimeIdAndCategoryUniverseIds(request.AnimeID, request.CategoryUniverseID)
-	if err != nil {
-		logs.Error(err.Error())
-		return errs.NewUnexpectedError()
-	}
-	if len(animeCategoryDup) != 0 {
-		errMessage := "Category Universe in anime is duplicate."
-		logs.Error(errMessage)
-		return errs.NewBadRequestError(errMessage)
-	}
+	var allAnimeCategories []entities.AnimeCategoryUniverse
 
-	for _, catrgory := range request.CategoryUniverseID {
-		animeCategoryId, err := uuid.NewV7()
+	for _, animeID := range request.AnimeIDs {
+		animeCategory := []entities.AnimeCategoryUniverse{}
+		// check dup
+		animeCategoryDup, err := s.animeCategorryUnivserseRepo.GetByAnimeIdsAndCategoryUniverseIds([]uuid.UUID{animeID}, request.CategoryUniverseID)
 		if err != nil {
 			logs.Error(err.Error())
 			return errs.NewUnexpectedError()
 		}
-		animeCategory = append(animeCategory, entities.AnimeCategoryUniverse{
-			ID:                 animeCategoryId,
-			AnimeID:            request.AnimeID,
-			CategoryUniverseID: catrgory,
-		})
+		if len(animeCategoryDup) != 0 {
+			errMessage := "Category Universe in anime is duplicate."
+			logs.Error(errMessage)
+			return errs.NewBadRequestError(errMessage)
+		}
+
+		for _, categoryUniverseID := range request.CategoryUniverseID {
+			animeCategoryId, err := uuid.NewV7()
+			if err != nil {
+				logs.Error(err.Error())
+				return errs.NewUnexpectedError()
+			}
+			animeCategory = append(animeCategory, entities.AnimeCategoryUniverse{
+				ID:                 animeCategoryId,
+				AnimeID:            animeID,
+				CategoryUniverseID: categoryUniverseID,
+			})
+		}
+		allAnimeCategories = append(allAnimeCategories, animeCategory...)
 	}
-	if err := s.animeCategorryUnivserseRepo.Save(animeCategory); err != nil {
+
+	if err := s.animeCategorryUnivserseRepo.Save(allAnimeCategories); err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}

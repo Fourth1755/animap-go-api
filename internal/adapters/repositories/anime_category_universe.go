@@ -9,7 +9,7 @@ import (
 type AnimeCategoryUniverseRepository interface {
 	Save(animeCategory []entities.AnimeCategoryUniverse) error
 	GetByCategoryUniverseId(uuid.UUID) ([]entities.AnimeCategoryUniverse, error)
-	GetByAnimeIdAndCategoryUniverseIds(anime_id uuid.UUID, category_ids []uuid.UUID) ([]entities.AnimeCategoryUniverse, error)
+	GetByAnimeIdsAndCategoryUniverseIds(anime_ids []uuid.UUID, category_ids []uuid.UUID) ([]entities.AnimeCategoryUniverse, error)
 }
 
 type GormAnimeCategoryUniverseRepository struct {
@@ -39,11 +39,11 @@ func (r GormAnimeCategoryUniverseRepository) GetByCategoryUniverseId(category_id
 	return categoryAnime, nil
 }
 
-func (r GormAnimeCategoryUniverseRepository) GetByAnimeIdAndCategoryUniverseIds(anime_id uuid.UUID, category_ids []uuid.UUID) ([]entities.AnimeCategoryUniverse, error) {
+func (r GormAnimeCategoryUniverseRepository) GetByAnimeIdsAndCategoryUniverseIds(anime_ids []uuid.UUID, category_ids []uuid.UUID) ([]entities.AnimeCategoryUniverse, error) {
 	var categoryAnime []entities.AnimeCategoryUniverse
 	result := r.dbReplica.
-		Where("anime_id = ?", anime_id).
-		Where("category_universe_id in (?)", category_ids).
+		Where("anime_id IN (?) ", anime_ids).
+		Where("category_universe_id IN (?)", category_ids).
 		Find(&categoryAnime)
 	if result.Error != nil {
 		return nil, result.Error

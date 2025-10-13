@@ -21,4 +21,5 @@ INSERT INTO category_universes(id, name, name_th , image, created_at, updated_at
     ('0196cf41-06a6-7d70-a677-7d3064a32c12','Tokyo Ghoul','','https://i.ytimg.com/vi/g1kFsIitVSE/maxresdefault.jpg',now(),now()),
     ('0196f366-2e6f-7748-84fa-8b3b24e7b97b','Kusuriya no Hitorigoto','','https://img.4gamers.com.tw/news-image/c0cfde53-c1da-496d-b8f9-5adf8808945f.jpg',now(),now()),
     ('','Shokugeki no Souma','','',now(),now()),
-    ('','Dungeon ni Deai wo Motomeru no wa Machigatteiru Darou ka','','',now(),now());
+    ('','Dungeon ni Deai wo Motomeru no wa Machigatteiru Darou ka','','',now(),now()),
+    ('0199de4d-dbd9-797a-b8e8-ce0dcc7e1106','Doraemon The Movie','','',now(),now());
