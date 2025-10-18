@@ -30,8 +30,11 @@ func (r GormAnimeCategoryUniverseRepository) Save(animeCategory []entities.Anime
 
 func (r GormAnimeCategoryUniverseRepository) GetByCategoryUniverseId(category_id uuid.UUID) ([]entities.AnimeCategoryUniverse, error) {
 	var categoryAnime []entities.AnimeCategoryUniverse
-	result := r.dbReplica.Preload("Anime").
-		Where("category_universe_id = ?", category_id).
+	result := r.dbReplica.
+		Joins("JOIN animes ON animes.id = anime_category_universes.anime_id").
+		Preload("Anime").
+		Where("anime_category_universes.category_universe_id = ?", category_id).
+		Order("animes.aired_at DESC").
 		Find(&categoryAnime)
 	if result.Error != nil {
 		return nil, result.Error

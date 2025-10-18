@@ -16,11 +16,17 @@ type TierTemplateService interface {
 }
 
 type tierTemplateService struct {
-	repo repositories.TierTemplateRepository
+	repo                        repositories.TierTemplateRepository
+	animeRepo                   repositories.AnimeRepository
+	animeCategorryUnivserseRepo repositories.AnimeCategoryUniverseRepository
 }
 
-func NewTierTemplateService(repo repositories.TierTemplateRepository) TierTemplateService {
-	return &tierTemplateService{repo: repo}
+func NewTierTemplateService(
+	repo repositories.TierTemplateRepository,
+	animeRepo repositories.AnimeRepository,
+	animeCategorryUnivserseRepo repositories.AnimeCategoryUniverseRepository,
+) TierTemplateService {
+	return &tierTemplateService{repo: repo, animeRepo: animeRepo, animeCategorryUnivserseRepo: animeCategorryUnivserseRepo}
 }
 
 func (s *tierTemplateService) GetAll() (*dtos.GetTierTemplatePaginatedResponse, error) {
@@ -77,6 +83,21 @@ func (s *tierTemplateService) GetById(id uuid.UUID) (*dtos.GetByIdTierTemplateRe
 		return nil, errs.NewNotFoundError("Tier template not found")
 	}
 	itemList := []dtos.GetByIdTierTemplateResponseItem{}
+	if tierTemplate.IsFromAnimeCategory {
+		categoryUniverse, err := s.animeCategorryUnivserseRepo.GetByCategoryUniverseId(tierTemplate.CategoryUniverseId)
+		if err != nil {
+			logs.Error(err.Error())
+			return nil, errs.NewUnexpectedError()
+		}
+
+		for _, item := range categoryUniverse {
+			itemList = append(itemList, dtos.GetByIdTierTemplateResponseItem{
+				ID:    item.ID,
+				Image: item.Anime.Image,
+				Name:  item.Anime.Name,
+			})
+		}
+	}
 
 	response := &dtos.GetByIdTierTemplateResponse{
 		ID:          tierTemplate.ID,

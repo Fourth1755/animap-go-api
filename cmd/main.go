@@ -91,7 +91,7 @@ func main() {
 	episodeService := services.NewEpisodeService(episodeRepo, animeRepo, episodeCharacterRepo)
 	characterService := services.NewCharacterService(characterRepo, animeCharacterRepo, animeRepo)
 	commentService := services.NewCommentService(commentRepo, userRepo)
-	tierTemplateService := services.NewTierTemplateService(tierTemplateRepo)
+	tierTemplateService := services.NewTierTemplateService(tierTemplateRepo, animeRepo, animeCategorryUnivserseRepo)
 
 	//create handler
 
