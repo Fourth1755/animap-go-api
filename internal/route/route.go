@@ -86,6 +86,7 @@ func InitRoutes(https HttpHandler) *gin.Engine {
 
 	{
 		authorized.POST("my-anime", https.MyAnimeHandler.AddAnimeToList)
+		authorized.GET("my-anime/anime-detail/:uuid", https.MyAnimeHandler.GetMyAnimeDetail)
 	}
 	//router.POST("my-anime", myAnimeHandler.AddAnimeToList)
 	router.GET("my-anime/:uuid", https.MyAnimeHandler.GetAnimeByUserId)

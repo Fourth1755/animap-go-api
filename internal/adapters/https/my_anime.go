@@ -24,7 +24,6 @@ func (h *HttpMyAnimeHandler) AddAnimeToList(c *gin.Context) {
 		handleError(c, errs.NewBadRequestError(err.Error()))
 		return
 	}
-
 	if err := h.service.AddAnimeToList(c, myAnimeRequest); err != nil {
 		handleError(c, err)
 		return
@@ -77,4 +76,14 @@ func (h *HttpMyAnimeHandler) UpdateMyTopAnime(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Update my top anime to list success."})
+}
+
+func (h *HttpMyAnimeHandler) GetMyAnimeDetail(c *gin.Context) {
+	animeId := c.Param("uuid")
+	animeDetail, err := h.service.GetMyAnimeDetail(c, uuid.MustParse(animeId))
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, animeDetail)
 }

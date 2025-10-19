@@ -12,11 +12,12 @@ import (
 )
 
 type MyAnimeService interface {
-	AddAnimeToList(c context.Context, userAnime *dtos.AddAnimeToListRequest) error
+	AddAnimeToList(ctx context.Context, userAnime *dtos.AddAnimeToListRequest) error
 	GetAnimeByUserId(uuid uuid.UUID) ([]dtos.GetAnimeByUserIdResponse, error)
 	GetMyAnimeYearByUserId(uuid uuid.UUID) (*dtos.GetMyAnimeYearByUserIdResponse, error)
 	GetMyTopAnime(uuid uuid.UUID) ([]dtos.GetMyTopAnimeResponse, error)
 	UpdateMyTopAnime(request *dtos.UpdateMyTopAnimeRequest) error
+	GetMyAnimeDetail(ctx context.Context, animeId uuid.UUID) (*dtos.MyAnimeDetailResponse, error)
 }
 
 type myAnimeServiceImpl struct {
@@ -35,7 +36,6 @@ func (s *myAnimeServiceImpl) AddAnimeToList(ctx context.Context, request *dtos.A
 		return errs.NewUnexpectedError()
 	}
 	userIdUuid := uuid.MustParse(userId)
-
 	if _, err := s.animeRepo.GetById(request.AnimeID); err != nil {
 		logs.Error(err.Error())
 		return errs.NewNotFoundError("Anime not found")
@@ -185,4 +185,29 @@ func (s *myAnimeServiceImpl) UpdateMyTopAnime(request *dtos.UpdateMyTopAnimeRequ
 	}
 
 	return nil
+}
+
+func (s *myAnimeServiceImpl) GetMyAnimeDetail(ctx context.Context, animeId uuid.UUID) (*dtos.MyAnimeDetailResponse, error) {
+	userId, ok := ctx.Value("userId").(string)
+	if !ok {
+		return nil, errs.NewUnexpectedError()
+	}
+	userIdUuid := uuid.MustParse(userId)
+
+	userAnimes, err := s.repo.GetByUserIdAndAnimeId(userIdUuid, []uuid.UUID{animeId})
+	if err != nil {
+		logs.Error(err.Error())
+		return nil, errs.NewUnexpectedError()
+	}
+
+	if len(userAnimes) == 0 {
+		return &dtos.MyAnimeDetailResponse{IsWatched: false}, nil
+	}
+
+	userAnime := userAnimes[0]
+	return &dtos.MyAnimeDetailResponse{
+		Score:         userAnime.Score,
+		WatchedYearAt: userAnime.WatchedYearAt,
+		IsWatched:     true,
+	}, nil
 }

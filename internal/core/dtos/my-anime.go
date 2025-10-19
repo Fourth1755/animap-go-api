@@ -6,6 +6,12 @@ import (
 	"github.com/google/uuid"
 )
 
+type MyAnimeDetailResponse struct {
+	Score         float32 `json:"score"`
+	WatchedYearAt string  `json:"watched_year_at"`
+	IsWatched     bool    `json:"is_watched"`
+}
+
 type GetAnimeByUserIdResponse struct {
 	AnimeID       uuid.UUID `json:"anime_id"`
 	AnimeName     string    `json:"anime_name"`
