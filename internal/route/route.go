@@ -41,6 +41,8 @@ func InitRoutes(https HttpHandler) *gin.Engine {
 	}))
 	router.POST("register", https.UserHandler.CreateUser)
 	router.POST("login", https.UserHandler.Login)
+	router.GET("auth/google", https.UserHandler.GoogleLogin)
+	router.GET("auth/google/callback", https.UserHandler.GoogleCallback)
 
 	authorized := router.Group("/")
 	authorized.Use(middleware.AuthRequired)

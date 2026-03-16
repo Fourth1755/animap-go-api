@@ -12,6 +12,7 @@ type User struct {
 	Password     string
 	Name         string
 	SID          string
+	GoogleID     string  `gorm:"index"`
 	Animes       []Anime `gorm:"many2many:user_animes;"`
 	ProfileImage string
 	Description  string `json:"description"`

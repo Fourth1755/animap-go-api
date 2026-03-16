@@ -2,7 +2,9 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"time"
 
@@ -16,11 +18,15 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
 
 type UserService interface {
 	CreateUser(user *entities.User) error
 	Login(user *entities.User) (*dtos.LoginResponse, error)
+	LoginWithGoogle(code string) (*dtos.LoginResponse, error)
+	GetGoogleOAuthURL(state string) string
 	GetUserInfo(ctx context.Context) (*dtos.GetUserInfoResponse, error)
 	UpdateUserInfo(ctx context.Context, request *dtos.UpdateUserInfoRequest) error
 	GetUserByUUID(uuid string) (*dtos.GetUserInfoResponse, error)
@@ -180,3 +186,110 @@ func (s *UserServiceImpl) GetUserByUUID(uuidStr string) (*dtos.GetUserInfoRespon
 		Description:  user.Description,
 	}, nil
 }
+
+func (s *UserServiceImpl) googleOAuthConfig() *oauth2.Config {
+	cfg := s.configService.GetGoogleOAuth()
+	return &oauth2.Config{
+		ClientID:     cfg.ClientID,
+		ClientSecret: cfg.ClientSecret,
+		RedirectURL:  cfg.RedirectURL,
+		Scopes: []string{
+			"https://www.googleapis.com/auth/userinfo.email",
+			"https://www.googleapis.com/auth/userinfo.profile",
+		},
+		Endpoint: google.Endpoint,
+	}
+}
+
+func (s *UserServiceImpl) GetGoogleOAuthURL(state string) string {
+	return s.googleOAuthConfig().AuthCodeURL(state, oauth2.AccessTypeOffline)
+}
+
+type googleUserInfo struct {
+	ID            string `json:"id"`
+	Email         string `json:"email"`
+	Name          string `json:"name"`
+	Picture       string `json:"picture"`
+	VerifiedEmail bool   `json:"verified_email"`
+}
+
+func (s *UserServiceImpl) LoginWithGoogle(code string) (*dtos.LoginResponse, error) {
+	oauthCfg := s.googleOAuthConfig()
+
+	token, err := oauthCfg.Exchange(context.Background(), code)
+	if err != nil {
+		logs.Error(err)
+		return nil, errs.NewUnauthorizedError("failed to exchange google oauth code")
+	}
+
+	client := oauthCfg.Client(context.Background(), token)
+	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
+	if err != nil {
+		logs.Error(err)
+		return nil, errs.NewUnexpectedError()
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		logs.Error(err)
+		return nil, errs.NewUnexpectedError()
+	}
+
+	var googleUser googleUserInfo
+	if err := json.Unmarshal(body, &googleUser); err != nil {
+		logs.Error(err)
+		return nil, errs.NewUnexpectedError()
+	}
+
+	// Find existing user by GoogleID, then fallback to email
+	user, err := s.repo.GetUserByGoogleID(googleUser.ID)
+	if err != nil {
+		// Not found by GoogleID — try by email
+		user, err = s.repo.GetUserByEmail(googleUser.Email)
+		if err != nil {
+			// Create new user
+			newID, idErr := uuid.NewV7()
+			if idErr != nil {
+				logs.Error(idErr)
+				return nil, errs.NewUnexpectedError()
+			}
+			user = &entities.User{
+				ID:           newID,
+				Email:        googleUser.Email,
+				Name:         googleUser.Name,
+				GoogleID:     googleUser.ID,
+				ProfileImage: googleUser.Picture,
+			}
+			if saveErr := s.repo.Save(user); saveErr != nil {
+				logs.Error(saveErr)
+				return nil, errs.NewUnexpectedError()
+			}
+		} else {
+			// Link GoogleID to existing email account
+			user.GoogleID = googleUser.ID
+			if updateErr := s.repo.UpdateUser(user); updateErr != nil {
+				logs.Error(updateErr)
+			}
+		}
+	}
+
+	// Issue JWT
+	claims := jwt.MapClaims{
+		"uuid":    user.ID,
+		"picture": user.ProfileImage,
+		"name":    user.Name,
+		"email":   user.Email,
+		"role":    "admin",
+		"exp":     time.Now().Add(time.Hour * TokenDuration).Unix(),
+	}
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	t, err := jwtToken.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		logs.Error(err)
+		return nil, errs.NewUnexpectedError()
+	}
+
+	return &dtos.LoginResponse{Token: t, UserID: user.ID}, nil
+}
+

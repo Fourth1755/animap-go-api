@@ -11,6 +11,7 @@ type UserRepository interface {
 	GetUserByEmail(email string) (*entities.User, error)
 	GetById(id uuid.UUID) (*entities.User, error)
 	UpdateUser(user *entities.User) error
+	GetUserByGoogleID(googleID string) (*entities.User, error)
 }
 
 type GormUserRepository struct {
@@ -54,4 +55,13 @@ func (r *GormUserRepository) UpdateUser(user *entities.User) error {
 		return result.Error
 	}
 	return nil
+}
+
+func (r *GormUserRepository) GetUserByGoogleID(googleID string) (*entities.User, error) {
+	user := new(entities.User)
+	result := r.dbReplica.Where("google_id = ?", googleID).First(user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return user, nil
 }

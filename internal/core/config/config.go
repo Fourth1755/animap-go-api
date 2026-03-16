@@ -10,6 +10,7 @@ type ConfigService interface {
 	GetCommon() *Common
 	GetAWS() *AWS
 	GetMyAnimeListClient() *MyAnimeListClient
+	GetGoogleOAuth() *GoogleOAuth
 }
 
 type configService struct {
@@ -52,6 +53,12 @@ type DatabaseReplica struct {
 type MyAnimeListClient struct {
 	EndPoint string
 	CLientID string
+}
+
+type GoogleOAuth struct {
+	ClientID     string
+	ClientSecret string
+	RedirectURL  string
 }
 
 func initConfig() {
@@ -123,5 +130,14 @@ func (s *configService) GetMyAnimeListClient() *MyAnimeListClient {
 	return &MyAnimeListClient{
 		EndPoint: s.client.GetString("myAnimeListEndpoint"),
 		CLientID: s.client.GetString("myAnimeListClientId"),
+	}
+}
+
+func (s *configService) GetGoogleOAuth() *GoogleOAuth {
+	google := s.service.Sub("google")
+	return &GoogleOAuth{
+		ClientID:     google.GetString("clientId"),
+		ClientSecret: google.GetString("clientSecret"),
+		RedirectURL:  google.GetString("redirectUrl"),
 	}
 }

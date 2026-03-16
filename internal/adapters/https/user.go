@@ -1,6 +1,8 @@
 package adapters
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"net/http"
 
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
@@ -123,4 +125,69 @@ func (h *HttpUserHandler) Logout(c *gin.Context) {
 		SameSite: http.SameSiteLaxMode,
 	})
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Logout success."})
+}
+
+func (h *HttpUserHandler) GoogleLogin(c *gin.Context) {
+	b := make([]byte, 16)
+	rand.Read(b)
+	state := hex.EncodeToString(b)
+
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "oauth_state",
+		Value:    state,
+		Path:     "/",
+		MaxAge:   300, // 5 minutes
+		HttpOnly: true,
+		Secure:   false, // dev = false, prod = true
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	url := h.service.GetGoogleOAuthURL(state)
+	c.Redirect(http.StatusTemporaryRedirect, url)
+}
+
+func (h *HttpUserHandler) GoogleCallback(c *gin.Context) {
+	// Validate state to prevent CSRF
+	stateCookie, err := c.Cookie("oauth_state")
+	if err != nil || stateCookie != c.Query("state") {
+		handleError(c, errs.NewUnauthorizedError("invalid oauth state"))
+		return
+	}
+
+	// Clear state cookie
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "oauth_state",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+	})
+
+	code := c.Query("code")
+	if code == "" {
+		handleError(c, errs.NewBadRequestError("missing oauth code"))
+		return
+	}
+
+	response, err := h.service.LoginWithGoogle(code)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "jwt",
+		Value:    response.Token,
+		Path:     "/",
+		MaxAge:   3600 * 24,
+		HttpOnly: true,
+		Secure:   false, // dev = false, prod = true
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"message": "Login success.",
+		"token":   response.Token,
+		"user_id": response.UserID,
+	})
 }
