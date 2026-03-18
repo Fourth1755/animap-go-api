@@ -185,9 +185,6 @@ func (h *HttpUserHandler) GoogleCallback(c *gin.Context) {
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	c.IndentedJSON(http.StatusOK, gin.H{
-		"message": "Login success.",
-		"token":   response.Token,
-		"user_id": response.UserID,
-	})
+	frontendURL := h.service.GetGoogleFrontendURL()
+	c.Redirect(http.StatusTemporaryRedirect, frontendURL)
 }

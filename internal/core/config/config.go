@@ -59,6 +59,7 @@ type GoogleOAuth struct {
 	ClientID     string
 	ClientSecret string
 	RedirectURL  string
+	FrontendURL  string
 }
 
 func initConfig() {
@@ -139,5 +140,6 @@ func (s *configService) GetGoogleOAuth() *GoogleOAuth {
 		ClientID:     google.GetString("clientId"),
 		ClientSecret: google.GetString("clientSecret"),
 		RedirectURL:  google.GetString("redirectUrl"),
+		FrontendURL:  google.GetString("frontendUrl"),
 	}
 }

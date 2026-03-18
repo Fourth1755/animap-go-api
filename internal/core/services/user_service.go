@@ -27,6 +27,7 @@ type UserService interface {
 	Login(user *entities.User) (*dtos.LoginResponse, error)
 	LoginWithGoogle(code string) (*dtos.LoginResponse, error)
 	GetGoogleOAuthURL(state string) string
+	GetGoogleFrontendURL() string
 	GetUserInfo(ctx context.Context) (*dtos.GetUserInfoResponse, error)
 	UpdateUserInfo(ctx context.Context, request *dtos.UpdateUserInfoRequest) error
 	GetUserByUUID(uuid string) (*dtos.GetUserInfoResponse, error)
@@ -106,7 +107,7 @@ func (s *UserServiceImpl) Login(user *entities.User) (*dtos.LoginResponse, error
 		"picture": selectUser.ProfileImage,
 		"name":    selectUser.Name,
 		"email":   selectUser.Email,
-		"role":    "admin",
+		"role":    "user",
 		"exp":     time.Now().Add(time.Hour * TokenDuration).Unix(),
 	}
 	// Create token
@@ -205,6 +206,10 @@ func (s *UserServiceImpl) GetGoogleOAuthURL(state string) string {
 	return s.googleOAuthConfig().AuthCodeURL(state, oauth2.AccessTypeOffline)
 }
 
+func (s *UserServiceImpl) GetGoogleFrontendURL() string {
+	return s.configService.GetGoogleOAuth().FrontendURL
+}
+
 type googleUserInfo struct {
 	ID            string `json:"id"`
 	Email         string `json:"email"`
@@ -280,7 +285,7 @@ func (s *UserServiceImpl) LoginWithGoogle(code string) (*dtos.LoginResponse, err
 		"picture": user.ProfileImage,
 		"name":    user.Name,
 		"email":   user.Email,
-		"role":    "admin",
+		"role":    "user",
 		"exp":     time.Now().Add(time.Hour * TokenDuration).Unix(),
 	}
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -292,4 +297,3 @@ func (s *UserServiceImpl) LoginWithGoogle(code string) (*dtos.LoginResponse, err
 
 	return &dtos.LoginResponse{Token: t, UserID: user.ID}, nil
 }
-
