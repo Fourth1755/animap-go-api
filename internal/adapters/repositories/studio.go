@@ -12,6 +12,7 @@ type StudioRepository interface {
 	GetById(id uuid.UUID) (*entities.Studio, error)
 	GetByMyAnimeListId(id int) (*entities.Studio, error)
 	Save(studio entities.Studio) (*entities.Studio, error)
+	Search(keyword string, limit int) ([]entities.Studio, error)
 }
 
 type GormStudioRepository struct {
@@ -61,4 +62,16 @@ func (r GormStudioRepository) Save(studio entities.Studio) (*entities.Studio, er
 		return nil, result.Error
 	}
 	return &studio, nil
+}
+
+func (r GormStudioRepository) Search(keyword string, limit int) ([]entities.Studio, error) {
+	var studios []entities.Studio
+	result := r.dbReplica.
+		Where("name ILIKE ?", "%"+keyword+"%").
+		Limit(limit).
+		Find(&studios)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return studios, nil
 }

@@ -10,6 +10,7 @@ type CharacterRepository interface {
 	Save(character *entities.Character) (*entities.Character, error)
 	GetById(id uuid.UUID) (*entities.Character, error)
 	GetByIds(ids []uuid.UUID) ([]entities.Character, error)
+	Search(keyword string, limit int) ([]entities.Character, error)
 }
 
 type GormCharacterRepository struct {
@@ -40,6 +41,18 @@ func (r *GormCharacterRepository) GetByIds(ids []uuid.UUID) ([]entities.Characte
 	var characters []entities.Character
 	if result := r.dbReplica.
 		Where("id in (?)", ids).Find(&characters); result.Error != nil {
+		return nil, result.Error
+	}
+	return characters, nil
+}
+
+func (r *GormCharacterRepository) Search(keyword string, limit int) ([]entities.Character, error) {
+	var characters []entities.Character
+	result := r.dbReplica.
+		Where("name ILIKE ?", "%"+keyword+"%").
+		Limit(limit).
+		Find(&characters)
+	if result.Error != nil {
 		return nil, result.Error
 	}
 	return characters, nil

@@ -10,6 +10,7 @@ type CategoryUniverseRepository interface {
 	Save(category *entities.CategoryUniverse) error
 	GetAll() ([]entities.CategoryUniverse, error)
 	GetById(id uuid.UUID) (*entities.CategoryUniverse, error)
+	Search(keyword string, limit int) ([]entities.CategoryUniverse, error)
 }
 
 type GormCategoryUniverseRepository struct {
@@ -45,4 +46,16 @@ func (r *GormCategoryUniverseRepository) GetById(id uuid.UUID) (*entities.Catego
 		return nil, result.Error
 	}
 	return category, nil
+}
+
+func (r *GormCategoryUniverseRepository) Search(keyword string, limit int) ([]entities.CategoryUniverse, error) {
+	var categories []entities.CategoryUniverse
+	result := r.dbReplica.
+		Where("name ILIKE ?", "%"+keyword+"%").
+		Limit(limit).
+		Find(&categories)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return categories, nil
 }

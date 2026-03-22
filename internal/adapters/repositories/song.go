@@ -14,6 +14,7 @@ type SongRepository interface {
 	Update(*entities.Song) error
 	Delete(uuid.UUID) error
 	GetByAnimeId(uuid.UUID) ([]entities.Song, error)
+	Search(keyword string, limit int) ([]entities.Song, error)
 }
 
 type GormSongRepository struct {
@@ -81,6 +82,18 @@ func (r *GormSongRepository) Delete(id uuid.UUID) error {
 func (r *GormSongRepository) GetByAnimeId(id uuid.UUID) ([]entities.Song, error) {
 	var songs []entities.Song
 	result := r.dbReplica.Preload("Artist").Preload("SongChannel").Where("anime_id = ?", id).Find(&songs)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return songs, nil
+}
+
+func (r *GormSongRepository) Search(keyword string, limit int) ([]entities.Song, error) {
+	var songs []entities.Song
+	result := r.dbReplica.
+		Where("name ILIKE ?", "%"+keyword+"%").
+		Limit(limit).
+		Find(&songs)
 	if result.Error != nil {
 		return nil, result.Error
 	}

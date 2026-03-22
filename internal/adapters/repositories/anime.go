@@ -22,6 +22,7 @@ type AnimeRepository interface {
 	UpdadteImage(image string, myAnimeListId int) error
 	GetByMyAnimeListId(id int) (*entities.Anime, error)
 	UpdadteAiredAt(airedAt time.Time, myAnimeListId int) error
+	Search(keyword string, limit int) ([]entities.Anime, error)
 }
 
 type GormAnimeRepository struct {
@@ -177,4 +178,16 @@ func (r *GormAnimeRepository) GetByMyAnimeListId(id int) (*entities.Anime, error
 		return nil, result.Error
 	}
 	return &anime, nil
+}
+
+func (r *GormAnimeRepository) Search(keyword string, limit int) ([]entities.Anime, error) {
+	var animes []entities.Anime
+	result := r.dbReplica.
+		Where("name ILIKE ? AND is_show = true", "%"+keyword+"%").
+		Limit(limit).
+		Find(&animes)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return animes, nil
 }

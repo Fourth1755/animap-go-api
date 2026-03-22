@@ -92,6 +92,7 @@ func main() {
 	characterService := services.NewCharacterService(characterRepo, animeCharacterRepo, animeRepo)
 	commentService := services.NewCommentService(commentRepo, userRepo)
 	tierTemplateService := services.NewTierTemplateService(tierTemplateRepo, animeRepo, animeCategorryUnivserseRepo)
+	searchService := services.NewSearchService(animeRepo, studioRepo, songRepo, categoryUniverseRepo, characterRepo)
 
 	//create handler
 
@@ -110,6 +111,7 @@ func main() {
 		AnimeMigrateHandler:     adapters.NewHttpAnimeMigrateHandler(animeMigrateService),
 		CommentHandler:          adapters.NewHttpCommentHandler(commentService),
 		TierTemplateHandler:     adapters.NewTierTemplateHandler(tierTemplateService),
+		SearchHandler:           adapters.NewHttpSearchHandler(searchService),
 	})
 
 	log.Print("Server listening on http://localhost:8080/")
