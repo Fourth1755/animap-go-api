@@ -32,6 +32,13 @@ type AnimeDataUniverse struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
 }
+
+type AnimeDetailProvider struct {
+	ID    uuid.UUID `json:"id"`
+	Name  string    `json:"name"`
+	Image string    `json:"image"`
+}
+
 type GetAnimeByIdResponse struct {
 	ID               uuid.UUID               `json:"id"`
 	Name             string                  `json:"name"`
@@ -55,6 +62,7 @@ type GetAnimeByIdResponse struct {
 	Rating           string                  `json:"rating"`
 	MediaType        string                  `json:"media_type"`
 	IsSubAnime       bool                    `json:"is_sub_anime"`
+	Providers        []AnimeDetailProvider   `json:"providers"`
 }
 
 type AnimeQueryDTO struct {

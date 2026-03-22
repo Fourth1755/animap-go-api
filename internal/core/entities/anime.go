@@ -38,4 +38,5 @@ type Anime struct {
 	Rating            string         `json:"rating"`
 	IsShow            bool           `gorm:"default:true" json:"is_show"`
 	Pictures          pq.StringArray `gorm:"type:text[]" json:"pictures"`
+	Providers         []Provider     `gorm:"many2many:anime_providers;"`
 }

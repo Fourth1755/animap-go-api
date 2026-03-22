@@ -239,6 +239,15 @@ func (s *animeServiceImpl) GetAnimeById(id uuid.UUID) (*dtos.GetAnimeByIdRespons
 		})
 	}
 
+	var providers []dtos.AnimeDetailProvider
+	for _, provider := range anime.Providers {
+		providers = append(providers, dtos.AnimeDetailProvider{
+			ID:    provider.ID,
+			Name:  provider.Name,
+			Image: provider.Image,
+		})
+	}
+
 	myAnimeListData, err := s.myAnimeListService.GetAnimeDetail(int(anime.MyAnimeListID))
 	if err != nil {
 		logs.Error(err.Error())
@@ -266,6 +275,7 @@ func (s *animeServiceImpl) GetAnimeById(id uuid.UUID) (*dtos.GetAnimeByIdRespons
 			CategoryUniverse: categoryUniverse,
 			MyAnimeListScore: myAnimeListData.Mean,
 			IsSubAnime:       anime.IsSubAnime,
+			Providers:        providers,
 		}
 	} else {
 		animeResponse = dtos.GetAnimeByIdResponse{
@@ -288,6 +298,7 @@ func (s *animeServiceImpl) GetAnimeById(id uuid.UUID) (*dtos.GetAnimeByIdRespons
 			CategoryUniverse: categoryUniverse,
 			MyAnimeListScore: 0,
 			IsSubAnime:       anime.IsSubAnime,
+			Providers:        providers,
 		}
 	}
 

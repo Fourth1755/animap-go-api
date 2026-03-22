@@ -17,6 +17,7 @@ import (
 
 type AnimeMigrateService interface {
 	MigrateAnime(req dtos.MigrateAnimeRequest) error
+	MigrateProviders() error
 }
 
 type animeMigrateServiceImpl struct {
@@ -26,6 +27,7 @@ type animeMigrateServiceImpl struct {
 	categoryRepo       repositories.CategoryRepository
 	studioRepo         repositories.StudioRepository
 	episodeRepo        repositories.EpisodeRepository
+	providerRepo       repositories.ProviderRepository
 	myAnimeListService external_api.MyAnimeListService
 }
 
@@ -36,6 +38,7 @@ func NewAnimeMigrateService(
 	categoryRepo repositories.CategoryRepository,
 	studioRepo repositories.StudioRepository,
 	episodeRepo repositories.EpisodeRepository,
+	providerRepo repositories.ProviderRepository,
 	myAnimeListService external_api.MyAnimeListService,
 ) AnimeMigrateService {
 	return &animeMigrateServiceImpl{
@@ -45,6 +48,7 @@ func NewAnimeMigrateService(
 		categoryRepo:       categoryRepo,
 		studioRepo:         studioRepo,
 		episodeRepo:        episodeRepo,
+		providerRepo:       providerRepo,
 		myAnimeListService: myAnimeListService,
 	}
 }
@@ -256,6 +260,43 @@ func (s *animeMigrateServiceImpl) MigrateAnime(req dtos.MigrateAnimeRequest) err
 	fmt.Println("count")
 	fmt.Println(count)
 	fmt.Println("End migrate")
+	return nil
+}
+
+func (s *animeMigrateServiceImpl) MigrateProviders() error {
+	type providerSeed struct {
+		Name  string
+		Image string
+	}
+	seeds := []providerSeed{
+		{Name: "Crunchyroll", Image: "https://www.crunchyroll.com/build/assets/img/favicons/favicon-192x192.png"},
+		{Name: "Netflix", Image: "https://assets.nflxext.com/us/ffe/siteui/common/icons/nficon2016.png"},
+		{Name: "Funimation", Image: "https://www.funimation.com/favicon.ico"},
+		{Name: "HiDive", Image: "https://www.hidive.com/favicon.ico"},
+		{Name: "Amazon Prime Video", Image: "https://m.media-amazon.com/images/G/01/primevideo/seo/primevideo-seo-logo.png"},
+		{Name: "Disney+", Image: "https://cnbl-cdn.bamgrid.com/assets/7ecc8bcb60ad77193058d63e321bd21cbac2fc67/original"},
+		{Name: "Hulu", Image: "https://assetshuluimcom-a.akamaihd.net/h5/default_v3/static/hulu-logo.png"},
+		{Name: "Apple TV+", Image: "https://tv.apple.com/assets/atv-web/atvweb.png"},
+		{Name: "Bilibili", Image: "https://www.bilibili.com/favicon.ico"},
+		{Name: "Aniplus", Image: "https://www.aniplus-asia.com/favicon.ico"},
+	}
+
+	for _, seed := range seeds {
+		id, err := uuid.NewV7()
+		if err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+		provider := &entities.Provider{
+			ID:    id,
+			Name:  seed.Name,
+			Image: seed.Image,
+		}
+		if _, err := s.providerRepo.Save(provider); err != nil {
+			logs.Error(err.Error())
+			return errs.NewUnexpectedError()
+		}
+	}
 	return nil
 }
 

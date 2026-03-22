@@ -52,6 +52,8 @@ func main() {
 	commentRepo := repositories.NewGormCommentAnimeRepository(dbPrimary, dbReplica)
 	animeTrailerRepo := repositories.NewAnimeTrailerRepository(dbPrimary, dbReplica)
 	tierTemplateRepo := repositories.NewTierTemplateRepository(dbPrimary, dbReplica)
+	providerRepo := repositories.NewGormProviderRepository(dbPrimary, dbReplica)
+	animeProviderRepo := repositories.NewGormAnimeProviderRepository(dbPrimary, dbReplica)
 
 	//create service
 	userService := services.NewUserService(userRepo, s3Service, configService)
@@ -82,6 +84,7 @@ func main() {
 		categoryRepo,
 		studioRepo,
 		episodeRepo,
+		providerRepo,
 		myAnimeListService,
 	)
 	commonService := services.NewCommonService(configService)
@@ -91,6 +94,7 @@ func main() {
 	commentService := services.NewCommentService(commentRepo, userRepo)
 	tierTemplateService := services.NewTierTemplateService(tierTemplateRepo, animeRepo, animeCategorryUnivserseRepo)
 	searchService := services.NewSearchService(animeRepo, studioRepo, songRepo, categoryUniverseRepo, characterRepo)
+	providerService := services.NewProviderService(providerRepo, animeProviderRepo)
 
 	//create handler
 
@@ -110,6 +114,7 @@ func main() {
 		CommentHandler:          adapters.NewHttpCommentHandler(commentService),
 		TierTemplateHandler:     adapters.NewTierTemplateHandler(tierTemplateService),
 		SearchHandler:           adapters.NewHttpSearchHandler(searchService),
+		ProviderHandler:         adapters.NewHttpProviderHandler(providerService),
 	})
 
 	log.Print("Server listening on http://localhost:8080/")

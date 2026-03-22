@@ -27,6 +27,7 @@ type HttpHandler struct {
 	CommentHandler          *adapters.HttpCommentHandler
 	TierTemplateHandler     *adapters.TierTemplateHandler
 	SearchHandler           *adapters.HttpSearchHandler
+	ProviderHandler         *adapters.HttpProviderHandler
 }
 
 func InitRoutes(https HttpHandler) *gin.Engine {
@@ -126,6 +127,10 @@ func InitRoutes(https HttpHandler) *gin.Engine {
 	router.GET("tier-template/:id", https.TierTemplateHandler.GetById)
 
 	router.POST("search", https.SearchHandler.Search)
+
+	router.GET("providers", https.ProviderHandler.GetAllProviders)
+	router.POST("providers", https.ProviderHandler.CreateProvider)
+	router.POST("providers/anime", https.ProviderHandler.AddProviderToAnime)
 
 	router.GET("common/seasonal-year", https.CommonHandler.GetSeasonalAndYear)
 

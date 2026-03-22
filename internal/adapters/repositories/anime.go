@@ -50,6 +50,7 @@ func (r *GormAnimeRepository) GetById(id uuid.UUID) (*entities.Anime, error) {
 		Preload("Categories").
 		Preload("Studios").
 		Preload("CategoryUniverses").
+		Preload("Providers").
 		First(&anime, id); result.Error != nil {
 		return nil, result.Error
 	}
