@@ -57,7 +57,7 @@ type AnimeService interface {
 	AddCategoryToAnime(request dtos.EditCategoryToAnimeRequest) error
 	AddCategoryUniverseToAnime(request dtos.EditCategoryUniverseToAnimeRequest) error
 	GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) (*dtos.GetAnimeBySeasonAndYearResponse, error)
-	GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeByStudioResponse, error)
+	GetAnimeByStudio(studioId uuid.UUID, query dtos.AnimeCursorQueryDTO) (*dtos.GetAnimeByStudioResponse, error)
 	AddAnimePictures(request dtos.AddAnimePicturesRequest) error
 	GetAnimePictures(animeID uuid.UUID) (*dtos.AnimeMediaResponse, error)
 	CreateAnimeTrailers(request dtos.CreateAnimeTrailersRequest) error
@@ -666,16 +666,37 @@ func (s *animeServiceImpl) GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeas
 	}, nil
 }
 
-func (s *animeServiceImpl) GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeByStudioResponse, error) {
+func (s *animeServiceImpl) GetAnimeByStudio(studioId uuid.UUID, query dtos.AnimeCursorQueryDTO) (*dtos.GetAnimeByStudioResponse, error) {
 	studio, err := s.studioRepo.GetById(studioId)
 	if err != nil {
 		logs.Error(err)
 		return nil, errs.NewNotFoundError("Studio Not Found" + studioId.String())
 	}
-	animeStudio, err := s.animeStudioRepo.GetByStudioId(studioId)
+
+	limit := query.Limit
+	if limit <= 0 {
+		limit = 20
+	}
+
+	var cursorTime *time.Time
+	var cursorID *uuid.UUID
+	if query.Cursor != "" {
+		ct, cid, err := decodeCursor(query.Cursor)
+		if err != nil {
+			return nil, errs.NewBadRequestError("invalid cursor")
+		}
+		cursorTime, cursorID = ct, cid
+	}
+
+	animeStudio, err := s.animeStudioRepo.GetByStudioId(studioId, cursorTime, cursorID, limit+1)
 	if err != nil {
 		logs.Error(err)
 		return nil, errs.NewUnexpectedError()
+	}
+
+	hasMore := len(animeStudio) > limit
+	if hasMore {
+		animeStudio = animeStudio[:limit]
 	}
 
 	var animeIds []uuid.UUID
@@ -688,8 +709,18 @@ func (s *animeServiceImpl) GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeB
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
 	}
+
+	animeMap := make(map[uuid.UUID]entities.Anime, len(animeList))
+	for _, a := range animeList {
+		animeMap[a.ID] = a
+	}
+
 	var animesReponse []dtos.GetAnimeByStudioResponseAnimeList
-	for _, anime := range animeList {
+	for _, animeItem := range animeStudio {
+		anime, ok := animeMap[animeItem.AnimeID]
+		if !ok {
+			continue
+		}
 		var categories []dtos.AnimeDetailCategories
 		for _, category := range anime.Categories {
 			categories = append(categories, dtos.AnimeDetailCategories{
@@ -699,10 +730,10 @@ func (s *animeServiceImpl) GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeB
 		}
 
 		var studios []dtos.AnimeDetailStduios
-		for _, studio := range anime.Studios {
+		for _, s := range anime.Studios {
 			studios = append(studios, dtos.AnimeDetailStduios{
-				ID:   studio.ID,
-				Name: studio.Name,
+				ID:   s.ID,
+				Name: s.Name,
 			})
 		}
 
@@ -721,12 +752,22 @@ func (s *animeServiceImpl) GetAnimeByStudio(studioId uuid.UUID) (*dtos.GetAnimeB
 			Wallpaper:   anime.Wallpaper,
 		})
 	}
+
+	var nextCursor *string
+	if hasMore && len(animeStudio) > 0 {
+		last := animeStudio[len(animeStudio)-1]
+		c := encodeCursor(last.Anime.AiredAt, last.AnimeID)
+		nextCursor = &c
+	}
+
 	return &dtos.GetAnimeByStudioResponse{
-		ID:        studio.ID,
-		Name:      studio.Name,
-		Wallpaper: studio.Image,
-		MainColor: studio.MainColor,
-		AnimeList: animesReponse,
+		ID:         studio.ID,
+		Name:       studio.Name,
+		Wallpaper:  studio.Image,
+		MainColor:  studio.MainColor,
+		AnimeList:  animesReponse,
+		NextCursor: nextCursor,
+		HasMore:    hasMore,
 	}, nil
 }
 func (s *animeServiceImpl) AddAnimePictures(request dtos.AddAnimePicturesRequest) error {

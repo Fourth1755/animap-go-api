@@ -192,11 +192,13 @@ type GetAnimeByStudioResponseAnimeList struct {
 }
 
 type GetAnimeByStudioResponse struct {
-	ID        uuid.UUID                           `json:"id"`
-	Name      string                              `json:"name"`
-	Wallpaper string                              `json:"wallpaper"`
-	MainColor string                              `json:"main_color"`
-	AnimeList []GetAnimeByStudioResponseAnimeList `json:"anime_list"`
+	ID         uuid.UUID                           `json:"id"`
+	Name       string                              `json:"name"`
+	Wallpaper  string                              `json:"wallpaper"`
+	MainColor  string                              `json:"main_color"`
+	AnimeList  []GetAnimeByStudioResponseAnimeList `json:"anime_list"`
+	NextCursor *string                             `json:"next_cursor"`
+	HasMore    bool                                `json:"has_more"`
 }
 
 type MigrateAnimeRequest struct {

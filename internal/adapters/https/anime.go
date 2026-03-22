@@ -167,7 +167,12 @@ func (h *HttpAnimeHandler) GetAnimeBySeasonalAndYear(c *gin.Context) {
 
 func (h *HttpAnimeHandler) GetAnimeByStudio(c *gin.Context) {
 	studioId := c.Param("studio_id")
-	animes, err := h.service.GetAnimeByStudio(uuid.MustParse(studioId))
+	var query dtos.AnimeCursorQueryDTO
+	if err := c.ShouldBindQuery(&query); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	animes, err := h.service.GetAnimeByStudio(uuid.MustParse(studioId), query)
 	if err != nil {
 		handleError(c, err)
 		return
