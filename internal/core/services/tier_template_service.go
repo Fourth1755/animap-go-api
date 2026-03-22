@@ -84,7 +84,7 @@ func (s *tierTemplateService) GetById(id uuid.UUID) (*dtos.GetByIdTierTemplateRe
 	}
 	itemList := []dtos.GetByIdTierTemplateResponseItem{}
 	if tierTemplate.IsFromAnimeCategory {
-		categoryUniverse, err := s.animeCategorryUnivserseRepo.GetByCategoryUniverseId(tierTemplate.CategoryUniverseId)
+		categoryUniverse, err := s.animeCategorryUnivserseRepo.GetByCategoryUniverseId(tierTemplate.CategoryUniverseId, nil, nil, 0)
 		if err != nil {
 			logs.Error(err.Error())
 			return nil, errs.NewUnexpectedError()

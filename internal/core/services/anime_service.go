@@ -1,11 +1,13 @@
 package services
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/url"
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Fourth1755/animap-go-api/internal/adapters/aws"
 	"github.com/Fourth1755/animap-go-api/internal/adapters/external_api"
@@ -18,15 +20,40 @@ import (
 	"gorm.io/gorm"
 )
 
+func encodeCursor(airedAt time.Time, id uuid.UUID) string {
+	raw := airedAt.UTC().Format(time.RFC3339Nano) + "|" + id.String()
+	return base64.StdEncoding.EncodeToString([]byte(raw))
+}
+
+func decodeCursor(cursor string) (*time.Time, *uuid.UUID, error) {
+	decoded, err := base64.StdEncoding.DecodeString(cursor)
+	if err != nil {
+		return nil, nil, err
+	}
+	parts := strings.SplitN(string(decoded), "|", 2)
+	if len(parts) != 2 {
+		return nil, nil, fmt.Errorf("invalid cursor format")
+	}
+	t, err := time.Parse(time.RFC3339Nano, parts[0])
+	if err != nil {
+		return nil, nil, err
+	}
+	id, err := uuid.Parse(parts[1])
+	if err != nil {
+		return nil, nil, err
+	}
+	return &t, &id, nil
+}
+
 type AnimeService interface {
 	CreateAnime(anime dtos.CreateAnimeRequest) error
 	GetAnimeById(id uuid.UUID) (*dtos.GetAnimeByIdResponse, error)
-	GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeListResponse, error)
+	GetAnimes(query dtos.AnimeQueryDTO) (*dtos.AnimeListsResponse, error)
 	UpdateAnime(anime entities.Anime) error
 	DeleteAnime(id uuid.UUID) error
 	GetAnimeByUserId(user_id uuid.UUID) ([]entities.UserAnime, error)
-	GetAnimeByCategoryId(category_id uuid.UUID) (*dtos.GetAnimeByCategoryIdResponse, error)
-	GetAnimeByCategoryUniverseId(category_id uuid.UUID) (*dtos.GetAnimeByCategoryUniverseIdResponse, error)
+	GetAnimeByCategoryId(category_id uuid.UUID, query dtos.AnimeCursorQueryDTO) (*dtos.GetAnimeByCategoryIdResponse, error)
+	GetAnimeByCategoryUniverseId(category_id uuid.UUID, query dtos.AnimeCursorQueryDTO) (*dtos.GetAnimeByCategoryUniverseIdResponse, error)
 	AddCategoryToAnime(request dtos.EditCategoryToAnimeRequest) error
 	AddCategoryUniverseToAnime(request dtos.EditCategoryUniverseToAnimeRequest) error
 	GetAnimeBySeasonalAndYear(request dtos.GetAnimeBySeasonAndYearRequest) (*dtos.GetAnimeBySeasonAndYearResponse, error)
@@ -269,7 +296,7 @@ func (s *animeServiceImpl) GetAnimeById(id uuid.UUID) (*dtos.GetAnimeByIdRespons
 	return &animeResponse, nil
 }
 
-func (s *animeServiceImpl) GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeListResponse, error) {
+func (s *animeServiceImpl) GetAnimes(query dtos.AnimeQueryDTO) (*dtos.AnimeListsResponse, error) {
 	animes, err := s.repo.GetAll(query)
 	if err != nil {
 		logs.Error(err.Error())
@@ -289,7 +316,7 @@ func (s *animeServiceImpl) GetAnimes(query dtos.AnimeQueryDTO) ([]dtos.AnimeList
 			})
 		}
 	}
-	return animesDto, nil
+	return &dtos.AnimeListsResponse{Animes: animesDto}, nil
 }
 
 func (s *animeServiceImpl) UpdateAnime(anime entities.Anime) error {
@@ -339,18 +366,39 @@ func (s *animeServiceImpl) GetAnimeByUserId(userId uuid.UUID) ([]entities.UserAn
 	return result, nil
 }
 
-func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uuid.UUID) (*dtos.GetAnimeByCategoryIdResponse, error) {
+func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uuid.UUID, query dtos.AnimeCursorQueryDTO) (*dtos.GetAnimeByCategoryIdResponse, error) {
 	category, err := s.categoryRepo.GetById(category_id)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
 	}
 
-	animeCategories, err := s.animeCategoryRepo.GetByCategoryId(category_id)
+	limit := query.Limit
+	if limit <= 0 {
+		limit = 10
+	}
+
+	var cursorTime *time.Time
+	var cursorID *uuid.UUID
+	if query.Cursor != "" {
+		ct, cid, err := decodeCursor(query.Cursor)
+		if err != nil {
+			return nil, errs.NewBadRequestError("invalid cursor")
+		}
+		cursorTime, cursorID = ct, cid
+	}
+
+	animeCategories, err := s.animeCategoryRepo.GetByCategoryId(category_id, cursorTime, cursorID, limit+1)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
 	}
+
+	hasMore := len(animeCategories) > limit
+	if hasMore {
+		animeCategories = animeCategories[:limit]
+	}
+
 	var animesReponse []dtos.GetAnimeByCategoryIdResponseAnimeList
 	for _, anime := range animeCategories {
 		var studios []dtos.AnimeDetailStduios
@@ -370,25 +418,55 @@ func (s *animeServiceImpl) GetAnimeByCategoryId(category_id uuid.UUID) (*dtos.Ge
 			Studios:  studios,
 		})
 	}
+
+	var nextCursor *string
+	if hasMore && len(animeCategories) > 0 {
+		last := animeCategories[len(animeCategories)-1]
+		c := encodeCursor(last.AiredAt, last.ID)
+		nextCursor = &c
+	}
+
 	return &dtos.GetAnimeByCategoryIdResponse{
-		ID:        category.ID,
-		Name:      category.Name,
-		Wallpaper: category.Image,
-		AnimeList: animesReponse,
+		ID:         category.ID,
+		Name:       category.Name,
+		Wallpaper:  category.Image,
+		AnimeList:  animesReponse,
+		NextCursor: nextCursor,
+		HasMore:    hasMore,
 	}, nil
 }
 
-func (s *animeServiceImpl) GetAnimeByCategoryUniverseId(category_id uuid.UUID) (*dtos.GetAnimeByCategoryUniverseIdResponse, error) {
+func (s *animeServiceImpl) GetAnimeByCategoryUniverseId(category_id uuid.UUID, query dtos.AnimeCursorQueryDTO) (*dtos.GetAnimeByCategoryUniverseIdResponse, error) {
 	category, err := s.categoryUniverseRepo.GetById(category_id)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
 	}
 
-	animeCategories, err := s.animeCategorryUnivserseRepo.GetByCategoryUniverseId(category_id)
+	limit := query.Limit
+	if limit <= 0 {
+		limit = 10
+	}
+
+	var cursorTime *time.Time
+	var cursorID *uuid.UUID
+	if query.Cursor != "" {
+		ct, cid, err := decodeCursor(query.Cursor)
+		if err != nil {
+			return nil, errs.NewBadRequestError("invalid cursor")
+		}
+		cursorTime, cursorID = ct, cid
+	}
+
+	animeCategories, err := s.animeCategorryUnivserseRepo.GetByCategoryUniverseId(category_id, cursorTime, cursorID, limit+1)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
+	}
+
+	hasMore := len(animeCategories) > limit
+	if hasMore {
+		animeCategories = animeCategories[:limit]
 	}
 
 	var animeIds []uuid.UUID
@@ -401,8 +479,18 @@ func (s *animeServiceImpl) GetAnimeByCategoryUniverseId(category_id uuid.UUID) (
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
 	}
+
+	animeMap := make(map[uuid.UUID]entities.Anime, len(animeList))
+	for _, a := range animeList {
+		animeMap[a.ID] = a
+	}
+
 	var animesReponse []dtos.GetAnimeByCategoryUniverseIdResponseAnimeList
-	for _, anime := range animeList {
+	for _, animeItem := range animeCategories {
+		anime, ok := animeMap[animeItem.AnimeID]
+		if !ok {
+			continue
+		}
 		var categories []dtos.AnimeDetailCategories
 		for _, category := range anime.Categories {
 			categories = append(categories, dtos.AnimeDetailCategories{
@@ -433,11 +521,21 @@ func (s *animeServiceImpl) GetAnimeByCategoryUniverseId(category_id uuid.UUID) (
 			Categories:  categories,
 		})
 	}
+
+	var nextCursor *string
+	if hasMore && len(animeCategories) > 0 {
+		last := animeCategories[len(animeCategories)-1]
+		c := encodeCursor(last.Anime.AiredAt, last.AnimeID)
+		nextCursor = &c
+	}
+
 	return &dtos.GetAnimeByCategoryUniverseIdResponse{
-		ID:        category.ID,
-		Name:      category.Name,
-		Wallpaper: category.Image,
-		AnimeList: animesReponse,
+		ID:         category.ID,
+		Name:       category.Name,
+		Wallpaper:  category.Image,
+		AnimeList:  animesReponse,
+		NextCursor: nextCursor,
+		HasMore:    hasMore,
 	}, nil
 }
 

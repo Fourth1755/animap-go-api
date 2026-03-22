@@ -95,7 +95,12 @@ func (h *HttpAnimeHandler) GetAnimeByUserId(c *gin.Context) {
 
 func (h *HttpAnimeHandler) GetAnimeByCategory(c *gin.Context) {
 	categoryId := c.Param("category_id")
-	animes, err := h.service.GetAnimeByCategoryId(uuid.MustParse(categoryId))
+	var query dtos.AnimeCursorQueryDTO
+	if err := c.ShouldBindQuery(&query); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	animes, err := h.service.GetAnimeByCategoryId(uuid.MustParse(categoryId), query)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -105,7 +110,12 @@ func (h *HttpAnimeHandler) GetAnimeByCategory(c *gin.Context) {
 
 func (h *HttpAnimeHandler) GetAnimeByCategoryUniverse(c *gin.Context) {
 	categoryId := c.Param("category_id")
-	animes, err := h.service.GetAnimeByCategoryUniverseId(uuid.MustParse(categoryId))
+	var query dtos.AnimeCursorQueryDTO
+	if err := c.ShouldBindQuery(&query); err != nil {
+		handleError(c, errs.NewBadRequestError(err.Error()))
+		return
+	}
+	animes, err := h.service.GetAnimeByCategoryUniverseId(uuid.MustParse(categoryId), query)
 	if err != nil {
 		handleError(c, err)
 		return

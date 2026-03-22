@@ -14,6 +14,10 @@ type AnimeListResponse struct {
 	Year     string    `json:"year"`
 	Image    string    `json:"image"`
 }
+
+type AnimeListsResponse struct {
+	Animes []AnimeListResponse `json:"animes"`
+}
 type AnimeDetailCategories struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
@@ -135,6 +139,8 @@ type GetAnimeByCategoryIdResponse struct {
 	IsUniverse string                                  `json:"is_universe"`
 	Wallpaper  string                                  `json:"wallpaper"`
 	AnimeList  []GetAnimeByCategoryIdResponseAnimeList `json:"anime_list"`
+	NextCursor *string                                 `json:"next_cursor"`
+	HasMore    bool                                    `json:"has_more"`
 }
 
 type GetAnimeByCategoryUniverseIdResponseAnimeList struct {
@@ -157,6 +163,13 @@ type GetAnimeByCategoryUniverseIdResponse struct {
 	Name      string                                          `json:"name"`
 	Wallpaper string                                          `json:"wallpaper"`
 	AnimeList []GetAnimeByCategoryUniverseIdResponseAnimeList `json:"anime_list"`
+	NextCursor *string                                        `json:"next_cursor"`
+	HasMore    bool                                           `json:"has_more"`
+}
+
+type AnimeCursorQueryDTO struct {
+	Cursor string `form:"cursor"`
+	Limit  int    `form:"limit"`
 }
 
 type GetAnimeByStudioRequest struct {

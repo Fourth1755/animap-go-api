@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"time"
+
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -8,7 +10,7 @@ import (
 
 type AnimeCategoryRepository interface {
 	Save(animeCategory []entities.AnimeCategory) error
-	GetByCategoryId(uuid.UUID) ([]GetByCategoryId, error)
+	GetByCategoryId(categoryID uuid.UUID, cursorTime *time.Time, cursorID *uuid.UUID, limit int) ([]GetByCategoryId, error)
 	GetByAnimeIdAndCategoryIds(anime_id uuid.UUID, category_ids []uuid.UUID) ([]entities.AnimeCategory, error)
 }
 
@@ -41,9 +43,10 @@ type GetByCategoryId struct {
 	Year     string         `json:"year"`
 	Image    string         `json:"image"`
 	Studios  []StudioDetail `json:"studios"`
+	AiredAt  time.Time      `json:"aired_at"`
 }
 
-func (r GormAnimeCategoryRepository) GetByCategoryId(category_id uuid.UUID) ([]GetByCategoryId, error) {
+func (r GormAnimeCategoryRepository) GetByCategoryId(categoryID uuid.UUID, cursorTime *time.Time, cursorID *uuid.UUID, limit int) ([]GetByCategoryId, error) {
 	type TempResult struct {
 		ID         uuid.UUID
 		Name       string
@@ -51,10 +54,24 @@ func (r GormAnimeCategoryRepository) GetByCategoryId(category_id uuid.UUID) ([]G
 		Seasonal   string
 		Year       string
 		Image      string
+		AiredAt    time.Time
 		StudioID   *uuid.UUID
 		StudioName *string
 	}
-	var tempResults []TempResult
+
+	args := []interface{}{categoryID}
+	cursorClause := ""
+	if cursorTime != nil && cursorID != nil {
+		cursorClause = "AND (a.aired_at < ? OR (a.aired_at = ? AND a.id < ?))"
+		args = append(args, *cursorTime, *cursorTime, *cursorID)
+	}
+
+	limitClause := ""
+	if limit > 0 {
+		limitClause = "LIMIT ?"
+		args = append(args, limit)
+	}
+
 	sql := `
 		SELECT
 			a.id,
@@ -63,6 +80,7 @@ func (r GormAnimeCategoryRepository) GetByCategoryId(category_id uuid.UUID) ([]G
 			a.seasonal,
 			a.year,
 			a.image AS image,
+			a.aired_at,
 			s.id AS studio_id,
 			s.name AS studio_name
 		FROM
@@ -76,10 +94,13 @@ func (r GormAnimeCategoryRepository) GetByCategoryId(category_id uuid.UUID) ([]G
 		WHERE
 			ac.category_id = ?
 			AND a.is_show = true
+			` + cursorClause + `
 		ORDER BY
-			a.aired_at DESC, a.id`
+			a.aired_at DESC, a.id DESC
+		` + limitClause
 
-	result := r.dbReplica.Raw(sql, category_id).Scan(&tempResults)
+	var tempResults []TempResult
+	result := r.dbReplica.Raw(sql, args...).Scan(&tempResults)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -97,6 +118,7 @@ func (r GormAnimeCategoryRepository) GetByCategoryId(category_id uuid.UUID) ([]G
 				Seasonal: res.Seasonal,
 				Year:     res.Year,
 				Image:    res.Image,
+				AiredAt:  res.AiredAt,
 				Studios:  []StudioDetail{},
 			}
 			animeMap[res.ID] = anime
