@@ -1,6 +1,6 @@
 INSERT INTO providers (id, name, image, created_at, updated_at) VALUES
   (gen_random_uuid(), 'Crunchyroll',        'https://www.crunchyroll.com/build/assets/img/favicons/favicon-192x192.png',                    NOW(), NOW()),
-  (gen_random_uuid(), 'Netflix',            'https://assets.nflxext.com/us/ffe/siteui/common/icons/nficon2016.png',                          NOW(), NOW()),
+  (gen_random_uuid(), 'Netflix',            'https://upload.wikimedia.org/wikipedia/commons/7/75/Netflix_icon.svg',                          NOW(), NOW()),
   (gen_random_uuid(), 'Funimation',         'https://www.funimation.com/favicon.ico',                                                         NOW(), NOW()),
   (gen_random_uuid(), 'HiDive',             'https://www.hidive.com/favicon.ico',                                                             NOW(), NOW()),
   (gen_random_uuid(), 'Amazon Prime Video', 'https://m.media-amazon.com/images/G/01/primevideo/seo/primevideo-seo-logo.png',                   NOW(), NOW()),
