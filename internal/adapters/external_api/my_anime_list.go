@@ -73,7 +73,7 @@ type GetAnimeDetailResponse struct {
 	StartSeason            StartSeason       `json:"start_season"`
 	Broadcast              Broadcast         `json:"broadcast"`
 	Source                 string            `json:"source"`
-	AverageEpisodeDuration uint              `json:"average_episode_duration"`
+	AverageEpisodeDuration int               `json:"average_episode_duration"`
 	Rating                 string            `json:"rating"`
 	Studios                []Studio          `json:"studios"`
 	Genres                 []Genre           `json:"genres"`

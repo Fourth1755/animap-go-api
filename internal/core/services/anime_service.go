@@ -16,6 +16,7 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
 	"github.com/Fourth1755/animap-go-api/internal/logs"
+	"github.com/Fourth1755/animap-go-api/internal/utils"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -257,7 +258,7 @@ func (s *animeServiceImpl) GetAnimeById(id uuid.UUID) (*dtos.GetAnimeByIdRespons
 			Image:            myAnimeListData.MainPicture.Large,
 			Description:      myAnimeListData.Synopsis,
 			Type:             anime.Type,
-			Duration:         anime.Duration,
+			Duration:         utils.FormatDuration(myAnimeListData.AverageEpisodeDuration),
 			Categories:       categories,
 			Wallpaper:        anime.Wallpaper,
 			TrailerEmbed:     anime.TrailerEmbed,
