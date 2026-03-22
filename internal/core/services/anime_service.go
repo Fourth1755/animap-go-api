@@ -68,7 +68,6 @@ type animeServiceImpl struct {
 	userRepo                    repositories.UserRepository
 	animeCategoryRepo           repositories.AnimeCategoryRepository
 	animeStudioRepo             repositories.AnimeStudioRepository
-	animePictureRepo            repositories.AnimePictureRepository
 	animeTrailerRepo            repositories.AnimeTrailerRepository
 	songRepo                    repositories.SongRepository
 	categoryRepo                repositories.CategoryRepository
@@ -85,7 +84,6 @@ func NewAnimeService(
 	userRepo repositories.UserRepository,
 	animeCategoryRepo repositories.AnimeCategoryRepository,
 	animeStudioRepo repositories.AnimeStudioRepository,
-	animePictureRepo repositories.AnimePictureRepository,
 	animeTrailerRepo repositories.AnimeTrailerRepository,
 	songRepo repositories.SongRepository,
 	categoryRepo repositories.CategoryRepository,
@@ -101,7 +99,6 @@ func NewAnimeService(
 		userRepo:                    userRepo,
 		animeCategoryRepo:           animeCategoryRepo,
 		animeStudioRepo:             animeStudioRepo,
-		animePictureRepo:            animePictureRepo,
 		animeTrailerRepo:            animeTrailerRepo,
 		songRepo:                    songRepo,
 		categoryRepo:                categoryRepo,
@@ -771,8 +768,8 @@ func (s *animeServiceImpl) GetAnimeByStudio(studioId uuid.UUID, query dtos.Anime
 	}, nil
 }
 func (s *animeServiceImpl) AddAnimePictures(request dtos.AddAnimePicturesRequest) error {
-	// Check if anime exists
-	if _, err := s.repo.GetById(request.AnimeID); err != nil {
+	anime, err := s.repo.GetById(request.AnimeID)
+	if err != nil {
 		logs.Error(err.Error())
 		if err == gorm.ErrRecordNotFound {
 			return errs.NewNotFoundError("Anime not found")
@@ -780,21 +777,8 @@ func (s *animeServiceImpl) AddAnimePictures(request dtos.AddAnimePicturesRequest
 		return errs.NewUnexpectedError()
 	}
 
-	var pictures []entities.AnimePicture
-	for _, picURL := range request.Pictures {
-		picID, err := uuid.NewV7()
-		if err != nil {
-			logs.Error(err.Error())
-			return errs.NewUnexpectedError()
-		}
-		pictures = append(pictures, entities.AnimePicture{
-			ID:         picID,
-			AnimeID:    request.AnimeID,
-			PictureURL: picURL,
-		})
-	}
-
-	if err := s.animePictureRepo.Save(pictures); err != nil {
+	updated := append(anime.Pictures, request.Pictures...)
+	if err := s.repo.UpdatePictures(request.AnimeID, updated); err != nil {
 		logs.Error(err.Error())
 		return errs.NewUnexpectedError()
 	}
@@ -810,26 +794,26 @@ func (s *animeServiceImpl) GetAnimePictures(animeID uuid.UUID) (*dtos.AnimeMedia
 	}
 	var response []dtos.AnimeMediaDataResponse
 	for _, t := range trailer {
+		id := t.ID
 		url := fmt.Sprintf("https://img.youtube.com/vi/%s/maxresdefault.jpg", t.VideoID)
 		embedURL := fmt.Sprintf("https://www.youtube.com/embed/%s", t.VideoID)
 		response = append(response, dtos.AnimeMediaDataResponse{
-			ID:       t.ID,
+			ID:       &id,
 			Type:     "VIDEO",
 			URL:      url,
 			EmbedURL: embedURL,
 		})
 	}
-	pictures, err := s.animePictureRepo.GetByAnimeId(animeID)
+	anime, err := s.repo.GetById(animeID)
 	if err != nil {
 		logs.Error(err.Error())
 		return nil, errs.NewUnexpectedError()
 	}
 
-	for _, pic := range pictures {
+	for _, picURL := range anime.Pictures {
 		response = append(response, dtos.AnimeMediaDataResponse{
-			ID:       pic.ID,
 			Type:     "PICTURE",
-			URL:      pic.PictureURL,
+			URL:      picURL,
 			EmbedURL: "",
 		})
 	}

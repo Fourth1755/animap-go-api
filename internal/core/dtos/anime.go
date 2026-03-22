@@ -212,10 +212,10 @@ type AddAnimePicturesRequest struct {
 }
 
 type AnimeMediaDataResponse struct {
-	ID       uuid.UUID `json:"id"`
-	Type     string    `json:"type"`
-	URL      string    `json:"url"`
-	EmbedURL string    `json:"embed_url"`
+	ID       *uuid.UUID `json:"id,omitempty"`
+	Type     string     `json:"type"`
+	URL      string     `json:"url"`
+	EmbedURL string     `json:"embed_url,omitempty"`
 }
 type AnimeMediaResponse struct {
 	Data []AnimeMediaDataResponse `json:"data"`

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
@@ -36,4 +37,5 @@ type Anime struct {
 	IsSubAnime        bool           `json:"is_sub_anime"`
 	Rating            string         `json:"rating"`
 	IsShow            bool           `gorm:"default:true" json:"is_show"`
+	Pictures          pq.StringArray `gorm:"type:text[]" json:"pictures"`
 }

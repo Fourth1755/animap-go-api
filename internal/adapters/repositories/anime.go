@@ -6,6 +6,7 @@ import (
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/core/entities"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
@@ -23,6 +24,7 @@ type AnimeRepository interface {
 	GetByMyAnimeListId(id int) (*entities.Anime, error)
 	UpdadteAiredAt(airedAt time.Time, myAnimeListId int) error
 	Search(keyword string, limit int) ([]entities.Anime, error)
+	UpdatePictures(animeID uuid.UUID, pictures pq.StringArray) error
 }
 
 type GormAnimeRepository struct {
@@ -190,4 +192,9 @@ func (r *GormAnimeRepository) Search(keyword string, limit int) ([]entities.Anim
 		return nil, result.Error
 	}
 	return animes, nil
+}
+
+func (r *GormAnimeRepository) UpdatePictures(animeID uuid.UUID, pictures pq.StringArray) error {
+	result := r.dbPrimary.Model(&entities.Anime{}).Where("id = ?", animeID).Update("pictures", pictures)
+	return result.Error
 }

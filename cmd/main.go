@@ -50,7 +50,6 @@ func main() {
 	animeCharacterRepo := repositories.NewGormAnimeCharacterRepository(dbPrimary, dbReplica)
 	episodeCharacterRepo := repositories.NewGormEpisodeCharacterRepository(dbPrimary, dbReplica)
 	commentRepo := repositories.NewGormCommentAnimeRepository(dbPrimary, dbReplica)
-	animePictureRepo := repositories.NewGormAnimePictureRepository(dbPrimary, dbReplica)
 	animeTrailerRepo := repositories.NewAnimeTrailerRepository(dbPrimary, dbReplica)
 	tierTemplateRepo := repositories.NewTierTemplateRepository(dbPrimary, dbReplica)
 
@@ -66,7 +65,6 @@ func main() {
 		userRepo,
 		animeCategoryRepo,
 		animeStudioRepo,
-		animePictureRepo,
 		animeTrailerRepo,
 		songRepo,
 		categoryRepo,
