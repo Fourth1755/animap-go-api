@@ -1,8 +1,6 @@
 package services
 
 import (
-	"sync"
-
 	"github.com/Fourth1755/animap-go-api/internal/adapters/repositories"
 	"github.com/Fourth1755/animap-go-api/internal/core/dtos"
 	"github.com/Fourth1755/animap-go-api/internal/errs"
@@ -44,132 +42,110 @@ func (s *searchServiceImpl) Search(keyword string) (*dtos.SearchResponse, error)
 		return &dtos.SearchResponse{Results: []dtos.SearchResultItem{}}, nil
 	}
 
-	type result struct {
+	type bucket struct {
 		items []dtos.SearchResultItem
 		err   error
 	}
 
-	ch := make(chan result, 5)
-	var wg sync.WaitGroup
-
-	wg.Add(5)
+	animes := make(chan bucket, 1)
+	categoryUniverses := make(chan bucket, 1)
+	songs := make(chan bucket, 1)
+	characters := make(chan bucket, 1)
+	studios := make(chan bucket, 1)
 
 	go func() {
-		defer wg.Done()
-		animes, err := s.animeRepo.Search(keyword, searchLimit)
+		list, err := s.animeRepo.Search(keyword, searchLimit)
 		if err != nil {
 			logs.Error(err.Error())
-			ch <- result{err: err}
+			animes <- bucket{err: err}
 			return
 		}
-		items := make([]dtos.SearchResultItem, 0, len(animes))
-		for _, a := range animes {
-			items = append(items, dtos.SearchResultItem{
-				ID:    a.ID,
-				Name:  a.Name,
-				Image: a.Image,
-				Type:  "anime",
-			})
+		items := make([]dtos.SearchResultItem, 0, len(list))
+		for _, a := range list {
+			items = append(items, dtos.SearchResultItem{ID: a.ID, Name: a.Name, Image: a.Image, Type: "anime"})
 		}
-		ch <- result{items: items}
+		animes <- bucket{items: items}
 	}()
 
 	go func() {
-		defer wg.Done()
-		studios, err := s.studioRepo.Search(keyword, searchLimit)
+		list, err := s.categoryUniverseRepo.Search(keyword, searchLimit)
 		if err != nil {
 			logs.Error(err.Error())
-			ch <- result{err: err}
+			categoryUniverses <- bucket{err: err}
 			return
 		}
-		items := make([]dtos.SearchResultItem, 0, len(studios))
-		for _, s := range studios {
-			items = append(items, dtos.SearchResultItem{
-				ID:    s.ID,
-				Name:  s.Name,
-				Image: s.Image,
-				Type:  "studio",
-			})
+		items := make([]dtos.SearchResultItem, 0, len(list))
+		for _, c := range list {
+			items = append(items, dtos.SearchResultItem{ID: c.ID, Name: c.Name, Type: "category_universe"})
 		}
-		ch <- result{items: items}
+		categoryUniverses <- bucket{items: items}
 	}()
 
 	go func() {
-		defer wg.Done()
-		songs, err := s.songRepo.Search(keyword, searchLimit)
+		list, err := s.songRepo.Search(keyword, searchLimit)
 		if err != nil {
 			logs.Error(err.Error())
-			ch <- result{err: err}
+			songs <- bucket{err: err}
 			return
 		}
-		items := make([]dtos.SearchResultItem, 0, len(songs))
-		for _, s := range songs {
-			items = append(items, dtos.SearchResultItem{
-				ID:    s.ID,
-				Name:  s.Name,
-				Image: s.Image,
-				Type:  "song",
-			})
+		items := make([]dtos.SearchResultItem, 0, len(list))
+		for _, s := range list {
+			items = append(items, dtos.SearchResultItem{ID: s.ID, Name: s.Name, Image: s.Image, Type: "song"})
 		}
-		ch <- result{items: items}
+		songs <- bucket{items: items}
 	}()
 
 	go func() {
-		defer wg.Done()
-		categories, err := s.categoryUniverseRepo.Search(keyword, searchLimit)
+		list, err := s.characterRepo.Search(keyword, searchLimit)
 		if err != nil {
 			logs.Error(err.Error())
-			ch <- result{err: err}
+			characters <- bucket{err: err}
 			return
 		}
-		items := make([]dtos.SearchResultItem, 0, len(categories))
-		for _, c := range categories {
-			items = append(items, dtos.SearchResultItem{
-				ID:    c.ID,
-				Name:  c.Name,
-				Image: c.Image,
-				Type:  "category_universe",
-			})
+		items := make([]dtos.SearchResultItem, 0, len(list))
+		for _, c := range list {
+			items = append(items, dtos.SearchResultItem{ID: c.ID, Name: c.Name, Image: c.Image, Type: "character"})
 		}
-		ch <- result{items: items}
+		characters <- bucket{items: items}
 	}()
 
 	go func() {
-		defer wg.Done()
-		characters, err := s.characterRepo.Search(keyword, searchLimit)
+		list, err := s.studioRepo.Search(keyword, searchLimit)
 		if err != nil {
 			logs.Error(err.Error())
-			ch <- result{err: err}
+			studios <- bucket{err: err}
 			return
 		}
-		items := make([]dtos.SearchResultItem, 0, len(characters))
-		for _, c := range characters {
-			items = append(items, dtos.SearchResultItem{
-				ID:    c.ID,
-				Name:  c.Name,
-				Image: c.Image,
-				Type:  "character",
-			})
+		items := make([]dtos.SearchResultItem, 0, len(list))
+		for _, s := range list {
+			items = append(items, dtos.SearchResultItem{ID: s.ID, Name: s.Name, Image: s.Image, Type: "studio"})
 		}
-		ch <- result{items: items}
+		studios <- bucket{items: items}
 	}()
 
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
+	// collect in priority order: anime → category_universe → song → character → studio
+	ordered := make([]bucket, 5)
+	ordered[0] = <-animes
+	ordered[1] = <-categoryUniverses
+	ordered[2] = <-songs
+	ordered[3] = <-characters
+	ordered[4] = <-studios
 
-	var allItems []dtos.SearchResultItem
-	for r := range ch {
-		if r.err != nil {
+	result := make([]dtos.SearchResultItem, 0, searchLimit)
+	for _, b := range ordered {
+		if b.err != nil {
 			return nil, errs.NewUnexpectedError()
 		}
-		allItems = append(allItems, r.items...)
+		remaining := searchLimit - len(result)
+		if remaining <= 0 {
+			break
+		}
+		if len(b.items) > remaining {
+			result = append(result, b.items[:remaining]...)
+		} else {
+			result = append(result, b.items...)
+		}
 	}
 
-	if allItems == nil {
-		allItems = []dtos.SearchResultItem{}
-	}
-
-	return &dtos.SearchResponse{Results: allItems}, nil
+	return &dtos.SearchResponse{Results: result}, nil
 }
